@@ -38,3 +38,11 @@
 
 - 💡 **Bugs and ideas**
   - Feel free to report any bug or suggest ideas.
+
+  ## License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license.
+
+You are free to use, modify, and share this code **as long as it is not for commercial purposes** and you give appropriate credit.
+
+🔗 [Read full license here](https://creativecommons.org/licenses/by-nc/4.0/)
