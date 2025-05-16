@@ -4,19 +4,11 @@
 
 ## Screenshots
 
-| Pantalla principal | Configuración |
-|--------------------|----------------|
-| ![Home](screenshots/home_screen.png) | ![Settings](screenshots/settings_screen.png) |
-| ![Search](screenshots/search_screen.png) | ![Columns View](screenshots/home_screen_columns.png) |
-
-
-## Screenshots
-
 <p align="center">
   <img src="screenshots/home_screen.png" alt="Home" width="200"/>
   <img src="screenshots/settings_screen.png" alt="Settings" width="200"/>
   <img src="screenshots/search_screen.png" alt="Search" width="200"/>
-  <img src="screenshots/home_screen_columns.png" alt="Grid View" width="200"/>
+  <img src="screenshots/home_screen_columns.png" alt="Columns View" width="200"/>
 </p>
 
 
