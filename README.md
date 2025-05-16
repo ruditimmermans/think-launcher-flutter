@@ -7,7 +7,7 @@
 | Pantalla principal | Configuración |
 |--------------------|----------------|
 | ![Home](screenshots/home_screen.png) | ![Settings](screenshots/settings_screen.png) |
-| ![Search](screenshots/search_screen.png) | ![Columns View](screenshots/columns_screen.png) |
+| ![Search](screenshots/search_screen.png) | ![Columns View](screenshots/home_screen_columns.png) |
 
 
 ## ✨ Features
