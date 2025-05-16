@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       debugPrint('Error al guardar configuración: $e');
       if (mounted) {
         setState(() {
-          errorMessage = 'Error al guardar la configuración';
+          errorMessage = 'Error saving settings';
         });
       }
     } finally {
@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Configuración'),
+        title: const Text('Settings'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -162,15 +162,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             )
           else
-            TextButton(
+            FilledButton.tonal(
               onPressed: _saveSettings,
-              child: const Text(
-                'Guardar',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: const Text('Save'),
             ),
         ],
       ),
@@ -178,11 +172,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           ListView(
             children: [
-              // 1. Número de apps
+              // 1. Number of apps
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text(
-                  'Número de apps',
+                  'Number of apps',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -198,7 +192,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() {
                     numApps = value.toInt();
-                    // Ajustar la lista de apps si es necesario
                     if (selectedApps.length > numApps) {
                       selectedApps = selectedApps.sublist(0, numApps);
                     }
@@ -206,11 +199,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 2. Número de columnas
+              // 2. Number of columns
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text(
-                  'Número de columnas',
+                  'Number of columns',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -230,10 +223,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 3. Mostrar fecha, hora y batería
+              // 3. Show date, time and battery
               SwitchListTile(
                 title: const Text(
-                  'Mostrar fecha, hora y batería',
+                  'Show date, time and battery',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -247,10 +240,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 4. Mostrar botón de búsqueda
+              // 4. Show search button
               SwitchListTile(
                 title: const Text(
-                  'Mostrar botón de búsqueda',
+                  'Show search button',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -264,10 +257,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 5. Mostrar botón de configuración
+              // 5. Show settings button
               SwitchListTile(
                 title: const Text(
-                  'Mostrar botón de configuración',
+                  'Show settings button',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -281,10 +274,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 6. Usar fuente en negrita
+              // 6. Use bold font
               SwitchListTile(
                 title: const Text(
-                  'Usar fuente en negrita',
+                  'Use bold font',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -298,10 +291,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 7. Permitir scroll en la lista
+              // 7. Enable list scrolling
               SwitchListTile(
                 title: const Text(
-                  'Permitir scroll en la lista',
+                  'Enable list scrolling',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -315,10 +308,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 8. Mostrar iconos
+              // 8. Show icons
               SwitchListTile(
                 title: const Text(
-                  'Mostrar iconos',
+                  'Show icons',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -332,11 +325,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 9. Tamaño de fuente de las apps
+              // 9. App font size
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text(
-                  'Tamaño de fuente de las apps',
+                  'App font size',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -356,25 +349,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
-              // 10. Lista de apps
+              // 10. App list
               ListTile(
                 title: const Text(
-                  'Lista de apps',
+                  'App list',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                subtitle: Text(
-                    '${selectedApps.length} de $numApps apps seleccionadas'),
+                subtitle:
+                    Text('${selectedApps.length} of $numApps apps selected'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _selectApps,
               ),
 
-              // 11. Reordenar apps
+              // 11. Reorder apps
               ListTile(
                 title: const Text(
-                  'Reordenar apps',
+                  'Reorder apps',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -391,22 +384,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               left: 16,
               right: 16,
               child: Material(
-                color: Colors.red.shade100,
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red),
+                      const Icon(Icons.error_outline, color: Colors.black),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(color: Colors.black),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red),
+                        icon: const Icon(Icons.close, color: Colors.black),
                         onPressed: () {
                           setState(() {
                             errorMessage = null;
@@ -468,7 +465,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
       debugPrint('Error al cargar información de apps: $e');
       if (mounted) {
         setState(() {
-          errorMessage = 'Error al cargar la información de las apps';
+          errorMessage = 'Error loading app information';
           isLoading = false;
         });
       }
@@ -480,7 +477,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Reordenar apps'),
+        title: const Text('Reorder apps'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -489,15 +486,13 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          TextButton(
+          FilledButton.tonal(
             onPressed: () => Navigator.pop(context, apps),
-            child: const Text(
-              'Guardar',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
             ),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -515,7 +510,11 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadAppInfos,
-                    child: const Text('Reintentar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Reattempt'),
                   ),
                 ],
               ),

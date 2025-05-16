@@ -65,10 +65,10 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error al cargar apps: $e');
+      debugPrint('Error loading apps: $e');
       if (mounted) {
         setState(() {
-          errorMessage = 'Error al cargar las aplicaciones';
+          errorMessage = 'Error loading applications';
           isLoading = false;
         });
       }
@@ -97,8 +97,8 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('Ya has seleccionado el máximo de ${widget.maxApps} apps'),
+            content: Text(
+                'You have already selected the maximum of ${widget.maxApps} apps'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -111,7 +111,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Seleccionar apps'),
+        title: const Text('Select apps'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -132,12 +132,16 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
               cursorWidth: 2,
               cursorRadius: const Radius.circular(1),
               cursorOpacityAnimates: false,
-              decoration: const InputDecoration(
-                hintText: 'Buscar apps...',
-                prefixIcon: Icon(Icons.search),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
+              decoration: InputDecoration(
+                hintText: 'Search apps...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
               onChanged: _filterApps,
             ),
@@ -147,7 +151,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.black),
               ),
             )
           else
@@ -181,8 +185,9 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color:
-                                      isMaxReached ? Colors.grey : Colors.black,
+                                  color: isMaxReached
+                                      ? Colors.black.withAlpha(127)
+                                      : Colors.black,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,

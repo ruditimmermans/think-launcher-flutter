@@ -46,10 +46,10 @@ class _SearchScreenState extends State<SearchScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error al cargar apps: $e');
+      debugPrint('Error loading apps: $e');
       if (mounted) {
         setState(() {
-          errorMessage = 'Error al cargar las aplicaciones';
+          errorMessage = 'Error loading applications';
         });
       }
     }
@@ -75,11 +75,11 @@ class _SearchScreenState extends State<SearchScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      debugPrint('Error al abrir la app: $e');
+      debugPrint('Error opening app: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('No se pudo abrir la aplicación'),
+            content: Text('Could not open the application'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -92,7 +92,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Buscar apps'),
+        title: const Text('Search apps'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -113,12 +113,15 @@ class _SearchScreenState extends State<SearchScreen> {
               cursorWidth: 2,
               cursorRadius: const Radius.circular(1),
               cursorOpacityAnimates: false,
-              decoration: const InputDecoration(
-                hintText: 'Buscar apps...',
-                prefixIcon: Icon(Icons.search),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
+              decoration: InputDecoration(
+                hintText: 'Search apps...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceVariant,
               ),
               onChanged: _filterApps,
             ),
@@ -128,7 +131,7 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.black),
               ),
             )
           else

@@ -88,7 +88,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       appInfoCache[packageName] = appInfo;
       return appInfo;
     } catch (e) {
-      debugPrint('Error al obtener información de la app $packageName: $e');
+      debugPrint('Error getting app info for $packageName: $e');
       // Si hay error, intentamos obtener la información básica
       try {
         final app = await InstalledApps.getAppInfo(packageName, null);
@@ -156,7 +156,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         });
       }
     } catch (e) {
-      debugPrint('Error al obtener nivel de batería: $e');
+      debugPrint('Error getting battery level: $e');
     }
   }
 
@@ -178,7 +178,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _loadSettings();
       }
     } catch (e) {
-      debugPrint('Error al abrir configuración: $e');
+      debugPrint('Error opening settings: $e');
     } finally {
       _isNavigating = false;
     }
@@ -200,7 +200,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
       );
     } catch (e) {
-      debugPrint('Error al abrir búsqueda: $e');
+      debugPrint('Error opening search: $e');
     } finally {
       _isNavigating = false;
     }
@@ -220,10 +220,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
 
         if (snapshot.hasError) {
-          debugPrint('Error al cargar las apps: ${snapshot.error}');
+          debugPrint('Error loading apps: ${snapshot.error}');
           return Center(
             child: Text(
-              'Error al cargar las aplicaciones',
+              'Error loading applications',
               style: TextStyle(
                 fontSize: appFontSize,
                 fontWeight: useBoldFont ? FontWeight.bold : FontWeight.normal,
@@ -236,7 +236,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (apps.isEmpty) {
           return Center(
             child: Text(
-              'No hay aplicaciones seleccionadas',
+              'No applications selected',
               style: TextStyle(
                 fontSize: appFontSize,
                 fontWeight: useBoldFont ? FontWeight.bold : FontWeight.normal,
@@ -271,7 +271,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       key: ValueKey(app.packageName),
       child: InkWell(
         onTap: () => InstalledApps.startApp(app.packageName),
-        child: Padding(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black),
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -288,6 +295,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 style: TextStyle(
                   fontSize: appFontSize,
                   fontWeight: useBoldFont ? FontWeight.bold : FontWeight.normal,
+                  color: Colors.black,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -386,6 +394,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                   icon: const Icon(Icons.settings, size: 28),
                                   onPressed: _openSettings,
                                   padding: EdgeInsets.zero,
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side:
+                                          const BorderSide(color: Colors.black),
+                                    ),
+                                  ),
                                 ),
                               if (showSearchButton)
                                 IconButton(
@@ -404,7 +420,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           if (selectedApps.isEmpty)
                             const Center(
                               child: Text(
-                                'Presiona el botón de configuración para comenzar',
+                                'Press the settings button to start',
                                 style: TextStyle(fontSize: 18),
                               ),
                             )

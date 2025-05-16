@@ -2,7 +2,13 @@
 
 **InkLauncher** is a minimalist Android launcher designed specifically for **e-ink devices**. It prioritizes **battery efficiency**, **simplicity**, and **high readability**, using only pure black and white tones and no animations.
 
-![InkLauncher Screenshot](screenshot.png)
+## Screenshots
+
+| Pantalla principal | Configuración |
+|--------------------|----------------|
+| ![Home](screenshots/home_screen.png) | ![Settings](screenshots/settings_screen.png) |
+| ![Search](screenshots/search_screen.png) | ![Columns View](screenshots/columns_screen.png) |
+
 
 ## ✨ Features
 
