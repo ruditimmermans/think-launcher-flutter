@@ -31,7 +31,7 @@
     - 🔎 Search button
     - 🕒 Time, date, and battery info.
 
-- 🧠 **Built for e-ink**
+- ✒️ **Built for e-ink**
   - No animations.
   - Black text, white background only.
   - Minimal redraw and screen refresh to preserve screen and battery.
@@ -41,8 +41,7 @@
 
 ## License
 
-This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license.
+This project is licensed under the **MIT License**.  
+You are free to use, modify, and distribute it, even for commercial purposes, as long as proper credit is given.
 
-You are free to use, modify, and share this code **as long as it is not for commercial purposes** and you give appropriate credit.
-
-🔗 [Read full license here](https://creativecommons.org/licenses/by-nc/4.0/)
+[View full license](./LICENSE)
