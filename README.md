@@ -1,8 +1,8 @@
-<p align="left">
-  <img src="assets/icon.png" alt="ThinkLauncher Icon" width="50"/>
+<p align="center">
+  <img src="assets/icon.png" alt="ThinkLauncher Icon" width="100"/>
 </p>
 
-## About
+## Think Launcher
 
 **Think Launcher** is a minimalist Android launcher designed specifically for **e-ink devices**. It prioritizes **simplicity**, **customization**, and uses only pure black and white tones and no animations.
 
