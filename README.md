@@ -1,5 +1,5 @@
-<p align="center">
-  <img src="assets/icon.png" alt="InkLauncher Icon" width="100"/>
+<p align="left">
+  <img src="assets/icon.png" alt="ThinkLauncher Icon" width="50"/>
 </p>
 # InkLauncher
 
