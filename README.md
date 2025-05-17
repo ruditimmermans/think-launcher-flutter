@@ -8,7 +8,7 @@
   <img src="screenshots/home_screen.png" alt="Home" width="200"/>
   <img src="screenshots/settings_screen.png" alt="Settings" width="200"/>
     <img src="screenshots/home_screen_columns.png" alt="Columns View" width="200"/>
-  <img src="screenshots/search_screen.png" alt="Gestures" width="200"/>
+  <img src="screenshots/gestures_screen.png" alt="Gestures" width="200"/>
 </p>
 
 
