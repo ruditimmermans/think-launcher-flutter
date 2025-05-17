@@ -7,13 +7,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
-  // Configurar la barra de estado
+  // Configure status bar
+  final showStatusBar = prefs.getBool('showStatusBar') ?? false;
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
-    overlays: [SystemUiOverlay.bottom],
+    overlays: showStatusBar
+        ? [SystemUiOverlay.top, SystemUiOverlay.bottom]
+        : [SystemUiOverlay.bottom],
   );
 
-  // Configurar el color de la barra de navegación
+  // Configure navigation bar color
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -44,11 +47,9 @@ class MyApp extends StatelessWidget {
           onSecondary: Colors.white,
           surface: Colors.white,
           onSurface: Colors.black,
-          background: Colors.white,
-          onBackground: Colors.black,
           error: Colors.black,
           onError: Colors.white,
-          surfaceVariant: Colors.white,
+          surfaceContainerHighest: Colors.white,
           onSurfaceVariant: Colors.black,
           outline: Colors.black,
           outlineVariant: Colors.black,
@@ -128,6 +129,10 @@ class MyApp extends StatelessWidget {
             borderSide: const BorderSide(color: Colors.black, width: 2),
           ),
         ),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
             TargetPlatform.android: NoTransitionsBuilder(),

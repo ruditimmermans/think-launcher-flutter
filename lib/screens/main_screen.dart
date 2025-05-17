@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
-import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:flutter/services.dart';
 import '../models/app_info.dart';
 import 'settings_screen.dart';
 import 'search_screen.dart';
@@ -33,10 +33,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   String currentTime = '';
   String currentDate = '';
   int batteryLevel = 0;
-  Timer? _timer;
+  Timer? _dateTimeTimer;
+  Timer? _batteryTimer;
   bool _isNavigating = false;
   final Battery _battery = Battery();
   bool _isFirstLoad = true;
+  bool showAppTitles = true;
+  double appIconSize = 18.0;
 
   @override
   void initState() {
@@ -48,8 +51,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _battery.onBatteryStateChanged.listen((BatteryState state) {
       _updateBattery();
     });
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _dateTimeTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       _updateDateTime();
+    });
+    _batteryTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
       _updateBattery();
     });
   }
@@ -57,18 +62,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _timer?.cancel();
+    _dateTimeTimer?.cancel();
+    _batteryTimer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Solo actualizamos la batería y la fecha/hora
+      // Only update battery and date/time
       _updateBattery();
       _updateDateTime();
 
-      // Si es la primera carga, cargamos la configuración
+      // If it's the first load, load settings
       if (_isFirstLoad) {
         _loadSettings();
         _isFirstLoad = false;
@@ -77,7 +83,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<AppInfo> _getAppInfo(String packageName) async {
-    // Si ya tenemos la información en caché, la devolvemos
+    // If we already have the info in cache, return it
     if (appInfoCache.containsKey(packageName)) {
       return appInfoCache[packageName]!;
     }
@@ -89,49 +95,61 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       return appInfo;
     } catch (e) {
       debugPrint('Error getting app info for $packageName: $e');
-      // Si hay error, intentamos obtener la información básica
-      try {
-        final app = await InstalledApps.getAppInfo(packageName, null);
-        return AppInfo.fromInstalledApps(app);
-      } catch (e) {
-        // Si aún hay error, devolvemos un AppInfo básico
-        return AppInfo(
-          name: packageName,
-          packageName: packageName,
-          versionName: '',
-          versionCode: 0,
-          builtWith: BuiltWith.unknown,
-          installedTimestamp: 0,
-        );
-      }
+      return AppInfo(
+        name: packageName,
+        packageName: packageName,
+        versionName: '',
+        versionCode: 0,
+        builtWith: BuiltWith.unknown,
+        installedTimestamp: 0,
+      );
     }
   }
 
-  // Precargar la información de todas las apps seleccionadas
   Future<void> _preloadAppInfo() async {
-    for (final packageName in selectedApps) {
-      if (!appInfoCache.containsKey(packageName)) {
-        await _getAppInfo(packageName);
-      }
-    }
+    if (selectedApps.isEmpty) return;
+
+    // Load apps in parallel to improve performance
+    final futures = selectedApps
+        .where((packageName) => !appInfoCache.containsKey(packageName))
+        .map((packageName) => _getAppInfo(packageName));
+
+    await Future.wait(futures);
   }
 
   void _loadSettings() {
     if (!mounted) return;
-    setState(() {
-      numApps = widget.prefs.getInt('numApps') ?? 5;
-      numColumns = widget.prefs.getInt('numColumns') ?? 1;
-      showDateTime = widget.prefs.getBool('showDateTime') ?? true;
-      showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
-      showSettingsButton = widget.prefs.getBool('showSettingsButton') ?? true;
-      useBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
-      appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
-      enableScroll = widget.prefs.getBool('enableScroll') ?? true;
-      showIcons = widget.prefs.getBool('showIcons') ?? false;
-      selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
 
-      // Precargar la información de las apps
-      _preloadAppInfo();
+    // Load settings asynchronously
+    Future.microtask(() async {
+      if (!mounted) return;
+
+      setState(() {
+        numApps = widget.prefs.getInt('numApps') ?? 5;
+        numColumns = widget.prefs.getInt('numColumns') ?? 1;
+        showDateTime = widget.prefs.getBool('showDateTime') ?? true;
+        showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
+        showSettingsButton = widget.prefs.getBool('showSettingsButton') ?? true;
+        useBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
+        appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
+        enableScroll = widget.prefs.getBool('enableScroll') ?? true;
+        showIcons = widget.prefs.getBool('showIcons') ?? false;
+        showAppTitles = widget.prefs.getBool('showAppTitles') ?? true;
+        selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
+        appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
+      });
+
+      // Update status bar visibility
+      final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: showStatusBar
+            ? [SystemUiOverlay.top, SystemUiOverlay.bottom]
+            : [SystemUiOverlay.bottom],
+      );
+
+      // Preload app info asynchronously
+      await _preloadAppInfo();
     });
   }
 
@@ -139,7 +157,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!mounted || !showDateTime) return;
     final now = DateTime.now();
     final timeFormatter = DateFormat('HH:mm');
-    final dateFormatter = DateFormat('dd - MMMM - yyyy');
+    final dateFormatter = DateFormat('dd, MMMM - yyyy');
     setState(() {
       currentTime = timeFormatter.format(now);
       currentDate = dateFormatter.format(now);
@@ -156,7 +174,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         });
       }
     } catch (e) {
-      debugPrint('Error getting battery level: $e');
+      // Error silently
     }
   }
 
@@ -178,7 +196,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _loadSettings();
       }
     } catch (e) {
-      debugPrint('Error opening settings: $e');
+      // Error silently
     } finally {
       _isNavigating = false;
     }
@@ -200,7 +218,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
       );
     } catch (e) {
-      debugPrint('Error opening search: $e');
+      // Error silently
     } finally {
       _isNavigating = false;
     }
@@ -213,8 +231,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
+            child: Text(
+              'Loading...',
+              style: TextStyle(fontSize: 18),
             ),
           );
         }
@@ -245,66 +264,144 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           );
         }
 
-        return ReorderableGridView.count(
-          crossAxisCount: numColumns,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: 1.0,
-          children: apps.map((app) => _buildAppTile(app)).toList(),
-          onReorder: (oldIndex, newIndex) {
-            setState(() {
-              if (newIndex > oldIndex) {
-                newIndex -= 1;
-              }
-              final app = selectedApps.removeAt(oldIndex);
-              selectedApps.insert(newIndex, app);
-              widget.prefs.setStringList('selectedApps', selectedApps);
-            });
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildAppTile(AppInfo app) {
-    return Card(
-      key: ValueKey(app.packageName),
-      child: InkWell(
-        onTap: () => InstalledApps.startApp(app.packageName),
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (showIcons && app.icon != null)
-                Image.memory(
-                  app.icon!,
-                  width: 48,
-                  height: 48,
-                ),
-              if (showIcons && app.icon != null) const SizedBox(height: 8),
-              Text(
-                app.name,
-                style: TextStyle(
-                  fontSize: appFontSize,
-                  fontWeight: useBoldFont ? FontWeight.bold : FontWeight.normal,
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+        if (numColumns == 1) {
+          return ScrollConfiguration(
+            behavior: NoGlowScrollBehavior(),
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              physics: enableScroll
+                  ? const AlwaysScrollableScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
+              itemCount: apps.length,
+              itemBuilder: (context, index) {
+                final app = apps[index];
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => InstalledApps.startApp(app.packageName),
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: appIconSize + 16.0,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Row(
+                        children: [
+                          if (showIcons && app.icon != null)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: Image.memory(
+                                app.icon!,
+                                width: appIconSize,
+                                height: appIconSize,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          if (showAppTitles)
+                            Expanded(
+                              child: Text(
+                                app.name,
+                                style: TextStyle(
+                                  fontSize: appFontSize,
+                                  fontWeight: useBoldFont
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        } else {
+          return ScrollConfiguration(
+            behavior: NoGlowScrollBehavior(),
+            child: GridView.builder(
+              padding: EdgeInsets.zero,
+              physics: enableScroll
+                  ? const AlwaysScrollableScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: numColumns,
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 0,
+                childAspectRatio: numColumns == 4
+                    ? 0.55
+                    : numColumns == 3
+                        ? 0.7
+                        : 0.95,
               ),
-            ],
-          ),
-        ),
-      ),
+              itemCount: apps.length,
+              itemBuilder: (context, index) {
+                final app = apps[index];
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => InstalledApps.startApp(app.packageName),
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    child: Container(
+                      clipBehavior: Clip.none,
+                      constraints: BoxConstraints(
+                        minHeight: appIconSize + appFontSize + 24.0,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (showIcons && app.icon != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Image.memory(
+                                app.icon!,
+                                width: appIconSize,
+                                height: appIconSize,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          if (showAppTitles)
+                            Flexible(
+                              child: Text(
+                                app.name,
+                                style: TextStyle(
+                                  fontSize: appFontSize,
+                                  fontWeight: useBoldFont
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                softWrap: false,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -328,231 +425,113 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           onLongPress: _openSettings,
           child: Stack(
             children: [
-              SafeArea(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (showDateTime)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  currentTime,
-                                  style: TextStyle(
-                                    fontSize: 64,
-                                    fontWeight: useBoldFont
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      currentDate,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: useBoldFont
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                    const Text(
-                                      ' | ',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                    ),
-                                    Icon(
-                                      _getBatteryIcon(batteryLevel),
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '$batteryLevel%',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: useBoldFont
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            )
-                          else
-                            const SizedBox(),
-                          Row(
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (showDateTime)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (showSettingsButton)
-                                IconButton(
-                                  icon: const Icon(Icons.settings, size: 28),
-                                  onPressed: _openSettings,
-                                  padding: EdgeInsets.zero,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side:
-                                          const BorderSide(color: Colors.black),
+                              Text(
+                                currentTime,
+                                style: TextStyle(
+                                  fontSize: 64,
+                                  fontWeight: useBoldFont
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    currentDate,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: useBoldFont
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
                                     ),
                                   ),
-                                ),
-                              if (showSearchButton)
-                                IconButton(
-                                  icon: const Icon(Icons.search, size: 28),
-                                  onPressed: _openSearch,
-                                  padding: EdgeInsets.zero,
-                                ),
+                                  const Text(
+                                    ' | ',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                  Icon(
+                                    _getBatteryIcon(batteryLevel),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$batteryLevel%',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: useBoldFont
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
-                          ),
-                        ],
-                      ),
+                          )
+                        else
+                          const SizedBox(),
+                        Row(
+                          children: [
+                            if (showSettingsButton)
+                              IconButton(
+                                icon: const Icon(Icons.settings, size: 28),
+                                onPressed: _openSettings,
+                                padding: EdgeInsets.zero,
+                              ),
+                            if (showSearchButton)
+                              IconButton(
+                                icon: const Icon(Icons.search, size: 28),
+                                onPressed: _openSearch,
+                                padding: EdgeInsets.zero,
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          if (selectedApps.isEmpty)
-                            const Center(
-                              child: Text(
-                                'Press the settings button to start',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            )
-                          else
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: Container(
-                                constraints: BoxConstraints(
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height * 0.7,
-                                ),
-                                child: enableScroll
-                                    ? _buildAppGrid()
-                                    : LayoutBuilder(
-                                        builder: (context, constraints) {
-                                          // Calculamos el número de filas necesarias
-                                          final numRows =
-                                              (selectedApps.length / numColumns)
-                                                  .ceil();
-                                          // Calculamos la altura disponible por fila
-                                          final availableHeight =
-                                              constraints.maxHeight / numRows;
-                                          // Calculamos el aspect ratio basado en la altura disponible
-                                          final aspectRatio =
-                                              (constraints.maxWidth /
-                                                      numColumns) /
-                                                  availableHeight;
-
-                                          return GridView.builder(
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            gridDelegate:
-                                                SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: numColumns,
-                                              childAspectRatio: aspectRatio,
-                                              mainAxisSpacing: 1,
-                                              crossAxisSpacing: 1,
-                                            ),
-                                            itemCount: selectedApps.length,
-                                            itemBuilder: (context, index) {
-                                              return FutureBuilder<AppInfo>(
-                                                future: _getAppInfo(
-                                                    selectedApps[index]),
-                                                builder: (context, snapshot) {
-                                                  if (!snapshot.hasData) {
-                                                    return const SizedBox();
-                                                  }
-                                                  final app = snapshot.data!;
-                                                  return Material(
-                                                    color: Colors.transparent,
-                                                    child: InkWell(
-                                                      onTap: () => InstalledApps
-                                                          .startApp(
-                                                              app.packageName),
-                                                      splashColor:
-                                                          Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      hoverColor:
-                                                          Colors.transparent,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 16.0,
-                                                          vertical: 8.0,
-                                                        ),
-                                                        child: Row(
-                                                          children: [
-                                                            if (showIcons &&
-                                                                app.icon !=
-                                                                    null)
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            16.0),
-                                                                child: Image
-                                                                    .memory(
-                                                                  app.icon!,
-                                                                  width:
-                                                                      appFontSize *
-                                                                          1.5,
-                                                                  height:
-                                                                      appFontSize *
-                                                                          1.5,
-                                                                ),
-                                                              ),
-                                                            Expanded(
-                                                              child: Text(
-                                                                app.name,
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize:
-                                                                      appFontSize,
-                                                                  fontWeight: useBoldFont
-                                                                      ? FontWeight
-                                                                          .bold
-                                                                      : FontWeight
-                                                                          .normal,
-                                                                ),
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                maxLines: 1,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                              ),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        if (selectedApps.isEmpty)
+                          const Center(
+                            child: Text(
+                              'Press the settings button to start',
+                              style: TextStyle(fontSize: 18),
                             ),
-                        ],
-                      ),
+                          )
+                        else
+                          _buildAppGrid(),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+// Class to remove any overscroll effect (glow, stretch, bounce)
+class NoGlowScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }

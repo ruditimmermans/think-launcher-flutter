@@ -54,7 +54,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
       final appInfos =
           installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
 
-      // Ordenar apps por nombre
+      // Sort apps by name
       appInfos.sort((a, b) => a.name.compareTo(b.name));
 
       if (mounted) {
@@ -108,106 +108,123 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Select apps'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context, widget.selectedApps),
-        ),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              autofocus: false,
-              showCursor: true,
-              cursorColor: Colors.black,
-              cursorWidth: 2,
-              cursorRadius: const Radius.circular(1),
-              cursorOpacityAnimates: false,
-              decoration: InputDecoration(
-                hintText: 'Search apps...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-              ),
-              onChanged: _filterApps,
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Select apps'),
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context, widget.selectedApps),
             ),
           ),
-          if (errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                errorMessage!,
-                style: const TextStyle(color: Colors.black),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  autofocus: false,
+                  showCursor: true,
+                  cursorColor: Colors.black,
+                  cursorWidth: 2,
+                  cursorRadius: const Radius.circular(1),
+                  cursorOpacityAnimates: false,
+                  decoration: InputDecoration(
+                    hintText: 'Search apps...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
+                  onChanged: _filterApps,
+                ),
               ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredApps.length,
-                itemBuilder: (context, index) {
-                  final app = filteredApps[index];
-                  final isSelected =
-                      widget.selectedApps.contains(app.packageName);
-                  final isMaxReached =
-                      widget.selectedApps.length >= widget.maxApps &&
-                          !isSelected;
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: isMaxReached
-                          ? null
-                          : () => _selectApp(app.packageName),
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                app.name,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: isMaxReached
-                                      ? Colors.black.withAlpha(127)
-                                      : Colors.black,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ScrollConfiguration(
+                    behavior: NoGlowScrollBehavior(),
+                    child: ListView.builder(
+                      itemCount: filteredApps.length,
+                      itemBuilder: (context, index) {
+                        final app = filteredApps[index];
+                        final isSelected =
+                            widget.selectedApps.contains(app.packageName);
+                        final isMaxReached =
+                            widget.selectedApps.length >= widget.maxApps &&
+                                !isSelected;
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: isMaxReached
+                                ? null
+                                : () => _selectApp(app.packageName),
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      app.name,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: isMaxReached
+                                            ? Colors.black.withAlpha(127)
+                                            : Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.black,
+                                    ),
+                                ],
                               ),
                             ),
-                            if (isSelected)
-                              const Icon(
-                                Icons.check_circle,
-                                color: Colors.black,
-                              ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
-        ],
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
+  }
+}
+
+// Class to remove any overscroll effect (glow, stretch, bounce)
+class NoGlowScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }

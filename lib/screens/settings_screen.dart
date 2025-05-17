@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:flutter/services.dart';
 import '../models/app_info.dart';
 import 'app_selection_screen.dart';
+
+// Class to remove any overscroll effect (glow, stretch, bounce)
+class NoGlowScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
 
 class SettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -21,8 +31,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool showSettingsButton = true;
   bool useBoldFont = false;
   double appFontSize = 18.0;
+  double appIconSize = 27.0;
   bool enableScroll = true;
   bool showIcons = false;
+  bool showAppTitles = true;
   List<String> selectedApps = [];
   bool isLoading = false;
   String? errorMessage;
@@ -42,8 +54,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       showSettingsButton = widget.prefs.getBool('showSettingsButton') ?? true;
       useBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
+      appIconSize = widget.prefs.getDouble('appIconSize') ?? 27.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
       showIcons = widget.prefs.getBool('showIcons') ?? false;
+      showAppTitles = widget.prefs.getBool('showAppTitles') ?? true;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
     });
   }
@@ -55,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         errorMessage = null;
       });
 
-      // Validar que no haya más apps seleccionadas que el número máximo
+      // Validate that there are no more selected apps than the maximum number
       if (selectedApps.length > numApps) {
         selectedApps = selectedApps.sublist(0, numApps);
       }
@@ -67,15 +81,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.prefs.setBool('showSettingsButton', showSettingsButton);
       await widget.prefs.setBool('useBoldFont', useBoldFont);
       await widget.prefs.setDouble('appFontSize', appFontSize);
+      await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
       await widget.prefs.setBool('showIcons', showIcons);
+      await widget.prefs.setBool('showAppTitles', showAppTitles);
       await widget.prefs.setStringList('selectedApps', selectedApps);
 
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      // Update status bar visibility
+      final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: showStatusBar
+            ? [SystemUiOverlay.top, SystemUiOverlay.bottom]
+            : [SystemUiOverlay.bottom],
+      );
     } catch (e) {
-      debugPrint('Error al guardar configuración: $e');
+      debugPrint('Error saving settings: $e');
       if (mounted) {
         setState(() {
           errorMessage = 'Error saving settings';
@@ -136,286 +157,552 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                ),
-              ),
-            )
-          else
-            FilledButton.tonal(
-              onPressed: _saveSettings,
-              child: const Text('Save'),
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('Settings'),
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
             ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          ListView(
-            children: [
-              // 1. Number of apps
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Number of apps',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: FilledButton.tonal(
+                  onPressed: _saveSettings,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  child: const Text('Save'),
                 ),
-              ),
-              Slider(
-                value: numApps.toDouble(),
-                min: 1,
-                max: 20,
-                divisions: 19,
-                label: numApps.toString(),
-                onChanged: (value) {
-                  setState(() {
-                    numApps = value.toInt();
-                    if (selectedApps.length > numApps) {
-                      selectedApps = selectedApps.sublist(0, numApps);
-                    }
-                  });
-                },
-              ),
-
-              // 2. Number of columns
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Number of columns',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Slider(
-                value: numColumns.toDouble(),
-                min: 1,
-                max: 3,
-                divisions: 2,
-                label: numColumns.toString(),
-                onChanged: (value) {
-                  setState(() {
-                    numColumns = value.toInt();
-                  });
-                },
-              ),
-
-              // 3. Show date, time and battery
-              SwitchListTile(
-                title: const Text(
-                  'Show date, time and battery',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                value: showDateTime,
-                onChanged: (value) {
-                  setState(() {
-                    showDateTime = value;
-                  });
-                },
-              ),
-
-              // 4. Show search button
-              SwitchListTile(
-                title: const Text(
-                  'Show search button',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                value: showSearchButton,
-                onChanged: (value) {
-                  setState(() {
-                    showSearchButton = value;
-                  });
-                },
-              ),
-
-              // 5. Show settings button
-              SwitchListTile(
-                title: const Text(
-                  'Show settings button',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                value: showSettingsButton,
-                onChanged: (value) {
-                  setState(() {
-                    showSettingsButton = value;
-                  });
-                },
-              ),
-
-              // 6. Use bold font
-              SwitchListTile(
-                title: const Text(
-                  'Use bold font',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                value: useBoldFont,
-                onChanged: (value) {
-                  setState(() {
-                    useBoldFont = value;
-                  });
-                },
-              ),
-
-              // 7. Enable list scrolling
-              SwitchListTile(
-                title: const Text(
-                  'Enable list scrolling',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                value: enableScroll,
-                onChanged: (value) {
-                  setState(() {
-                    enableScroll = value;
-                  });
-                },
-              ),
-
-              // 8. Show icons
-              SwitchListTile(
-                title: const Text(
-                  'Show icons',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                value: showIcons,
-                onChanged: (value) {
-                  setState(() {
-                    showIcons = value;
-                  });
-                },
-              ),
-
-              // 9. App font size
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'App font size',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Slider(
-                value: appFontSize,
-                min: 14,
-                max: 32,
-                divisions: 18,
-                label: appFontSize.toStringAsFixed(0),
-                onChanged: (value) {
-                  setState(() {
-                    appFontSize = value;
-                  });
-                },
-              ),
-
-              // 10. App list
-              ListTile(
-                title: const Text(
-                  'App list',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle:
-                    Text('${selectedApps.length} of $numApps apps selected'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _selectApps,
-              ),
-
-              // 11. Reorder apps
-              ListTile(
-                title: const Text(
-                  'Reorder apps',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: selectedApps.isEmpty ? null : _reorderApps,
               ),
             ],
           ),
-          if (errorMessage != null)
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: Material(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
+          body: Stack(
+            children: [
+              Theme(
+                data: Theme.of(context).copyWith(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                ),
+                child: ScrollConfiguration(
+                  behavior: NoGlowScrollBehavior(),
+                  child: ListView(
+                    physics: const ClampingScrollPhysics(),
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.black),
-                      const SizedBox(width: 8),
-                      Expanded(
+                      // 1. Number of apps
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
                         child: Text(
-                          errorMessage!,
-                          style: const TextStyle(color: Colors.black),
+                          'Number of apps',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.black),
-                        onPressed: () {
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: numApps > 1
+                                  ? () {
+                                      setState(() {
+                                        numApps--;
+                                        if (selectedApps.length > numApps) {
+                                          selectedApps =
+                                              selectedApps.sublist(0, numApps);
+                                        }
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  overlayShape: SliderComponentShape.noOverlay,
+                                  valueIndicatorColor: Colors.transparent,
+                                  valueIndicatorTextStyle:
+                                      const TextStyle(color: Colors.black),
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 12,
+                                    elevation: 0,
+                                    pressedElevation: 0,
+                                  ),
+                                  trackHeight: 2,
+                                  activeTrackColor: Colors.black,
+                                  inactiveTrackColor: Colors.grey,
+                                  thumbColor: Colors.black,
+                                  overlayColor: Colors.transparent,
+                                ),
+                                child: Slider(
+                                  value: numApps.toDouble(),
+                                  min: 1,
+                                  max: 20,
+                                  divisions: 19,
+                                  label: numApps.toString(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      numApps = value.toInt();
+                                      if (selectedApps.length > numApps) {
+                                        selectedApps =
+                                            selectedApps.sublist(0, numApps);
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: numApps < 20
+                                  ? () {
+                                      setState(() {
+                                        numApps++;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 2. Number of columns
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'Number of columns',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: numColumns > 1
+                                  ? () {
+                                      setState(() {
+                                        numColumns--;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  overlayShape: SliderComponentShape.noOverlay,
+                                  valueIndicatorColor: Colors.transparent,
+                                  valueIndicatorTextStyle:
+                                      const TextStyle(color: Colors.black),
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 12,
+                                    elevation: 0,
+                                    pressedElevation: 0,
+                                  ),
+                                  trackHeight: 2,
+                                  activeTrackColor: Colors.black,
+                                  inactiveTrackColor: Colors.grey,
+                                  thumbColor: Colors.black,
+                                  overlayColor: Colors.transparent,
+                                ),
+                                child: Slider(
+                                  value: numColumns.toDouble(),
+                                  min: 1,
+                                  max: 4,
+                                  divisions: 3,
+                                  label: numColumns.toString(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      numColumns = value.toInt();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: numColumns < 4
+                                  ? () {
+                                      setState(() {
+                                        numColumns++;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 3. Show date, time and battery
+                      SwitchListTile(
+                        title: const Text(
+                          'Show date, time and battery',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showDateTime,
+                        onChanged: (value) {
                           setState(() {
-                            errorMessage = null;
+                            showDateTime = value;
                           });
                         },
+                      ),
+
+                      // 4. Show search button
+                      SwitchListTile(
+                        title: const Text(
+                          'Show search button',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showSearchButton,
+                        onChanged: (value) {
+                          setState(() {
+                            showSearchButton = value;
+                          });
+                        },
+                      ),
+
+                      // 5. Show settings button
+                      SwitchListTile(
+                        title: const Text(
+                          'Show settings button',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showSettingsButton,
+                        onChanged: (value) {
+                          setState(() {
+                            showSettingsButton = value;
+                          });
+                        },
+                      ),
+
+                      // 6. Use bold font
+                      SwitchListTile(
+                        title: const Text(
+                          'Use bold font',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: useBoldFont,
+                        onChanged: (value) {
+                          setState(() {
+                            useBoldFont = value;
+                          });
+                        },
+                      ),
+
+                      // 7. Enable list scrolling
+                      SwitchListTile(
+                        title: const Text(
+                          'Enable list scrolling',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: enableScroll,
+                        onChanged: (value) {
+                          setState(() {
+                            enableScroll = value;
+                          });
+                        },
+                      ),
+
+                      // 8. Show icons
+                      SwitchListTile(
+                        title: const Text(
+                          'Show icons',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showIcons,
+                        onChanged: (value) {
+                          setState(() {
+                            showIcons = value;
+                          });
+                        },
+                      ),
+
+                      // 9. Show app titles
+                      SwitchListTile(
+                        title: const Text(
+                          'Show app titles',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showAppTitles,
+                        onChanged: (value) {
+                          setState(() {
+                            showAppTitles = value;
+                          });
+                          widget.prefs.setBool('showAppTitles', value);
+                        },
+                      ),
+
+                      // 10. Show status bar
+                      SwitchListTile(
+                        title: const Text(
+                          'Show status bar',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: widget.prefs.getBool('showStatusBar') ?? false,
+                        onChanged: (value) {
+                          setState(() {
+                            widget.prefs.setBool('showStatusBar', value);
+                          });
+                        },
+                      ),
+
+                      // 11. App font size
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'App font size',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: appFontSize > 14
+                                  ? () {
+                                      setState(() {
+                                        appFontSize--;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  overlayShape: SliderComponentShape.noOverlay,
+                                  valueIndicatorColor: Colors.transparent,
+                                  valueIndicatorTextStyle:
+                                      const TextStyle(color: Colors.black),
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 12,
+                                    elevation: 0,
+                                    pressedElevation: 0,
+                                  ),
+                                  trackHeight: 2,
+                                  activeTrackColor: Colors.black,
+                                  inactiveTrackColor: Colors.grey,
+                                  thumbColor: Colors.black,
+                                  overlayColor: Colors.transparent,
+                                ),
+                                child: Slider(
+                                  value: appFontSize,
+                                  min: 14,
+                                  max: 32,
+                                  divisions: 18,
+                                  label: appFontSize.toStringAsFixed(0),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      appFontSize = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: appFontSize < 32
+                                  ? () {
+                                      setState(() {
+                                        appFontSize++;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 12. App icon size
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'App icon size',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: appIconSize > 16
+                                  ? () {
+                                      setState(() {
+                                        appIconSize--;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  overlayShape: SliderComponentShape.noOverlay,
+                                  valueIndicatorColor: Colors.transparent,
+                                  valueIndicatorTextStyle:
+                                      const TextStyle(color: Colors.black),
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 12,
+                                    elevation: 0,
+                                    pressedElevation: 0,
+                                  ),
+                                  trackHeight: 2,
+                                  activeTrackColor: Colors.black,
+                                  inactiveTrackColor: Colors.grey,
+                                  thumbColor: Colors.black,
+                                  overlayColor: Colors.transparent,
+                                ),
+                                child: Slider(
+                                  value: appIconSize,
+                                  min: 16,
+                                  max: 128,
+                                  divisions: 112,
+                                  label: appIconSize.toStringAsFixed(0),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      appIconSize = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: appIconSize < 128
+                                  ? () {
+                                      setState(() {
+                                        appIconSize++;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 13. App list
+                      ListTile(
+                        title: const Text(
+                          'App list',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                            '${selectedApps.length} of $numApps apps selected'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _selectApps,
+                      ),
+
+                      // 14. Reorder apps
+                      ListTile(
+                        title: const Text(
+                          'Reorder apps',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-        ],
+              if (errorMessage != null)
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  right: 16,
+                  child: Material(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.black),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.black),
+                            onPressed: () {
+                              setState(() {
+                                errorMessage = null;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -462,7 +749,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error al cargar información de apps: $e');
+      debugPrint('Error loading app information: $e');
       if (mounted) {
         setState(() {
           errorMessage = 'Error loading app information';
@@ -474,79 +761,95 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Reorder apps'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          FilledButton.tonal(
-            onPressed: () => Navigator.pop(context, apps),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          if (errorMessage != null)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    errorMessage!,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadAppInfos,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Reattempt'),
-                  ),
-                ],
-              ),
-            )
-          else
-            ReorderableListView(
-              children: appInfos.map((app) {
-                return ListTile(
-                  key: ValueKey(app.packageName),
-                  leading: const Icon(Icons.drag_handle),
-                  title: Text(
-                    app.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              }).toList(),
-              onReorder: (oldIndex, newIndex) {
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('Reorder apps'),
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
                 setState(() {
-                  if (newIndex > oldIndex) {
-                    newIndex -= 1;
-                  }
-                  final item = apps.removeAt(oldIndex);
-                  final appInfo = appInfos.removeAt(oldIndex);
-                  apps.insert(newIndex, item);
-                  appInfos.insert(newIndex, appInfo);
+                  // Update selected apps list with new order
+                  widget.selectedApps.clear();
+                  widget.selectedApps.addAll(apps);
                 });
+                Navigator.pop(context);
               },
             ),
-        ],
+          ),
+          body: Stack(
+            children: [
+              if (errorMessage != null)
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        errorMessage!,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadAppInfos,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Reattempt'),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ScrollConfiguration(
+                  behavior: NoGlowScrollBehavior(),
+                  child: ReorderableListView(
+                    proxyDecorator: (child, index, animation) {
+                      return Material(
+                        color: Colors.white,
+                        child: child,
+                      );
+                    },
+                    buildDefaultDragHandles: false,
+                    children: appInfos.map((app) {
+                      return ListTile(
+                        key: ValueKey(app.packageName),
+                        leading: ReorderableDragStartListener(
+                          index: appInfos.indexOf(app),
+                          child: const Icon(Icons.drag_handle),
+                        ),
+                        title: Text(
+                          app.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onReorder: (oldIndex, newIndex) {
+                      setState(() {
+                        if (newIndex > oldIndex) {
+                          newIndex -= 1;
+                        }
+                        final item = apps.removeAt(oldIndex);
+                        final appInfo = appInfos.removeAt(oldIndex);
+                        apps.insert(newIndex, item);
+                        appInfos.insert(newIndex, appInfo);
+                      });
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
