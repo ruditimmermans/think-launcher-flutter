@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="\android\app\src\main\res\mipmap-xxxhdpi\ic_launcher.png" alt="InkLauncher Icon" width="100"/>
+</p>
 # InkLauncher
 
 **InkLauncher** is a minimalist Android launcher designed specifically for **e-ink devices**. It prioritizes **simplicity**, **customization**, and uses only pure black and white tones and no animations.
