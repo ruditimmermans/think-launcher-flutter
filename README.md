@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="InkLauncher Icon" width="100"/>
+  <img src="assets/icon.png" alt="InkLauncher Icon" width="100"/>
 </p>
 # InkLauncher
 
@@ -8,10 +8,10 @@
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/home_screen.png" alt="Home" width="200"/>
-  <img src="screenshots/settings_screen.png" alt="Settings" width="200"/>
-    <img src="screenshots/home_screen_columns.png" alt="Columns View" width="200"/>
-  <img src="screenshots/gestures_screen.png" alt="Gestures" width="200"/>
+  <img src="assets/home_screen.png" alt="Home" width="200"/>
+  <img src="assets/settings_screen.png" alt="Settings" width="200"/>
+    <img src="assets/home_screen_columns.png" alt="Columns View" width="200"/>
+  <img src="assets/gestures_screen.png" alt="Gestures" width="200"/>
 </p>
 
 
