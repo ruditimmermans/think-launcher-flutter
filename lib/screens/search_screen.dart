@@ -3,12 +3,55 @@ import 'package:installed_apps/installed_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_info.dart';
 
+// Theme and style constants
+const _kSearchPadding = EdgeInsets.all(16.0);
+const _kItemPadding = EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0);
+const _kBorderRadius = 12.0;
+const _kFontSize = 18.0;
+const _kCursorWidth = 2.0;
+
+// Static cache for app list
+class _AppCache {
+  static List<AppInfo>? _cachedApps;
+  static String? _lastPackageList;
+  static bool _isInitialized = false;
+
+  static bool get isCacheValid {
+    return _cachedApps != null && _lastPackageList != null;
+  }
+
+  static List<AppInfo>? get cachedApps => isCacheValid ? _cachedApps : null;
+
+  static Future<void> updateCache(List<AppInfo> apps) async {
+    _cachedApps = apps;
+    _lastPackageList = apps.map((app) => app.packageName).join(',');
+    _isInitialized = true;
+  }
+
+  static Future<bool> hasAppsChanged() async {
+    if (!_isInitialized) return true;
+
+    try {
+      final currentApps =
+          await InstalledApps.getInstalledApps(false, false, '');
+      final currentPackageList =
+          currentApps.map((app) => app.packageName).join(',');
+      return currentPackageList != _lastPackageList;
+    } catch (e) {
+      debugPrint('Error checking apps changes: $e');
+      return true;
+    }
+  }
+}
+
 class SearchScreen extends StatefulWidget {
   final SharedPreferences prefs;
+  final bool autoFocus;
 
   const SearchScreen({
     super.key,
     required this.prefs,
+    this.autoFocus = true,
   });
 
   @override
@@ -16,75 +59,190 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  List<AppInfo> apps = [];
-  List<AppInfo> filteredApps = [];
   final TextEditingController _searchController = TextEditingController();
-  String? errorMessage;
+  final FocusNode _searchFocusNode = FocusNode();
+  List<AppInfo> _searchResults = [];
+  List<AppInfo> _installedApps = [];
+  String? _errorMessage;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadApps();
+    _loadInstalledApps();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.autoFocus && mounted) {
+      Future.microtask(() => _searchFocusNode.requestFocus());
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
-  Future<void> _loadApps() async {
+  Future<void> _loadInstalledApps() async {
+    if (!mounted) return;
+
+    // Use cache if available
+    final cachedApps = _AppCache.cachedApps;
+    if (cachedApps != null) {
+      setState(() {
+        _installedApps = cachedApps;
+        _searchResults = List.from(cachedApps);
+        _isLoading = false;
+      });
+
+      // Check for changes in background
+      _checkForAppChanges();
+      return;
+    }
+
+    await _loadAndCacheApps();
+  }
+
+  Future<void> _loadAndCacheApps() async {
     try {
       final installedApps =
           await InstalledApps.getInstalledApps(false, false, '');
-      if (mounted) {
-        setState(() {
-          apps = installedApps
-              .map((app) => AppInfo.fromInstalledApps(app))
-              .toList();
-          filteredApps = List.from(apps);
-        });
-      }
+      if (!mounted) return;
+
+      final apps = installedApps.map(AppInfo.fromInstalledApps).toList();
+      await _AppCache.updateCache(apps);
+
+      setState(() {
+        _installedApps = apps;
+        _searchResults = List.from(apps);
+        _isLoading = false;
+      });
     } catch (e) {
       debugPrint('Error loading apps: $e');
-      if (mounted) {
-        setState(() {
-          errorMessage = 'Error loading applications';
-        });
-      }
+      if (!mounted) return;
+
+      setState(() {
+        _errorMessage = 'Error loading applications';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkForAppChanges() async {
+    final hasChanges = await _AppCache.hasAppsChanged();
+    if (hasChanges && mounted) {
+      await _loadAndCacheApps();
     }
   }
 
   void _filterApps(String query) {
+    if (!mounted) return;
+
     setState(() {
-      if (query.isEmpty) {
-        filteredApps = List.from(apps);
-      } else {
-        filteredApps = apps
-            .where(
-                (app) => app.name.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      }
+      _searchResults = query.isEmpty
+          ? List.from(_installedApps)
+          : _installedApps
+              .where(
+                  (app) => app.name.toLowerCase().contains(query.toLowerCase()))
+              .toList();
     });
   }
 
   Future<void> _launchApp(String packageName) async {
     try {
       await InstalledApps.startApp(packageName);
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       debugPrint('Error opening app: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not open the application'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open the application'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
+  }
+
+  Widget _buildSearchField() {
+    return Padding(
+      padding: _kSearchPadding,
+      child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        autofocus: widget.autoFocus,
+        showCursor: true,
+        cursorColor: Colors.black,
+        cursorWidth: _kCursorWidth,
+        cursorRadius: const Radius.circular(1),
+        cursorOpacityAnimates: false,
+        decoration: InputDecoration(
+          hintText: 'Search apps...',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(_kBorderRadius),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        ),
+        onChanged: _filterApps,
+      ),
+    );
+  }
+
+  Widget _buildAppList() {
+    if (_isLoading) {
+      return const Center(
+          child: Text('Loading...', style: TextStyle(fontSize: _kFontSize)));
+    }
+
+    if (_errorMessage != null) {
+      return Padding(
+        padding: _kSearchPadding,
+        child:
+            Text(_errorMessage!, style: const TextStyle(color: Colors.black)),
+      );
+    }
+
+    return Expanded(
+      child: ScrollConfiguration(
+        behavior: NoGlowScrollBehavior(),
+        child: ListView.builder(
+          itemCount: _searchResults.length,
+          itemBuilder: (context, index) => _buildAppItem(_searchResults[index]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppItem(AppInfo app) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _launchApp(app.packageName),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        child: Padding(
+          padding: _kItemPadding,
+          child: Text(
+            app.name,
+            style: const TextStyle(
+              fontSize: _kFontSize,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -107,72 +265,8 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           body: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: _searchController,
-                  autofocus: false,
-                  showCursor: true,
-                  cursorColor: Colors.black,
-                  cursorWidth: 2,
-                  cursorRadius: const Radius.circular(1),
-                  cursorOpacityAnimates: false,
-                  decoration: InputDecoration(
-                    hintText: 'Search apps...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                  ),
-                  onChanged: _filterApps,
-                ),
-              ),
-              if (errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                )
-              else
-                Expanded(
-                  child: ScrollConfiguration(
-                    behavior: NoGlowScrollBehavior(),
-                    child: ListView.builder(
-                      itemCount: filteredApps.length,
-                      itemBuilder: (context, index) {
-                        final app = filteredApps[index];
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _launchApp(app.packageName),
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8.0),
-                              child: Text(
-                                app.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              _buildSearchField(),
+              _buildAppList(),
             ],
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:installed_apps/installed_apps.dart';
 import 'package:flutter/services.dart';
 import '../models/app_info.dart';
 import 'app_selection_screen.dart';
+import 'gesture_settings_screen.dart';
 
 // Class to remove any overscroll effect (glow, stretch, bounce)
 class NoGlowScrollBehavior extends ScrollBehavior {
@@ -59,6 +60,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       showIcons = widget.prefs.getBool('showIcons') ?? false;
       showAppTitles = widget.prefs.getBool('showAppTitles') ?? true;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
+
+      // Check if both are disabled and enable settings button if necessary
+      final enableLongPressGesture =
+          widget.prefs.getBool('enableLongPressGesture') ?? true;
+      if (!showSettingsButton && !enableLongPressGesture) {
+        showSettingsButton = true;
+        widget.prefs.setBool('showSettingsButton', true);
+      }
     });
   }
 
@@ -72,6 +81,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Validate that there are no more selected apps than the maximum number
       if (selectedApps.length > numApps) {
         selectedApps = selectedApps.sublist(0, numApps);
+      }
+
+      // Check if both are disabled and enable settings button if necessary
+      final enableLongPressGesture =
+          widget.prefs.getBool('enableLongPressGesture') ?? true;
+      if (!showSettingsButton && !enableLongPressGesture) {
+        showSettingsButton = true;
       }
 
       await widget.prefs.setInt('numApps', numApps);
@@ -157,6 +173,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final enableLongPressGesture =
+        widget.prefs.getBool('enableLongPressGesture') ?? true;
+
     return Container(
       color: Colors.white,
       child: Padding(
@@ -397,12 +416,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         value: showSettingsButton,
-                        onChanged: (value) {
-                          setState(() {
-                            showSettingsButton = value;
-                          });
-                        },
+                        onChanged: !enableLongPressGesture
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  showSettingsButton = value;
+                                });
+                              },
                       ),
+                      if (!enableLongPressGesture)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'Long press gesture is disabled. Enable it in gesture settings to hide this button.',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
 
                       // 6. Use bold font
                       SwitchListTile(
@@ -658,6 +690,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
+                      ),
+
+                      // 15. Gestures
+                      ListTile(
+                        title: const Text(
+                          'Gestures',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: const Text('Configure application gestures'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
+                                  GestureSettingsScreen(prefs: widget.prefs),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
