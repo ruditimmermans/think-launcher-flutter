@@ -247,11 +247,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _isNavigating = true;
     try {
       if (!mounted) return;
+      final autoFocus = widget.prefs.getBool('autoFocusSearch') ?? true;
       await Navigator.push(
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(
             prefs: widget.prefs,
+            autoFocus: autoFocus,
           ),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,

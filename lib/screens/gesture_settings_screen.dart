@@ -3,6 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
 import '../models/app_info.dart';
 
+// Theme and style constants
+const _kFontSize = 18.0;
+const _kSubtitleFontSize = 12.0;
+const _kPadding = EdgeInsets.all(16.0);
+const _kHorizontalPadding = EdgeInsets.symmetric(horizontal: 16.0);
+
 class GestureSettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
 
@@ -137,84 +143,158 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
             title: const Text('Gestures'),
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
           body: _isLoading
               ? const Center(
                   child: Text(
                     'Loading...',
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: _kFontSize),
                   ),
                 )
-              : ListView(
-                  children: [
-                    SwitchListTile(
-                      title: const Text('Enable search gesture'),
-                      subtitle: const Text('Swipe down to open search'),
-                      value: _enableSearchGesture,
-                      onChanged: (value) {
-                        setState(() {
-                          _enableSearchGesture = value;
-                        });
-                        _saveSettings();
-                      },
-                    ),
-                    SwitchListTile(
-                      title: const Text('Auto focus search'),
-                      subtitle: const Text(
-                          'Cursor will be positioned in the search field when opened'),
-                      value: _autoFocusSearch,
-                      onChanged: (value) {
-                        setState(() {
-                          _autoFocusSearch = value;
-                        });
-                        _saveSettings();
-                      },
-                    ),
-                    SwitchListTile(
-                      title: const Text('Enable long press gesture'),
-                      subtitle: const Text('Long press to open settings'),
-                      value: _enableLongPressGesture,
-                      onChanged: showSettingsButton
-                          ? (value) {
-                              setState(() {
-                                _enableLongPressGesture = value;
-                              });
-                              _saveSettings();
-                            }
-                          : null,
-                    ),
-                    if (!showSettingsButton)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          'Settings button is disabled. Enable it in settings to use this gesture.',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 12,
+              : Theme(
+                  data: Theme.of(context).copyWith(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                  ),
+                  child: ScrollConfiguration(
+                    behavior: NoGlowScrollBehavior(),
+                    child: ListView(
+                      physics: const ClampingScrollPhysics(),
+                      children: [
+                        SwitchListTile(
+                          title: const Text(
+                            'Enable search gesture',
+                            style: TextStyle(
+                              fontSize: _kFontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                          subtitle: const Text(
+                            'Swipe down to open search',
+                            style: TextStyle(fontSize: _kSubtitleFontSize),
+                          ),
+                          value: _enableSearchGesture,
+                          onChanged: (value) {
+                            setState(() {
+                              _enableSearchGesture = value;
+                            });
+                            _saveSettings();
+                          },
                         ),
-                      ),
-                    ListTile(
-                      title: const Text('Left to right app'),
-                      subtitle: _leftToRightApp != null &&
-                              _appInfoCache.containsKey(_leftToRightApp!)
-                          ? Text(_appInfoCache[_leftToRightApp!]!.name)
-                          : const Text('Not selected'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _selectApp(true),
+                        SwitchListTile(
+                          title: const Text(
+                            'Auto focus search',
+                            style: TextStyle(
+                              fontSize: _kFontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            'Cursor will be positioned in the search field when opened',
+                            style: TextStyle(fontSize: _kSubtitleFontSize),
+                          ),
+                          value: _autoFocusSearch,
+                          onChanged: (value) {
+                            setState(() {
+                              _autoFocusSearch = value;
+                            });
+                            _saveSettings();
+                          },
+                        ),
+                        SwitchListTile(
+                          title: const Text(
+                            'Enable long press gesture',
+                            style: TextStyle(
+                              fontSize: _kFontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            'Long press to open settings',
+                            style: TextStyle(fontSize: _kSubtitleFontSize),
+                          ),
+                          value: _enableLongPressGesture,
+                          onChanged: showSettingsButton
+                              ? (value) {
+                                  setState(() {
+                                    _enableLongPressGesture = value;
+                                  });
+                                  _saveSettings();
+                                }
+                              : null,
+                        ),
+                        if (!showSettingsButton)
+                          Padding(
+                            padding: _kHorizontalPadding,
+                            child: Text(
+                              'Settings button is disabled. Enable it in settings to use this gesture.',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                                fontSize: _kSubtitleFontSize,
+                              ),
+                            ),
+                          ),
+                        ListTile(
+                          title: const Text(
+                            'Left to right app',
+                            style: TextStyle(
+                              fontSize: _kFontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: _leftToRightApp != null &&
+                                  _appInfoCache.containsKey(_leftToRightApp!)
+                              ? Text(
+                                  _appInfoCache[_leftToRightApp!]!.name,
+                                  style: const TextStyle(
+                                      fontSize: _kSubtitleFontSize),
+                                )
+                              : const Text(
+                                  'Not selected',
+                                  style:
+                                      TextStyle(fontSize: _kSubtitleFontSize),
+                                ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => _selectApp(true),
+                        ),
+                        ListTile(
+                          title: const Text(
+                            'Right to left app',
+                            style: TextStyle(
+                              fontSize: _kFontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: _rightToLeftApp != null &&
+                                  _appInfoCache.containsKey(_rightToLeftApp!)
+                              ? Text(
+                                  _appInfoCache[_rightToLeftApp!]!.name,
+                                  style: const TextStyle(
+                                      fontSize: _kSubtitleFontSize),
+                                )
+                              : const Text(
+                                  'Not selected',
+                                  style:
+                                      TextStyle(fontSize: _kSubtitleFontSize),
+                                ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => _selectApp(false),
+                        ),
+                      ],
                     ),
-                    ListTile(
-                      title: const Text('Right to left app'),
-                      subtitle: _rightToLeftApp != null &&
-                              _appInfoCache.containsKey(_rightToLeftApp!)
-                          ? Text(_appInfoCache[_rightToLeftApp!]!.name)
-                          : const Text('Not selected'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _selectApp(false),
-                    ),
-                  ],
+                  ),
                 ),
         ),
       ),
@@ -306,12 +386,6 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
     });
   }
 
-  void _selectApp(String packageName) {
-    setState(() {
-      _selectedApp = packageName;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -319,6 +393,7 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
             title: const Text('Select app'),
             backgroundColor: Colors.white,
@@ -326,13 +401,13 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context, _selectedApp),
+              onPressed: () => Navigator.pop(context),
             ),
           ),
           body: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: _kPadding,
                 child: TextField(
                   controller: _searchController,
                   autofocus: false,
@@ -345,7 +420,7 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
                     hintText: 'Search apps...',
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
@@ -355,69 +430,71 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
                   onChanged: _filterApps,
                 ),
               ),
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                )
-              else if (_isLoading)
-                const Center(
-                  child: Text(
-                    'Loading...',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                )
-              else
-                Expanded(
-                  child: ScrollConfiguration(
-                    behavior: NoGlowScrollBehavior(),
-                    child: ListView.builder(
-                      itemCount: _filteredApps.length,
-                      itemBuilder: (context, index) {
-                        final app = _filteredApps[index];
-                        final isSelected = app.packageName == _selectedApp;
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _selectApp(app.packageName),
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 8.0,
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      app.name,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+              Expanded(
+                child: _isLoading
+                    ? const Center(
+                        child: Text(
+                          'Loading...',
+                          style: TextStyle(fontSize: _kFontSize),
+                        ),
+                      )
+                    : _errorMessage != null
+                        ? Center(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(fontSize: _kFontSize),
+                            ),
+                          )
+                        : ScrollConfiguration(
+                            behavior: NoGlowScrollBehavior(),
+                            child: ListView.builder(
+                              physics: const ClampingScrollPhysics(),
+                              itemCount: _filteredApps.length,
+                              itemBuilder: (context, index) {
+                                final app = _filteredApps[index];
+                                final isSelected =
+                                    app.packageName == _selectedApp;
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.pop(context, app.packageName);
+                                    },
+                                    splashColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                        vertical: 8.0,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              app.name,
+                                              style: const TextStyle(
+                                                fontSize: _kFontSize,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                          if (isSelected)
+                                            const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.black,
+                                            ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.black,
-                                    ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              ),
             ],
           ),
         ),

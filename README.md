@@ -19,10 +19,11 @@
   - Choose between a **scrollable** or **static** list.
   - Support for **1 to 4 columns** layout.
   - Customize the **font size**, **icon size**, and **text weight** (normal or bold).
-  - Sort and select which apps to display.
+  - Support for **gestures**
+  - Select and sort which apps to display.
 
 - 🔍 **Search**
-  - Quickly search for any installed app and launch it.
+  - Quickly search and launch any installed app.
 
 - ⚙️ **Configurable UI Elements**
   - Show or hide:
