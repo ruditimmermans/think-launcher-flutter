@@ -1,0 +1,186 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Think Launcher",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title for the settings screen"
+  },
+
+  "numberOfApps": "Number of apps",
+  "@numberOfApps": {
+    "description": "Label for number of apps setting"
+  },
+
+  "showDateTimeAndBattery": "Show date, time and battery",
+  "@showDateTimeAndBattery": {
+    "description": "Label for date time and battery setting"
+  },
+
+  "showSearchButton": "Show search button",
+  "@showSearchButton": {
+    "description": "Label for search button visibility setting"
+  },
+
+  "showSettingsButton": "Show settings button",
+  "@showSettingsButton": {
+    "description": "Label for settings button visibility setting"
+  },
+
+  "longPressGestureDisabled": "Long press gesture is disabled. Enable it in gesture settings to hide this button.",
+  "@longPressGestureDisabled": {
+    "description": "Message shown when long press gesture is disabled"
+  },
+
+  "useBoldFont": "Use bold font",
+  "@useBoldFont": {
+    "description": "Label for bold font setting"
+  },
+
+  "enableListScrolling": "Enable list scrolling",
+  "@enableListScrolling": {
+    "description": "Label for list scrolling setting"
+  },
+
+  "showIcons": "Show icons",
+  "@showIcons": {
+    "description": "Label for icon visibility setting"
+  },
+
+  "showStatusBar": "Show status bar",
+  "@showStatusBar": {
+    "description": "Label for status bar visibility setting"
+  },
+
+  "appFontSize": "App font size",
+  "@appFontSize": {
+    "description": "Label for app font size setting"
+  },
+
+  "appIconSize": "App icon size",
+  "@appIconSize": {
+    "description": "Label for app icon size setting"
+  },
+
+  "appList": "App list",
+  "@appList": {
+    "description": "Label for app list section"
+  },
+
+  "appsSelected": "{count} of {total} apps selected",
+  "@appsSelected": {
+    "description": "Shows how many apps are selected out of total",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "reorderApps": "Reorder apps",
+  "@reorderApps": {
+    "description": "Label for reorder apps option"
+  },
+
+  "manageFolders": "Manage folders",
+  "@manageFolders": {
+    "description": "Label for manage folders option"
+  },
+
+  "createAndOrganizeFolders": "Create and organize app folders",
+  "@createAndOrganizeFolders": {
+    "description": "Description for manage folders option"
+  },
+
+  "gestures": "Gestures",
+  "@gestures": {
+    "description": "Label for gestures option"
+  },
+
+  "configureGestures": "Configure application gestures",
+  "@configureGestures": {
+    "description": "Description for gestures option"
+  },
+
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "pressSettingsToStart": "Press the settings button to start",
+  "@pressSettingsToStart": {
+    "description": "Message shown when no apps are selected"
+  },
+
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading message"
+  },
+
+  "errorLoadingApps": "Error loading applications",
+  "@errorLoadingApps": {
+    "description": "Error message when apps fail to load"
+  },
+
+  "noAppsSelected": "No applications selected",
+  "@noAppsSelected": {
+    "description": "Message shown when no apps are selected"
+  },
+
+  "createFolder": "Create Folder",
+  "@createFolder": {
+    "description": "Title for create folder dialog"
+  },
+
+  "folderName": "Folder Name",
+  "@folderName": {
+    "description": "Label for folder name input"
+  },
+
+  "editFolder": "Edit Folder",
+  "@editFolder": {
+    "description": "Title for edit folder dialog"
+  },
+
+  "deleteFolder": "Delete Folder",
+  "@deleteFolder": {
+    "description": "Title for delete folder dialog"
+  },
+
+  "deleteFolderConfirm": "Are you sure you want to delete \"{name}\"?",
+  "@deleteFolderConfirm": {
+    "description": "Confirmation message for folder deletion",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "manageAppsInFolder": "Manage Apps in {name}",
+  "@manageAppsInFolder": {
+    "description": "Title for manage apps in folder dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "errorSavingSettings": "Error saving settings",
+  "@errorSavingSettings": {
+    "description": "Error message shown when settings fail to save"
+  }
+}

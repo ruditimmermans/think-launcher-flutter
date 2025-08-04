@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
 import 'screens/main_screen.dart';
+import 'l10n/l10n.dart';
 
-// Constantes para el tema
+// Theme constants
 const _kPrimaryColor = Colors.black;
 const _kSurfaceColor = Colors.white;
 const _kBorderRadius = 12.0;
@@ -13,9 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
-  // Configurar UI del sistema
   _configureSystemUI(prefs);
-
   runApp(MyApp(prefs: prefs));
 }
 
@@ -44,9 +45,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'InkLauncher',
+      title: 'Think Launcher',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: L10n.all,
       home: MainScreen(prefs: prefs),
     );
   }
@@ -73,7 +81,7 @@ class MyApp extends StatelessWidget {
         foregroundColor: _kPrimaryColor,
         elevation: 0,
       ),
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         elevation: 0,
         color: _kSurfaceColor,
         shape: RoundedRectangleBorder(

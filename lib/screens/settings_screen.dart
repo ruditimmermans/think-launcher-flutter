@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-import '../models/app_info.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
+import 'package:think_launcher/models/app_info.dart';
+import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import 'app_selection_screen.dart';
 import 'gesture_settings_screen.dart';
-
-// Class to remove any overscroll effect (glow, stretch, bounce)
-class NoGlowScrollBehavior extends ScrollBehavior {
-  @override
-  Widget buildOverscrollIndicator(
-      BuildContext context, Widget child, ScrollableDetails details) {
-    return child;
-  }
-}
+import 'folder_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -26,16 +20,15 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   int numApps = 5;
-  int numColumns = 1;
   bool showDateTime = true;
   bool showSearchButton = true;
   bool showSettingsButton = true;
   bool useBoldFont = false;
   double appFontSize = 18.0;
-  double appIconSize = 27.0;
+  double appIconSize = 35.0;
   bool enableScroll = true;
   bool showIcons = false;
-  bool showAppTitles = true;
+
   List<String> selectedApps = [];
   bool isLoading = false;
   String? errorMessage;
@@ -49,16 +42,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _loadSettings() {
     setState(() {
       numApps = widget.prefs.getInt('numApps') ?? 5;
-      numColumns = widget.prefs.getInt('numColumns') ?? 1;
       showDateTime = widget.prefs.getBool('showDateTime') ?? true;
       showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
       showSettingsButton = widget.prefs.getBool('showSettingsButton') ?? true;
       useBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
-      appIconSize = widget.prefs.getDouble('appIconSize') ?? 27.0;
+      appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
-      showIcons = widget.prefs.getBool('showIcons') ?? false;
-      showAppTitles = widget.prefs.getBool('showAppTitles') ?? true;
+      showIcons = widget.prefs.getBool('showIcons') ?? true;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
 
       // Check if both are disabled and enable settings button if necessary
@@ -91,7 +82,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       await widget.prefs.setInt('numApps', numApps);
-      await widget.prefs.setInt('numColumns', numColumns);
       await widget.prefs.setBool('showDateTime', showDateTime);
       await widget.prefs.setBool('showSearchButton', showSearchButton);
       await widget.prefs.setBool('showSettingsButton', showSettingsButton);
@@ -100,7 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
       await widget.prefs.setBool('showIcons', showIcons);
-      await widget.prefs.setBool('showAppTitles', showAppTitles);
       await widget.prefs.setStringList('selectedApps', selectedApps);
 
       // Update status bar visibility
@@ -115,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       debugPrint('Error saving settings: $e');
       if (mounted) {
         setState(() {
-          errorMessage = 'Error saving settings';
+          errorMessage = AppLocalizations.of(context)!.errorSavingSettings;
         });
       }
     } finally {
@@ -183,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('Settings'),
+            title: Text(AppLocalizations.of(context)!.settingsTitle),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,
@@ -203,7 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Save'),
+                  child: Text(AppLocalizations.of(context)!.save),
                 ),
               ),
             ],
@@ -222,12 +211,144 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ListView(
                     physics: const ClampingScrollPhysics(),
                     children: [
-                      // 1. Number of apps
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
+                      // 1. Show date, time and battery
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showDateTimeAndBattery,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showDateTime,
+                        onChanged: (value) {
+                          setState(() {
+                            showDateTime = value;
+                          });
+                        },
+                      ),
+
+                      // 2. Show search button
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showSearchButton,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showSearchButton,
+                        onChanged: (value) {
+                          setState(() {
+                            showSearchButton = value;
+                          });
+                        },
+                      ),
+
+                      // 3. Show settings button
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showSettingsButton,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showSettingsButton,
+                        onChanged: !enableLongPressGesture
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  showSettingsButton = value;
+                                });
+                              },
+                      ),
+                      if (!enableLongPressGesture)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            AppLocalizations.of(context)!.longPressGestureDisabled,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+
+                      // 4. Use bold font
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.useBoldFont,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: useBoldFont,
+                        onChanged: (value) {
+                          setState(() {
+                            useBoldFont = value;
+                          });
+                        },
+                      ),
+
+                      // 5. Enable list scrolling
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.enableListScrolling,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: enableScroll,
+                        onChanged: (value) {
+                          setState(() {
+                            enableScroll = value;
+                          });
+                        },
+                      ),
+
+                      // 6. Show status bar
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showStatusBar,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: widget.prefs.getBool('showStatusBar') ?? false,
+                        onChanged: (value) {
+                          setState(() {
+                            widget.prefs.setBool('showStatusBar', value);
+                          });
+                        },
+                      ),
+
+                      // 7. Show icons
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showIcons,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showIcons,
+                        onChanged: (value) {
+                          setState(() {
+                            showIcons = value;
+                          });
+                        },
+                      ),
+
+                      // 8. Number of apps
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
                         child: Text(
-                          'Number of apps',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.numberOfApps,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -272,8 +393,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 child: Slider(
                                   value: numApps.toDouble(),
                                   min: 1,
-                                  max: 20,
-                                  divisions: 19,
+                                  max: 30,
+                                  divisions: 29,
                                   label: numApps.toString(),
                                   onChanged: (value) {
                                     setState(() {
@@ -288,7 +409,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             IconButton(
-                              onPressed: numApps < 20
+                              onPressed: numApps < 30
                                   ? () {
                                       setState(() {
                                         numApps++;
@@ -301,233 +422,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 2. Number of columns
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(
-                          'Number of columns',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      // 9. App font size
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: numColumns > 1
-                                  ? () {
-                                      setState(() {
-                                        numColumns--;
-                                      });
-                                    }
-                                  : null,
-                              icon: const Icon(Icons.remove),
-                            ),
-                            Expanded(
-                              child: SliderTheme(
-                                data: SliderTheme.of(context).copyWith(
-                                  overlayShape: SliderComponentShape.noOverlay,
-                                  valueIndicatorColor: Colors.transparent,
-                                  valueIndicatorTextStyle:
-                                      const TextStyle(color: Colors.black),
-                                  thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 12,
-                                    elevation: 0,
-                                    pressedElevation: 0,
-                                  ),
-                                  trackHeight: 2,
-                                  activeTrackColor: Colors.black,
-                                  inactiveTrackColor: Colors.grey,
-                                  thumbColor: Colors.black,
-                                  overlayColor: Colors.transparent,
-                                ),
-                                child: Slider(
-                                  value: numColumns.toDouble(),
-                                  min: 1,
-                                  max: 4,
-                                  divisions: 3,
-                                  label: numColumns.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      numColumns = value.toInt();
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: numColumns < 4
-                                  ? () {
-                                      setState(() {
-                                        numColumns++;
-                                      });
-                                    }
-                                  : null,
-                              icon: const Icon(Icons.add),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // 3. Show date, time and battery
-                      SwitchListTile(
-                        title: const Text(
-                          'Show date, time and battery',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showDateTime,
-                        onChanged: (value) {
-                          setState(() {
-                            showDateTime = value;
-                          });
-                        },
-                      ),
-
-                      // 4. Show search button
-                      SwitchListTile(
-                        title: const Text(
-                          'Show search button',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showSearchButton,
-                        onChanged: (value) {
-                          setState(() {
-                            showSearchButton = value;
-                          });
-                        },
-                      ),
-
-                      // 5. Show settings button
-                      SwitchListTile(
-                        title: const Text(
-                          'Show settings button',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showSettingsButton,
-                        onChanged: !enableLongPressGesture
-                            ? null
-                            : (value) {
-                                setState(() {
-                                  showSettingsButton = value;
-                                });
-                              },
-                      ),
-                      if (!enableLongPressGesture)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text(
-                            'Long press gesture is disabled. Enable it in gesture settings to hide this button.',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-
-                      // 6. Use bold font
-                      SwitchListTile(
-                        title: const Text(
-                          'Use bold font',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: useBoldFont,
-                        onChanged: (value) {
-                          setState(() {
-                            useBoldFont = value;
-                          });
-                        },
-                      ),
-
-                      // 7. Enable list scrolling
-                      SwitchListTile(
-                        title: const Text(
-                          'Enable list scrolling',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: enableScroll,
-                        onChanged: (value) {
-                          setState(() {
-                            enableScroll = value;
-                          });
-                        },
-                      ),
-
-                      // 8. Show icons
-                      SwitchListTile(
-                        title: const Text(
-                          'Show icons',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showIcons,
-                        onChanged: (value) {
-                          setState(() {
-                            showIcons = value;
-                          });
-                        },
-                      ),
-
-                      // 9. Show app titles
-                      SwitchListTile(
-                        title: const Text(
-                          'Show app titles',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showAppTitles,
-                        onChanged: (value) {
-                          setState(() {
-                            showAppTitles = value;
-                          });
-                          widget.prefs.setBool('showAppTitles', value);
-                        },
-                      ),
-
-                      // 10. Show status bar
-                      SwitchListTile(
-                        title: const Text(
-                          'Show status bar',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: widget.prefs.getBool('showStatusBar') ?? false,
-                        onChanged: (value) {
-                          setState(() {
-                            widget.prefs.setBool('showStatusBar', value);
-                          });
-                        },
-                      ),
-
-                      // 11. App font size
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Text(
-                          'App font size',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.appFontSize,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -593,12 +493,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 12. App icon size
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
+                      // 10. App icon size
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
                         child: Text(
-                          'App icon size',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.appIconSize,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -664,26 +564,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 13. App list
+                      // 11. App list
                       ListTile(
-                        title: const Text(
-                          'App list',
-                          style: TextStyle(
+                        title: Text(
+                          AppLocalizations.of(context)!.appList,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         subtitle: Text(
-                            '${selectedApps.length} of $numApps apps selected'),
+                          AppLocalizations.of(context)!.appsSelected(
+                            selectedApps.length,
+                            numApps,
+                          ),
+                        ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: _selectApps,
                       ),
 
-                      // 14. Reorder apps
+                      // 12. Reorder apps
                       ListTile(
-                        title: const Text(
-                          'Reorder apps',
-                          style: TextStyle(
+                        title: Text(
+                          AppLocalizations.of(context)!.reorderApps,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -692,16 +596,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
 
-                      // 15. Gestures
+                      // 13. Manage folders
                       ListTile(
-                        title: const Text(
-                          'Gestures',
-                          style: TextStyle(
+                        title: Text(
+                          AppLocalizations.of(context)!.manageFolders,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: const Text('Configure application gestures'),
+                        subtitle: Text(AppLocalizations.of(context)!.createAndOrganizeFolders),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                  FolderManagementScreen(
+                                prefs: widget.prefs,
+                                selectedApps: selectedApps,
+                              ),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                      ),
+
+                      // 14. Gestures
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.gestures,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(AppLocalizations.of(context)!.configureGestures),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           Navigator.push(

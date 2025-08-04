@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
 
 // Theme and style constants
@@ -500,14 +501,5 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
         ),
       ),
     );
-  }
-}
-
-// Class to remove any overscroll effect (glow, stretch, bounce)
-class NoGlowScrollBehavior extends ScrollBehavior {
-  @override
-  Widget buildOverscrollIndicator(
-      BuildContext context, Widget child, ScrollableDetails details) {
-    return child;
   }
 }
