@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
 
@@ -162,9 +163,9 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open the application'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.couldNotOpenApp),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -183,7 +184,7 @@ class _SearchScreenState extends State<SearchScreen> {
         cursorRadius: const Radius.circular(1),
         cursorOpacityAnimates: false,
         decoration: InputDecoration(
-          hintText: 'Search apps...',
+          hintText: AppLocalizations.of(context)!.searchAppsHint,
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(_kBorderRadius),
@@ -199,8 +200,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildAppList() {
     if (_isLoading) {
-      return const Center(
-          child: Text('Loading...', style: TextStyle(fontSize: _kFontSize)));
+      return Center(
+        child: Text(
+          AppLocalizations.of(context)!.loading,
+          style: const TextStyle(fontSize: _kFontSize),
+        ),
+      );
     }
 
     if (_errorMessage != null) {
@@ -255,7 +260,7 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('Search apps'),
+            title: Text(AppLocalizations.of(context)!.searchApps),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,

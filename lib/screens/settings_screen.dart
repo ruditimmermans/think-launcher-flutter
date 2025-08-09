@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps/installed_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
-import 'package:think_launcher/models/app_info.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
-import 'app_selection_screen.dart';
-import 'gesture_settings_screen.dart';
-import 'folder_management_screen.dart';
+import 'package:think_launcher/screens/app_selection_screen.dart';
+import 'package:think_launcher/screens/folder_management_screen.dart';
+import 'package:think_launcher/screens/gesture_settings_screen.dart';
+import 'package:think_launcher/screens/reorder_apps_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -19,16 +18,13 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int numApps = 5;
   bool showDateTime = true;
   bool showSearchButton = true;
   bool showSettingsButton = true;
-  bool useBoldFont = false;
   double appFontSize = 18.0;
   double appIconSize = 35.0;
   bool enableScroll = true;
   bool showIcons = false;
-
   List<String> selectedApps = [];
   bool isLoading = false;
   String? errorMessage;
@@ -41,24 +37,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _loadSettings() {
     setState(() {
-      numApps = widget.prefs.getInt('numApps') ?? 5;
       showDateTime = widget.prefs.getBool('showDateTime') ?? true;
       showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
       showSettingsButton = widget.prefs.getBool('showSettingsButton') ?? true;
-      useBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
+
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
       appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
       showIcons = widget.prefs.getBool('showIcons') ?? true;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
-
-      // Check if both are disabled and enable settings button if necessary
-      final enableLongPressGesture =
-          widget.prefs.getBool('enableLongPressGesture') ?? true;
-      if (!showSettingsButton && !enableLongPressGesture) {
-        showSettingsButton = true;
-        widget.prefs.setBool('showSettingsButton', true);
-      }
     });
   }
 
@@ -69,23 +56,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         errorMessage = null;
       });
 
-      // Validate that there are no more selected apps than the maximum number
-      if (selectedApps.length > numApps) {
-        selectedApps = selectedApps.sublist(0, numApps);
-      }
-
-      // Check if both are disabled and enable settings button if necessary
-      final enableLongPressGesture =
-          widget.prefs.getBool('enableLongPressGesture') ?? true;
-      if (!showSettingsButton && !enableLongPressGesture) {
-        showSettingsButton = true;
-      }
-
-      await widget.prefs.setInt('numApps', numApps);
       await widget.prefs.setBool('showDateTime', showDateTime);
       await widget.prefs.setBool('showSearchButton', showSearchButton);
       await widget.prefs.setBool('showSettingsButton', showSettingsButton);
-      await widget.prefs.setBool('useBoldFont', useBoldFont);
+
       await widget.prefs.setDouble('appFontSize', appFontSize);
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
@@ -120,12 +94,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final result = await Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            AppSelectionScreen(
-          prefs: widget.prefs,
-          selectedApps: selectedApps,
-          maxApps: numApps,
-        ),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return AppSelectionScreen(
+            prefs: widget.prefs,
+            selectedApps: selectedApps,
+          );
+        },
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
@@ -134,6 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (result != null && result is List<String>) {
       setState(() {
         selectedApps = result;
+        _saveSettings();
       });
     }
   }
@@ -144,10 +119,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final result = await Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ReorderAppsScreen(
-          selectedApps: selectedApps,
-        ),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return ReorderAppsScreen(
+            prefs: widget.prefs,
+            folder: null,
+            selectedApps: selectedApps,
+          );
+        },
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
@@ -156,15 +134,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (result != null && result is List<String>) {
       setState(() {
         selectedApps = result;
+        _saveSettings();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final enableLongPressGesture =
-        widget.prefs.getBool('enableLongPressGesture') ?? true;
-
     return Container(
       color: Colors.white,
       child: Padding(
@@ -180,22 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: FilledButton.tonal(
-                  onPressed: _saveSettings,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(AppLocalizations.of(context)!.save),
-                ),
-              ),
-            ],
+
           ),
           body: Stack(
             children: [
@@ -225,6 +186,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             showDateTime = value;
                           });
+                          _saveSettings();
                         },
                       ),
 
@@ -242,6 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             showSearchButton = value;
                           });
+                          _saveSettings();
                         },
                       ),
 
@@ -255,40 +218,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         value: showSettingsButton,
-                        onChanged: !enableLongPressGesture
-                            ? null
-                            : (value) {
-                                setState(() {
-                                  showSettingsButton = value;
-                                });
-                              },
-                      ),
-                      if (!enableLongPressGesture)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text(
-                            AppLocalizations.of(context)!.longPressGestureDisabled,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-
-                      // 4. Use bold font
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.useBoldFont,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: useBoldFont,
                         onChanged: (value) {
                           setState(() {
-                            useBoldFont = value;
+                            showSettingsButton = value;
                           });
+                          _saveSettings();
                         },
                       ),
 
@@ -306,6 +240,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             enableScroll = value;
                           });
+                          _saveSettings();
                         },
                       ),
 
@@ -323,6 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             widget.prefs.setBool('showStatusBar', value);
                           });
+                          _saveSettings();
                         },
                       ),
 
@@ -340,86 +276,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             showIcons = value;
                           });
+                          _saveSettings();
                         },
-                      ),
-
-                      // 8. Number of apps
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          AppLocalizations.of(context)!.numberOfApps,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: numApps > 1
-                                  ? () {
-                                      setState(() {
-                                        numApps--;
-                                        if (selectedApps.length > numApps) {
-                                          selectedApps =
-                                              selectedApps.sublist(0, numApps);
-                                        }
-                                      });
-                                    }
-                                  : null,
-                              icon: const Icon(Icons.remove),
-                            ),
-                            Expanded(
-                              child: SliderTheme(
-                                data: SliderTheme.of(context).copyWith(
-                                  overlayShape: SliderComponentShape.noOverlay,
-                                  valueIndicatorColor: Colors.transparent,
-                                  valueIndicatorTextStyle:
-                                      const TextStyle(color: Colors.black),
-                                  thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 12,
-                                    elevation: 0,
-                                    pressedElevation: 0,
-                                  ),
-                                  trackHeight: 2,
-                                  activeTrackColor: Colors.black,
-                                  inactiveTrackColor: Colors.grey,
-                                  thumbColor: Colors.black,
-                                  overlayColor: Colors.transparent,
-                                ),
-                                child: Slider(
-                                  value: numApps.toDouble(),
-                                  min: 1,
-                                  max: 30,
-                                  divisions: 29,
-                                  label: numApps.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      numApps = value.toInt();
-                                      if (selectedApps.length > numApps) {
-                                        selectedApps =
-                                            selectedApps.sublist(0, numApps);
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: numApps < 30
-                                  ? () {
-                                      setState(() {
-                                        numApps++;
-                                      });
-                                    }
-                                  : null,
-                              icon: const Icon(Icons.add),
-                            ),
-                          ],
-                        ),
                       ),
 
                       // 9. App font size
@@ -464,17 +322,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   inactiveTrackColor: Colors.grey,
                                   thumbColor: Colors.black,
                                   overlayColor: Colors.transparent,
+                                  showValueIndicator: ShowValueIndicator.onlyForContinuous,
                                 ),
                                 child: Slider(
                                   value: appFontSize,
                                   min: 14,
                                   max: 32,
-                                  divisions: 18,
                                   label: appFontSize.toStringAsFixed(0),
                                   onChanged: (value) {
                                     setState(() {
-                                      appFontSize = value;
+                                      appFontSize = value.roundToDouble();
                                     });
+                                    _saveSettings();
                                   },
                                 ),
                               ),
@@ -535,17 +394,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   inactiveTrackColor: Colors.grey,
                                   thumbColor: Colors.black,
                                   overlayColor: Colors.transparent,
+                                  showValueIndicator: ShowValueIndicator.onlyForContinuous,
                                 ),
                                 child: Slider(
                                   value: appIconSize,
                                   min: 16,
                                   max: 128,
-                                  divisions: 112,
                                   label: appIconSize.toStringAsFixed(0),
                                   onChanged: (value) {
                                     setState(() {
-                                      appIconSize = value;
+                                      appIconSize = value.roundToDouble();
                                     });
+                                    _saveSettings();
                                   },
                                 ),
                               ),
@@ -574,10 +434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          AppLocalizations.of(context)!.appsSelected(
-                            selectedApps.length,
-                            numApps,
-                          ),
+                          AppLocalizations.of(context)!.selectedAppsCount(selectedApps.length),
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: _selectApps,
@@ -686,153 +543,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ReorderAppsScreen extends StatefulWidget {
-  final List<String> selectedApps;
-
-  const ReorderAppsScreen({super.key, required this.selectedApps});
-
-  @override
-  State<ReorderAppsScreen> createState() => _ReorderAppsScreenState();
-}
-
-class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
-  late List<String> apps;
-  List<AppInfo> appInfos = [];
-  bool isLoading = true;
-  String? errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    apps = List.from(widget.selectedApps);
-    _loadAppInfos();
-  }
-
-  Future<void> _loadAppInfos() async {
-    try {
-      setState(() {
-        errorMessage = null;
-      });
-
-      final futures = apps.map((packageName) =>
-          InstalledApps.getAppInfo(packageName, null)
-              .then((app) => AppInfo.fromInstalledApps(app)));
-
-      final results = await Future.wait(futures);
-
-      if (mounted) {
-        setState(() {
-          appInfos = results;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading app information: $e');
-      if (mounted) {
-        setState(() {
-          errorMessage = 'Error loading app information';
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            title: const Text('Reorder apps'),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                setState(() {
-                  // Update selected apps list with new order
-                  widget.selectedApps.clear();
-                  widget.selectedApps.addAll(apps);
-                });
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          body: Stack(
-            children: [
-              if (errorMessage != null)
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        errorMessage!,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadAppInfos,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Reattempt'),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                ScrollConfiguration(
-                  behavior: NoGlowScrollBehavior(),
-                  child: ReorderableListView(
-                    proxyDecorator: (child, index, animation) {
-                      return Material(
-                        color: Colors.white,
-                        child: child,
-                      );
-                    },
-                    buildDefaultDragHandles: false,
-                    children: appInfos.map((app) {
-                      return ListTile(
-                        key: ValueKey(app.packageName),
-                        leading: ReorderableDragStartListener(
-                          index: appInfos.indexOf(app),
-                          child: const Icon(Icons.drag_handle),
-                        ),
-                        title: Text(
-                          app.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onReorder: (oldIndex, newIndex) {
-                      setState(() {
-                        if (newIndex > oldIndex) {
-                          newIndex -= 1;
-                        }
-                        final item = apps.removeAt(oldIndex);
-                        final appInfo = appInfos.removeAt(oldIndex);
-                        apps.insert(newIndex, item);
-                        appInfos.insert(newIndex, appInfo);
-                      });
-                    },
                   ),
                 ),
             ],

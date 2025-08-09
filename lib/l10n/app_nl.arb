@@ -21,6 +21,11 @@
     "description": "Label for date time and battery setting"
   },
 
+  "searchApps": "Zoek apps",
+  "@searchApps": {
+    "description": "Title for search apps"
+  },
+
   "showSearchButton": "Toon zoekknop",
   "@showSearchButton": {
     "description": "Label for search button visibility setting"
@@ -114,6 +119,11 @@
     "description": "Save button text"
   },
 
+  "delete": "Verwijderen",
+  "@save": {
+    "description": "Delete button text"
+  },
+
   "cancel": "Annuleren",
   "@cancel": {
     "description": "Cancel button text"
@@ -179,8 +189,243 @@
     }
   },
 
+  "reOrderApps": "Apps opnieuw ordenen",
+  "@reOrderApps": {
+    "description": "Title for reorder apps"
+  },
+
   "errorSavingSettings": "Fout bij opslaan van instellingen",
   "@errorSavingSettings": {
     "description": "Error message shown when settings fail to save"
+  },
+
+  "gestureSettings": "Gebareninstellingen",
+  "@gestureSettings": {
+    "description": "Title for gesture settings screen"
+  },
+
+  "enableSearchGestures": "Zoekgebaar inschakelen",
+  "@enableSearchGestures": {
+    "description": "Label for enabling search gesture"
+  },
+
+  "swipeUp": "Omhoog vegen",
+  "@swipeUp": {
+    "description": "Label for swipe up gesture"
+  },
+
+  "swipeDown": "Omlaag vegen",
+  "@swipeDown": {
+    "description": "Label for swipe down gesture"
+  },
+
+  "swipeLeft": "Links vegen",
+  "@swipeLeft": {
+    "description": "Label for swipe left gesture"
+  },
+
+  "swipeRight": "Rechts vegen",
+  "@swipeRight": {
+    "description": "Label for swipe right gesture"
+  },
+
+  "longPress": "Lang indrukken",
+  "@longPress": {
+    "description": "Label for long press gesture"
+  },
+
+  "doubleTap": "Dubbeltikken",
+  "@doubleTap": {
+    "description": "Label for double tap gesture"
+  },
+
+  "selectAction": "Selecteer actie",
+  "@selectAction": {
+    "description": "Label for selecting gesture action"
+  },
+
+  "noAction": "Geen actie",
+  "@noAction": {
+    "description": "Label for no action option"
+  },
+
+  "folderManagement": "Mappenbeheer",
+  "@folderManagement": {
+    "description": "Title for folder management screen"
+  },
+
+  "addAppsToFolder": "Apps toevoegen aan map",
+  "@addAppsToFolder": {
+    "description": "Button text for adding apps to folder"
+  },
+
+  "removeAppsFromFolder": "Apps verwijderen uit map",
+  "@removeAppsFromFolder": {
+    "description": "Button text for removing apps from folder"
+  },
+
+  "reorderAppsInFolder": "Apps in map herschikken",
+  "@reorderAppsInFolder": {
+    "description": "Button text for reordering apps in folder"
+  },
+
+  "noFolders": "Nog geen mappen gemaakt",
+  "@noFolders": {
+    "description": "Message shown when no folders exist"
+  },
+
+  "selectAppsForFolder": "Selecteer apps voor map",
+  "@selectAppsForFolder": {
+    "description": "Title for app selection for folder"
+  },
+
+  "folderCreated": "Map succesvol aangemaakt",
+  "@folderCreated": {
+    "description": "Message shown when folder is created"
+  },
+
+  "folderUpdated": "Map succesvol bijgewerkt",
+  "@folderUpdated": {
+    "description": "Message shown when folder is updated"
+  },
+
+  "folderDeleted": "Map succesvol verwijderd",
+  "@folderDeleted": {
+    "description": "Message shown when folder is deleted"
+  },
+
+  "selectApps": "Apps selecteren",
+  "@selectApps": {
+    "description": "Title for app selection screen"
+  },
+
+  "searchAppsHint": "Zoek apps op naam",
+  "@searchAppsHint": {
+    "description": "Hint text for app search field"
+  },
+
+  "selectAll": "Alles selecteren",
+  "@selectAll": {
+    "description": "Button text to select all apps"
+  },
+
+  "deselectAll": "Alles deselecteren",
+  "@deselectAll": {
+    "description": "Button text to deselect all apps"
+  },
+
+  "appInfo": "App-info",
+  "@appInfo": {
+    "description": "Label for app info option"
+  },
+
+  "uninstallApp": "App verwijderen",
+  "@uninstallApp": {
+    "description": "Label for uninstall app option"
+  },
+
+  "confirmUninstall": "Weet je zeker dat je {appName} wilt verwijderen?",
+  "@confirmUninstall": {
+    "description": "Confirmation message for app uninstallation",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "appOptions": "App-opties",
+  "@appOptions": {
+    "description": "Title for app options dialog"
+  },
+
+  "loading": "Laden...",
+  "@loading": {
+    "description": "Loading message"
+  },
+
+  "couldNotOpenApp": "Kon de applicatie niet openen",
+  "@couldNotOpenApp": {
+    "description": "Error message when app cannot be opened"
+  },
+
+  "selectAppsTitle": "Apps selecteren",
+  "@selectAppsTitle": {
+    "description": "Title for app selection screen"
+  },
+
+  "gesturesTitle": "Gebaren",
+  "@gesturesTitle": {
+    "description": "Title for gestures screen"
+  },
+
+  "selectAppTitle": "App selecteren",
+  "@selectAppTitle": {
+    "description": "Title for app selection dialog"
+  },
+
+  "appsInFolder": "{count} apps",
+  "@appsInFolder": {
+    "description": "Number of apps in a folder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rightToLeftApp": "App van rechts naar links",
+  "@rightToLeftApp": {
+    "description": "Label for right to left app gesture"
+  },
+
+  "leftToRightApp": "App van links naar rechts",
+  "@leftToRightApp": {
+    "description": "Label for left to right app gesture"
+  },
+
+  "notSelected": "Niet geselecteerd",
+  "@notSelected": {
+    "description": "Label for when no app is selected"
+  },
+
+  "selectedAppsCount": "{count} apps geselecteerd",
+  "@selectedAppsCount": {
+    "description": "Shows how many apps are selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "autoFocusSearch": "Automatisch zoeken focussen",
+  "@autoFocusSearch": {
+    "description": "Label for auto focus search setting"
+  },
+
+  "autoFocusSearchDescription": "Cursor wordt in het zoekveld geplaatst bij openen",
+  "@autoFocusSearchDescription": {
+    "description": "Description for auto focus search setting"
+  },
+
+  "errorLoadingApps": "Fout bij laden van applicaties",
+  "@errorLoadingApps": {
+    "description": "Error message when apps fail to load"
+  },
+
+  "errorGettingAppInfo": "Fout bij ophalen van app-info voor {packageName}",
+  "@errorGettingAppInfo": {
+    "description": "Error message when app info fails to load",
+    "placeholders": {
+      "packageName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "errorUpdatingWeather": "Fout bij bijwerken van het weer",
+  "@errorUpdatingWeather": {
+    "description": "Error message when weather update fails"
   }
 }

@@ -119,6 +119,12 @@ abstract class AppLocalizations {
   /// **'Show date, time and battery'**
   String get showDateTimeAndBattery;
 
+  /// Title for search apps
+  ///
+  /// In en, this message translates to:
+  /// **'Search apps'**
+  String get searchApps;
+
   /// Label for search button visibility setting
   ///
   /// In en, this message translates to:
@@ -215,11 +221,17 @@ abstract class AppLocalizations {
   /// **'Configure application gestures'**
   String get configureGestures;
 
-  /// Save button text
+  /// Delete button text
   ///
   /// In en, this message translates to:
   /// **'Save'**
   String get save;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
 
   /// Cancel button text
   ///
@@ -287,11 +299,257 @@ abstract class AppLocalizations {
   /// **'Manage Apps in {name}'**
   String manageAppsInFolder(String name);
 
+  /// Title for reorder apps
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder apps'**
+  String get reOrderApps;
+
   /// Error message shown when settings fail to save
   ///
   /// In en, this message translates to:
   /// **'Error saving settings'**
   String get errorSavingSettings;
+
+  /// Title for gesture settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Gesture Settings'**
+  String get gestureSettings;
+
+  /// Label for enabling search gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Enable search gesture'**
+  String get enableSearchGestures;
+
+  /// Label for swipe up gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe Up'**
+  String get swipeUp;
+
+  /// Label for swipe down gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe Down'**
+  String get swipeDown;
+
+  /// Label for swipe left gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe Left'**
+  String get swipeLeft;
+
+  /// Label for swipe right gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe Right'**
+  String get swipeRight;
+
+  /// Label for long press gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Long Press'**
+  String get longPress;
+
+  /// Label for double tap gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Double Tap'**
+  String get doubleTap;
+
+  /// Label for selecting gesture action
+  ///
+  /// In en, this message translates to:
+  /// **'Select Action'**
+  String get selectAction;
+
+  /// Label for no action option
+  ///
+  /// In en, this message translates to:
+  /// **'No Action'**
+  String get noAction;
+
+  /// Title for folder management screen
+  ///
+  /// In en, this message translates to:
+  /// **'Folder Management'**
+  String get folderManagement;
+
+  /// Button text for adding apps to folder
+  ///
+  /// In en, this message translates to:
+  /// **'Add Apps to Folder'**
+  String get addAppsToFolder;
+
+  /// Button text for removing apps from folder
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Apps from Folder'**
+  String get removeAppsFromFolder;
+
+  /// Button text for reordering apps in folder
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder Apps in Folder'**
+  String get reorderAppsInFolder;
+
+  /// Message shown when no folders exist
+  ///
+  /// In en, this message translates to:
+  /// **'No folders created yet'**
+  String get noFolders;
+
+  /// Title for app selection for folder
+  ///
+  /// In en, this message translates to:
+  /// **'Select apps for folder'**
+  String get selectAppsForFolder;
+
+  /// Message shown when folder is created
+  ///
+  /// In en, this message translates to:
+  /// **'Folder created successfully'**
+  String get folderCreated;
+
+  /// Message shown when folder is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Folder updated successfully'**
+  String get folderUpdated;
+
+  /// Message shown when folder is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Folder deleted successfully'**
+  String get folderDeleted;
+
+  /// Title for app selection screen
+  ///
+  /// In en, this message translates to:
+  /// **'Select Apps'**
+  String get selectApps;
+
+  /// Hint text for app search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search apps by name'**
+  String get searchAppsHint;
+
+  /// Button text to select all apps
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// Button text to deselect all apps
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect All'**
+  String get deselectAll;
+
+  /// Label for app info option
+  ///
+  /// In en, this message translates to:
+  /// **'App Info'**
+  String get appInfo;
+
+  /// Label for uninstall app option
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall App'**
+  String get uninstallApp;
+
+  /// Confirmation message for app uninstallation
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to uninstall {appName}?'**
+  String confirmUninstall(String appName);
+
+  /// Title for app options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'App Options'**
+  String get appOptions;
+
+  /// Error message when app cannot be opened
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the application'**
+  String get couldNotOpenApp;
+
+  /// Title for app selection screen
+  ///
+  /// In en, this message translates to:
+  /// **'Select apps'**
+  String get selectAppsTitle;
+
+  /// Title for gestures screen
+  ///
+  /// In en, this message translates to:
+  /// **'Gestures'**
+  String get gesturesTitle;
+
+  /// Title for app selection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Select app'**
+  String get selectAppTitle;
+
+  /// Number of apps in a folder
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apps'**
+  String appsInFolder(int count);
+
+  /// Label for right to left app gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Right to left app'**
+  String get rightToLeftApp;
+
+  /// Label for left to right app gesture
+  ///
+  /// In en, this message translates to:
+  /// **'Left to right app'**
+  String get leftToRightApp;
+
+  /// Label for when no app is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get notSelected;
+
+  /// Shows how many apps are selected
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apps selected'**
+  String selectedAppsCount(int count);
+
+  /// Label for auto focus search setting
+  ///
+  /// In en, this message translates to:
+  /// **'Auto focus search'**
+  String get autoFocusSearch;
+
+  /// Description for auto focus search setting
+  ///
+  /// In en, this message translates to:
+  /// **'Cursor will be positioned in the search field when opened'**
+  String get autoFocusSearchDescription;
+
+  /// Error message when app info fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting app info for {packageName}'**
+  String errorGettingAppInfo(String packageName);
+
+  /// Error message when weather update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating weather'**
+  String get errorUpdatingWeather;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

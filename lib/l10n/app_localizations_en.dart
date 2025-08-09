@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showDateTimeAndBattery => 'Show date, time and battery';
 
   @override
+  String get searchApps => 'Search apps';
+
+  @override
   String get showSearchButton => 'Show search button';
 
   @override
@@ -74,6 +77,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get delete => 'Delete';
+
+  @override
   String get cancel => 'Cancel';
 
   @override
@@ -111,5 +117,136 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get reOrderApps => 'Reorder apps';
+
+  @override
   String get errorSavingSettings => 'Error saving settings';
+
+  @override
+  String get gestureSettings => 'Gesture Settings';
+
+  @override
+  String get enableSearchGestures => 'Enable search gesture';
+
+  @override
+  String get swipeUp => 'Swipe Up';
+
+  @override
+  String get swipeDown => 'Swipe Down';
+
+  @override
+  String get swipeLeft => 'Swipe Left';
+
+  @override
+  String get swipeRight => 'Swipe Right';
+
+  @override
+  String get longPress => 'Long Press';
+
+  @override
+  String get doubleTap => 'Double Tap';
+
+  @override
+  String get selectAction => 'Select Action';
+
+  @override
+  String get noAction => 'No Action';
+
+  @override
+  String get folderManagement => 'Folder Management';
+
+  @override
+  String get addAppsToFolder => 'Add Apps to Folder';
+
+  @override
+  String get removeAppsFromFolder => 'Remove Apps from Folder';
+
+  @override
+  String get reorderAppsInFolder => 'Reorder Apps in Folder';
+
+  @override
+  String get noFolders => 'No folders created yet';
+
+  @override
+  String get selectAppsForFolder => 'Select apps for folder';
+
+  @override
+  String get folderCreated => 'Folder created successfully';
+
+  @override
+  String get folderUpdated => 'Folder updated successfully';
+
+  @override
+  String get folderDeleted => 'Folder deleted successfully';
+
+  @override
+  String get selectApps => 'Select Apps';
+
+  @override
+  String get searchAppsHint => 'Search apps by name';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get deselectAll => 'Deselect All';
+
+  @override
+  String get appInfo => 'App Info';
+
+  @override
+  String get uninstallApp => 'Uninstall App';
+
+  @override
+  String confirmUninstall(String appName) {
+    return 'Are you sure you want to uninstall $appName?';
+  }
+
+  @override
+  String get appOptions => 'App Options';
+
+  @override
+  String get couldNotOpenApp => 'Could not open the application';
+
+  @override
+  String get selectAppsTitle => 'Select apps';
+
+  @override
+  String get gesturesTitle => 'Gestures';
+
+  @override
+  String get selectAppTitle => 'Select app';
+
+  @override
+  String appsInFolder(int count) {
+    return '$count apps';
+  }
+
+  @override
+  String get rightToLeftApp => 'Right to left app';
+
+  @override
+  String get leftToRightApp => 'Left to right app';
+
+  @override
+  String get notSelected => 'Not selected';
+
+  @override
+  String selectedAppsCount(int count) {
+    return '$count apps selected';
+  }
+
+  @override
+  String get autoFocusSearch => 'Auto focus search';
+
+  @override
+  String get autoFocusSearchDescription => 'Cursor will be positioned in the search field when opened';
+
+  @override
+  String errorGettingAppInfo(String packageName) {
+    return 'Error getting app info for $packageName';
+  }
+
+  @override
+  String get errorUpdatingWeather => 'Error updating weather';
 }

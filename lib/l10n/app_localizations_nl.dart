@@ -21,6 +21,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get showDateTimeAndBattery => 'Toon datum, tijd en batterij';
 
   @override
+  String get searchApps => 'Zoek apps';
+
+  @override
   String get showSearchButton => 'Toon zoekknop';
 
   @override
@@ -74,6 +77,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get save => 'Opslaan';
 
   @override
+  String get delete => 'Verwijderen';
+
+  @override
   String get cancel => 'Annuleren';
 
   @override
@@ -111,5 +117,136 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get reOrderApps => 'Apps opnieuw ordenen';
+
+  @override
   String get errorSavingSettings => 'Fout bij opslaan van instellingen';
+
+  @override
+  String get gestureSettings => 'Gebareninstellingen';
+
+  @override
+  String get enableSearchGestures => 'Zoekgebaar inschakelen';
+
+  @override
+  String get swipeUp => 'Omhoog vegen';
+
+  @override
+  String get swipeDown => 'Omlaag vegen';
+
+  @override
+  String get swipeLeft => 'Links vegen';
+
+  @override
+  String get swipeRight => 'Rechts vegen';
+
+  @override
+  String get longPress => 'Lang indrukken';
+
+  @override
+  String get doubleTap => 'Dubbeltikken';
+
+  @override
+  String get selectAction => 'Selecteer actie';
+
+  @override
+  String get noAction => 'Geen actie';
+
+  @override
+  String get folderManagement => 'Mappenbeheer';
+
+  @override
+  String get addAppsToFolder => 'Apps toevoegen aan map';
+
+  @override
+  String get removeAppsFromFolder => 'Apps verwijderen uit map';
+
+  @override
+  String get reorderAppsInFolder => 'Apps in map herschikken';
+
+  @override
+  String get noFolders => 'Nog geen mappen gemaakt';
+
+  @override
+  String get selectAppsForFolder => 'Selecteer apps voor map';
+
+  @override
+  String get folderCreated => 'Map succesvol aangemaakt';
+
+  @override
+  String get folderUpdated => 'Map succesvol bijgewerkt';
+
+  @override
+  String get folderDeleted => 'Map succesvol verwijderd';
+
+  @override
+  String get selectApps => 'Apps selecteren';
+
+  @override
+  String get searchAppsHint => 'Zoek apps op naam';
+
+  @override
+  String get selectAll => 'Alles selecteren';
+
+  @override
+  String get deselectAll => 'Alles deselecteren';
+
+  @override
+  String get appInfo => 'App-info';
+
+  @override
+  String get uninstallApp => 'App verwijderen';
+
+  @override
+  String confirmUninstall(String appName) {
+    return 'Weet je zeker dat je $appName wilt verwijderen?';
+  }
+
+  @override
+  String get appOptions => 'App-opties';
+
+  @override
+  String get couldNotOpenApp => 'Kon de applicatie niet openen';
+
+  @override
+  String get selectAppsTitle => 'Apps selecteren';
+
+  @override
+  String get gesturesTitle => 'Gebaren';
+
+  @override
+  String get selectAppTitle => 'App selecteren';
+
+  @override
+  String appsInFolder(int count) {
+    return '$count apps';
+  }
+
+  @override
+  String get rightToLeftApp => 'App van rechts naar links';
+
+  @override
+  String get leftToRightApp => 'App van links naar rechts';
+
+  @override
+  String get notSelected => 'Niet geselecteerd';
+
+  @override
+  String selectedAppsCount(int count) {
+    return '$count apps geselecteerd';
+  }
+
+  @override
+  String get autoFocusSearch => 'Automatisch zoeken focussen';
+
+  @override
+  String get autoFocusSearchDescription => 'Cursor wordt in het zoekveld geplaatst bij openen';
+
+  @override
+  String errorGettingAppInfo(String packageName) {
+    return 'Fout bij ophalen van app-info voor $packageName';
+  }
+
+  @override
+  String get errorUpdatingWeather => 'Fout bij bijwerken van het weer';
 }

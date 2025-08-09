@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
 import 'dart:convert';
 import '../models/folder.dart';
 import '../models/app_info.dart';
@@ -81,11 +82,11 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Create Folder'),
+        title: Text(AppLocalizations.of(context)!.createFolder),
         content: TextField(
           controller: _folderNameController,
-          decoration: const InputDecoration(
-            labelText: 'Folder Name',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.folderName,
           ),
           autofocus: true,
         ),
@@ -95,7 +96,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
               _folderNameController.clear(); // Clear text when canceling
               Navigator.pop(context);
             },
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -112,7 +113,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Create'),
+            child: Text(AppLocalizations.of(context)!.createFolder),
           ),
         ],
       ),
@@ -124,11 +125,11 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Folder'),
+        title: Text(AppLocalizations.of(context)!.editFolder),
         content: TextField(
           controller: _folderNameController,
-          decoration: const InputDecoration(
-            labelText: 'Folder Name',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.folderName,
           ),
           autofocus: true,
         ),
@@ -138,7 +139,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
               _folderNameController.clear(); // Clear text when canceling
               Navigator.pop(context);
             },
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -156,7 +157,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -167,12 +168,12 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Folder'),
-        content: Text('Are you sure you want to delete "${folder.name}"?'),
+        title: Text(AppLocalizations.of(context)!.deleteFolder),
+        content: Text(AppLocalizations.of(context)!.deleteFolderConfirm(folder.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -185,7 +186,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -200,7 +201,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text('Manage Apps in ${folder.name}'),
+          title: Text(AppLocalizations.of(context)!.manageAppsInFolder(folder.name)),
           content: SizedBox(
             width: double.maxFinite,
             height: MediaQuery.of(context).size.height * 0.4,
@@ -237,7 +238,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -250,7 +251,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                 _saveFolders();
                 Navigator.pop(context);
               },
-              child: const Text('Save'),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         ),
@@ -267,7 +268,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('Manage Folders'),
+            title: Text(AppLocalizations.of(context)!.manageFolders),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,
@@ -290,7 +291,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                     return ListTile(
                       leading: const Icon(Icons.folder),
                       title: Text(folder.name),
-                      subtitle: Text('${folder.appPackageNames.length} apps'),
+                      subtitle: Text(AppLocalizations.of(context)!.appsInFolder(folder.appPackageNames.length)),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

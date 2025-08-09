@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
 
 class AppSelectionScreen extends StatefulWidget {
   final SharedPreferences prefs;
   final List<String> selectedApps;
-  final int maxApps;
+
 
   const AppSelectionScreen({
     super.key,
     required this.prefs,
     required this.selectedApps,
-    required this.maxApps,
+
   });
 
   @override
@@ -47,15 +48,12 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
       });
 
       final installedApps = await InstalledApps.getInstalledApps(
-        false, // includeSystemApps
+        false, // excludeSystemApps
         false, // withIcon
         '', // packageNamePrefix
       );
 
-      final appInfos =
-          installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
-
-      // Sort apps by name
+      final appInfos = installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
       appInfos.sort((a, b) => a.name.compareTo(b.name));
 
       if (mounted) {
@@ -93,16 +91,8 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
     setState(() {
       if (widget.selectedApps.contains(packageName)) {
         widget.selectedApps.remove(packageName);
-      } else if (widget.selectedApps.length < widget.maxApps) {
-        widget.selectedApps.add(packageName);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'You have already selected the maximum of ${widget.maxApps} apps'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        widget.selectedApps.add(packageName);
       }
     });
   }
@@ -115,7 +105,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Select apps'),
+            title: Text(AppLocalizations.of(context)!.selectAppsTitle),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,
@@ -137,7 +127,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                   cursorRadius: const Radius.circular(1),
                   cursorOpacityAnimates: false,
                   decoration: InputDecoration(
-                    hintText: 'Search apps...',
+                    hintText: AppLocalizations.of(context)!.searchAppsHint,
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -168,15 +158,11 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                         final app = filteredApps[index];
                         final isSelected =
                             widget.selectedApps.contains(app.packageName);
-                        final isMaxReached =
-                            widget.selectedApps.length >= widget.maxApps &&
-                                !isSelected;
+
                         return Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: isMaxReached
-                                ? null
-                                : () => _selectApp(app.packageName),
+                            onTap: () => _selectApp(app.packageName),
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             hoverColor: Colors.transparent,
@@ -188,12 +174,10 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                                   Expanded(
                                     child: Text(
                                       app.name,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: isMaxReached
-                                            ? Colors.black.withAlpha(127)
-                                            : Colors.black,
+                                        color: Colors.black,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,

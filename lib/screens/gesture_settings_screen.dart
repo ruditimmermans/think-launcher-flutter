@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
 
@@ -8,7 +9,7 @@ import '../models/app_info.dart';
 const _kFontSize = 18.0;
 const _kSubtitleFontSize = 12.0;
 const _kPadding = EdgeInsets.all(16.0);
-const _kHorizontalPadding = EdgeInsets.symmetric(horizontal: 16.0);
+
 
 class GestureSettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -22,7 +23,7 @@ class GestureSettingsScreen extends StatefulWidget {
 class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
   bool _enableSearchGesture = true;
   bool _autoFocusSearch = true;
-  bool _enableLongPressGesture = true;
+
   String? _leftToRightApp;
   String? _rightToLeftApp;
   final Map<String, AppInfo> _appInfoCache = {};
@@ -76,7 +77,7 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
         versionName: '',
         versionCode: 0,
         builtWith: BuiltWith.unknown,
-        installedTimestamp: 0,
+                  installedTimestamp: 0,
       );
     }
   }
@@ -86,8 +87,7 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
       _enableSearchGesture =
           widget.prefs.getBool('enableSearchGesture') ?? true;
       _autoFocusSearch = widget.prefs.getBool('autoFocusSearch') ?? true;
-      _enableLongPressGesture =
-          widget.prefs.getBool('enableLongPressGesture') ?? true;
+
       _leftToRightApp = widget.prefs.getString('leftToRightApp');
       _rightToLeftApp = widget.prefs.getString('rightToLeftApp');
     });
@@ -96,14 +96,26 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
   Future<void> _saveSettings() async {
     await widget.prefs.setBool('enableSearchGesture', _enableSearchGesture);
     await widget.prefs.setBool('autoFocusSearch', _autoFocusSearch);
-    await widget.prefs
-        .setBool('enableLongPressGesture', _enableLongPressGesture);
+
     if (_leftToRightApp != null) {
       await widget.prefs.setString('leftToRightApp', _leftToRightApp!);
     }
     if (_rightToLeftApp != null) {
       await widget.prefs.setString('rightToLeftApp', _rightToLeftApp!);
     }
+  }
+
+  void _removeApp(bool isLeftToRight) {
+    setState(() {
+      if (isLeftToRight) {
+        _leftToRightApp = null;
+        widget.prefs.remove('leftToRightApp');
+      } else {
+        _rightToLeftApp = null;
+        widget.prefs.remove('rightToRightApp');
+      }
+    });
+    _saveSettings();
   }
 
   Future<void> _selectApp(bool isLeftToRight) async {
@@ -136,8 +148,7 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final showSettingsButton =
-        widget.prefs.getBool('showSettingsButton') ?? true;
+
 
     return Container(
       color: Colors.white,
@@ -146,7 +157,7 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('Gestures'),
+            title: Text(AppLocalizations.of(context)!.gesturesTitle),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,
@@ -156,10 +167,10 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
             ),
           ),
           body: _isLoading
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Loading...',
-                    style: TextStyle(fontSize: _kFontSize),
+                    AppLocalizations.of(context)!.loading,
+                    style: const TextStyle(fontSize: _kFontSize),
                   ),
                 )
               : Theme(
@@ -175,16 +186,16 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                       physics: const ClampingScrollPhysics(),
                       children: [
                         SwitchListTile(
-                          title: const Text(
-                            'Enable search gesture',
-                            style: TextStyle(
+                          title: Text(
+                            AppLocalizations.of(context)!.enableSearchGestures,
+                            style: const TextStyle(
                               fontSize: _kFontSize,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          subtitle: const Text(
-                            'Swipe down to open search',
-                            style: TextStyle(fontSize: _kSubtitleFontSize),
+                          subtitle: Text(
+                            AppLocalizations.of(context)!.swipeDown,
+                            style: const TextStyle(fontSize: _kSubtitleFontSize),
                           ),
                           value: _enableSearchGesture,
                           onChanged: (value) {
@@ -195,16 +206,16 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                           },
                         ),
                         SwitchListTile(
-                          title: const Text(
-                            'Auto focus search',
-                            style: TextStyle(
+                          title: Text(
+                            AppLocalizations.of(context)!.autoFocusSearch,
+                            style: const TextStyle(
                               fontSize: _kFontSize,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          subtitle: const Text(
-                            'Cursor will be positioned in the search field when opened',
-                            style: TextStyle(fontSize: _kSubtitleFontSize),
+                          subtitle: Text(
+                            AppLocalizations.of(context)!.autoFocusSearchDescription,
+                            style: const TextStyle(fontSize: _kSubtitleFontSize),
                           ),
                           value: _autoFocusSearch,
                           onChanged: (value) {
@@ -214,43 +225,10 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                             _saveSettings();
                           },
                         ),
-                        SwitchListTile(
-                          title: const Text(
-                            'Enable long press gesture',
-                            style: TextStyle(
-                              fontSize: _kFontSize,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: const Text(
-                            'Long press to open settings',
-                            style: TextStyle(fontSize: _kSubtitleFontSize),
-                          ),
-                          value: _enableLongPressGesture,
-                          onChanged: showSettingsButton
-                              ? (value) {
-                                  setState(() {
-                                    _enableLongPressGesture = value;
-                                  });
-                                  _saveSettings();
-                                }
-                              : null,
-                        ),
-                        if (!showSettingsButton)
-                          Padding(
-                            padding: _kHorizontalPadding,
-                            child: Text(
-                              'Settings button is disabled. Enable it in settings to use this gesture.',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                                fontSize: _kSubtitleFontSize,
-                              ),
-                            ),
-                          ),
                         ListTile(
-                          title: const Text(
-                            'Left to right app',
-                            style: TextStyle(
+                          title: Text(
+                            AppLocalizations.of(context)!.leftToRightApp,
+                            style: const TextStyle(
                               fontSize: _kFontSize,
                               fontWeight: FontWeight.bold,
                             ),
@@ -262,18 +240,28 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                                   style: const TextStyle(
                                       fontSize: _kSubtitleFontSize),
                                 )
-                              : const Text(
-                                  'Not selected',
-                                  style:
-                                      TextStyle(fontSize: _kSubtitleFontSize),
+                              : Text(
+                                  AppLocalizations.of(context)!.notSelected,
+                                  style: const TextStyle(fontSize: _kSubtitleFontSize),
                                 ),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: _leftToRightApp != null
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () => _removeApp(true),
+                                    ),
+                                    const Icon(Icons.chevron_right),
+                                  ],
+                                )
+                              : const Icon(Icons.chevron_right),
                           onTap: () => _selectApp(true),
                         ),
                         ListTile(
-                          title: const Text(
-                            'Right to left app',
-                            style: TextStyle(
+                          title: Text(
+                            AppLocalizations.of(context)!.swipeRight,
+                            style: const TextStyle(
                               fontSize: _kFontSize,
                               fontWeight: FontWeight.bold,
                             ),
@@ -285,12 +273,22 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                                   style: const TextStyle(
                                       fontSize: _kSubtitleFontSize),
                                 )
-                              : const Text(
-                                  'Not selected',
-                                  style:
-                                      TextStyle(fontSize: _kSubtitleFontSize),
+                              : Text(
+                                  AppLocalizations.of(context)!.notSelected,
+                                  style: const TextStyle(fontSize: _kSubtitleFontSize),
                                 ),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: _rightToLeftApp != null
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () => _removeApp(false),
+                                    ),
+                                    const Icon(Icons.chevron_right),
+                                  ],
+                                )
+                              : const Icon(Icons.chevron_right),
                           onTap: () => _selectApp(false),
                         ),
                       ],
@@ -347,13 +345,12 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
       });
 
       final installedApps = await InstalledApps.getInstalledApps(
-        false, // includeSystemApps
+        false, // excludeSystemApps
         false, // withIcon
         '', // packageNamePrefix
       );
 
-      final appInfos =
-          installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
+      final appInfos = installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
       appInfos.sort((a, b) => a.name.compareTo(b.name));
 
       if (mounted) {
@@ -367,7 +364,7 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
       debugPrint('Error loading apps: $e');
       if (mounted) {
         setState(() {
-          _errorMessage = 'Error loading applications';
+          _errorMessage = AppLocalizations.of(context)!.errorLoadingApps;
           _isLoading = false;
         });
       }
@@ -396,7 +393,7 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('Select app'),
+            title: Text(AppLocalizations.of(context)!.selectAppTitle),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,
@@ -418,7 +415,7 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
                   cursorRadius: const Radius.circular(1),
                   cursorOpacityAnimates: false,
                   decoration: InputDecoration(
-                    hintText: 'Search apps...',
+                    hintText: AppLocalizations.of(context)!.searchAppsHint,
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -433,10 +430,10 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
               ),
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'Loading...',
-                          style: TextStyle(fontSize: _kFontSize),
+                          AppLocalizations.of(context)!.loading,
+                          style: const TextStyle(fontSize: _kFontSize),
                         ),
                       )
                     : _errorMessage != null

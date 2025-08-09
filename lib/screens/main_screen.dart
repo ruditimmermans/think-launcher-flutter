@@ -1,3 +1,4 @@
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:installed_apps/installed_apps.dart';
@@ -15,6 +16,11 @@ import 'package:think_launcher/models/notification_info.dart';
 import 'package:think_launcher/screens/search_screen.dart';
 import 'package:think_launcher/screens/settings_screen.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
+import 'package:think_launcher/models/weather_info.dart';
+import 'package:think_launcher/services/weather_service.dart';
+import 'package:think_launcher/l10n/app_localizations.dart';
+import 'package:think_launcher/screens/reorder_apps_screen.dart';
+import 'package:think_launcher/constants/dialog_options.dart';
 
 class MainScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -38,13 +44,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late bool _showDateTime;
   late bool _showSearchButton;
   late bool _showSettingsButton;
-  late bool _useBoldFont;
+
   late double _appFontSize;
   late bool _enableScroll;
   late bool _showIcons;
   late String _currentTime;
   late String _currentDate;
   late int _batteryLevel;
+  WeatherInfo? _weatherInfo;
+  late WeatherService _weatherService;
 
   late double _appIconSize;
 
@@ -86,12 +94,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   // Timers
   Timer? _dateTimeTimer;
   Timer? _batteryTimer;
+  Timer? _weatherTimer;
   bool _isNavigating = false;
   final Battery _battery = Battery();
 
   // Formatters
   static final _timeFormatter = DateFormat('HH:mm');
-  static final _dateFormatter = DateFormat('EEE, MMM dd');
+  static final _dateFormatter = DateFormat('EEE, dd MMM');
 
   @override
   void initState() {
@@ -101,6 +110,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _setupTimers();
     _setupBatteryListener();
     _setupNotificationListener();
+    _setupWeatherService();
   }
 
   void _initializeState() {
@@ -112,7 +122,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _showDateTime = widget.prefs.getBool('showDateTime') ?? true;
     _showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
     _showSettingsButton = widget.prefs.getBool('showSettingsButton') ?? true;
-    _useBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
+
     _appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
     _enableScroll = widget.prefs.getBool('enableScroll') ?? true;
     _showIcons = widget.prefs.getBool('showIcons') ?? true;
@@ -123,11 +133,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _batteryLevel = 0;
   }
 
+  void _setupWeatherService() {
+    _weatherService = WeatherService(
+        apiKey: const String.fromEnvironment('OPENWEATHER_API_KEY'));
+    _updateWeather();
+  }
+
   void _setupTimers() {
     _dateTimeTimer =
         Timer.periodic(const Duration(minutes: 1), (_) => _updateDateTime());
     _batteryTimer =
         Timer.periodic(const Duration(minutes: 5), (_) => _updateBattery());
+    _weatherTimer =
+        Timer.periodic(const Duration(minutes: 30), (_) => _updateWeather());
   }
 
   void _setupBatteryListener() {
@@ -180,37 +198,52 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _dateTimeTimer?.cancel();
     _batteryTimer?.cancel();
+    _weatherTimer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _loadFolders();
+      _buildAppGrid();
+      _loadNotifications();
       _updateBattery();
       _updateDateTime();
+      _updateWeather();
     }
   }
 
-  Future<AppInfo> _getAppInfo(String packageName) async {
+  Future<AppInfo?> _getAppInfo(String packageName) async {
     if (_appInfoCache.containsKey(packageName)) {
       return _appInfoCache[packageName]!;
     }
 
     try {
+      // Check if app is still installed
+      final isInstalled = await InstalledApps.isAppInstalled(packageName);
+      if (isInstalled == false) {
+        // Remove from selected apps and save
+        setState(() {
+          _selectedApps.remove(packageName);
+          widget.prefs.setStringList('selectedApps', _selectedApps);
+        });
+        return null;
+      }
+
       final app = await InstalledApps.getAppInfo(packageName, null);
       final appInfo = AppInfo.fromInstalledApps(app);
       _appInfoCache[packageName] = appInfo;
       return appInfo;
     } catch (e) {
-      debugPrint('Error getting app info for $packageName: $e');
-      return AppInfo(
-        name: packageName,
-        packageName: packageName,
-        versionName: '',
-        versionCode: 0,
-        builtWith: BuiltWith.unknown,
-        installedTimestamp: 0,
-      );
+      if (!mounted) return null;
+      debugPrint(AppLocalizations.of(context)!.errorGettingAppInfo(packageName));
+      // Remove from selected apps and save
+      setState(() {
+        _selectedApps.remove(packageName);
+        widget.prefs.setStringList('selectedApps', _selectedApps);
+      });
+      return null;
     }
   }
 
@@ -235,7 +268,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           widget.prefs.getBool('showSearchButton') ?? true;
       final newShowSettingsButton =
           widget.prefs.getBool('showSettingsButton') ?? true;
-      final newUseBoldFont = widget.prefs.getBool('useBoldFont') ?? false;
+
       final newAppFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
       final newEnableScroll = widget.prefs.getBool('enableScroll') ?? true;
       final newShowIcons = widget.prefs.getBool('showIcons') ?? false;
@@ -247,7 +280,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showDateTime != newShowDateTime ||
           _showSearchButton != newShowSearchButton ||
           _showSettingsButton != newShowSettingsButton ||
-          _useBoldFont != newUseBoldFont ||
           _appFontSize != newAppFontSize ||
           _enableScroll != newEnableScroll ||
           _showIcons != newShowIcons ||
@@ -261,7 +293,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showDateTime = newShowDateTime;
           _showSearchButton = newShowSearchButton;
           _showSettingsButton = newShowSettingsButton;
-          _useBoldFont = newUseBoldFont;
+
           _appFontSize = newAppFontSize;
           _enableScroll = newEnableScroll;
           _showIcons = newShowIcons;
@@ -301,6 +333,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       }
     } catch (e) {
       // Error silently
+    }
+  }
+
+  Future<void> _updateWeather() async {
+    if (!mounted || !_showDateTime) return;
+    try {
+      final weather = await _weatherService.getCurrentWeather();
+      if (mounted) {
+        setState(() => _weatherInfo = weather);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint(AppLocalizations.of(context)!.errorUpdatingWeather);
     }
   }
 
@@ -357,14 +402,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildAppGrid() {
-    return FutureBuilder<List<AppInfo>>(
+    return FutureBuilder<List<AppInfo?>>(
       future: Future.wait(
-          _selectedApps.map((packageName) => _getAppInfo(packageName))),
+        _selectedApps.map((packageName) => _getAppInfo(packageName)),
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting &&
             _appInfoCache.isEmpty) {
-          return const Center(
-              child: Text('Loading...', style: TextStyle(fontSize: 18)));
+          return Center(
+            child: Text(
+              AppLocalizations.of(context)!.loading,
+              style: const TextStyle(fontSize: 18),
+            ),
+          );
         }
 
         if (snapshot.hasError) {
@@ -374,20 +424,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               'Error loading applications',
               style: TextStyle(
                 fontSize: _appFontSize,
-                fontWeight: _useBoldFont ? FontWeight.bold : FontWeight.normal,
+                fontWeight: FontWeight.normal,
               ),
             ),
           );
         }
 
-        final apps = snapshot.data ?? [];
+        final apps = (snapshot.data ?? [])
+            .where((app) => app != null)
+            .cast<AppInfo>()
+            .toList();
         if (apps.isEmpty) {
           return Center(
             child: Text(
               'No applications selected',
               style: TextStyle(
                 fontSize: _appFontSize,
-                fontWeight: _useBoldFont ? FontWeight.bold : FontWeight.normal,
+                fontWeight: FontWeight.normal,
               ),
             ),
           );
@@ -418,10 +471,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           items.addAll(
             folder.appPackageNames
                 .where((packageName) => appMap.containsKey(packageName))
-                .map((packageName) => Padding(
-                      padding: const EdgeInsets.only(left: 32.0),
-                      child: _buildAppItem(appMap[packageName]!),
-                    )),
+                .map(
+                  (packageName) => Padding(
+                    padding: const EdgeInsets.only(left: 32.0),
+                    child: _buildAppItem(appMap[packageName]!),
+                  ),
+                ),
           );
         }
       }
@@ -442,6 +497,135 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  Future<void> _showFolderOptionsDialog(Folder folder) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            folder.name,
+            style: const TextStyle(fontSize: 20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text(AppLocalizations.of(context)!.editFolder),
+                onTap: () => Navigator.pop(context, FolderDialogOptions.rename),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: Text(AppLocalizations.of(context)!.deleteFolder),
+                onTap: () => Navigator.pop(context, FolderDialogOptions.delete),
+              ),
+              ListTile(
+                leading: const Icon(Icons.reorder),
+                title: Text(AppLocalizations.of(context)!.reorderAppsInFolder),
+                onTap: () => Navigator.pop(context, FolderDialogOptions.reorder),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (result == null) return;
+    if (!mounted) return;
+
+    switch (result) {
+      case FolderDialogOptions.rename:
+        final newName = await showDialog<String>(
+          context: context,
+          builder: (BuildContext context) {
+            final controller = TextEditingController(text: folder.name);
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.editFolder),
+              content: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.folderName,
+                ),
+                autofocus: true,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, controller.text),
+                  child: Text(AppLocalizations.of(context)!.save),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (newName != null && newName.isNotEmpty) {
+          setState(() {
+            final index = _folders.indexWhere((f) => f.id == folder.id);
+            if (index != -1) {
+              _folders[index] = folder.copyWith(name: newName);
+              final foldersJson =
+                  jsonEncode(_folders.map((f) => f.toJson()).toList());
+              widget.prefs.setString('folders', foldersJson);
+            }
+          });
+        }
+        break;
+
+      case FolderDialogOptions.delete:
+        final shouldDelete = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.deleteFolder),
+              content: Text(
+                AppLocalizations.of(context)!.deleteFolderConfirm(folder.name),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(AppLocalizations.of(context)!.deleteFolder),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (shouldDelete == true) {
+          setState(() {
+            _folders.removeWhere((f) => f.id == folder.id);
+            _expandedFolders.remove(folder.id);
+            final foldersJson =
+                jsonEncode(_folders.map((f) => f.toJson()).toList());
+            widget.prefs.setString('folders', foldersJson);
+          });
+        }
+        break;
+
+      case FolderDialogOptions.reorder:
+        // Navigate to reorder screen
+        if (!mounted) return;
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReorderAppsScreen(
+              prefs: widget.prefs,
+              folder: folder,
+            ),
+          ),
+        );
+        _loadFolders(); // Reload folders after returning from reorder screen
+        break;
+    }
+  }
+
   Widget _buildFolderItem(Folder folder) {
     return Material(
       color: Colors.transparent,
@@ -455,6 +639,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             }
           });
         },
+        onLongPress: () => _showFolderOptionsDialog(folder),
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
         hoverColor: Colors.transparent,
@@ -485,8 +670,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   folder.name,
                   style: TextStyle(
                     fontSize: _appFontSize,
-                    fontWeight:
-                        _useBoldFont ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: FontWeight.normal,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -505,11 +689,141 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  Future<void> _showAppOptionsDialog(AppInfo app) async {
+    // Check if app is already in a folder
+    final isInFolder = _folders.any((folder) => folder.appPackageNames.contains(app.packageName));
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(context)!.appOptions,
+            style: const TextStyle(fontSize: 20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info),
+                title: Text(AppLocalizations.of(context)!.appInfo),
+                onTap: () => Navigator.pop(context, AppDialogOptions.info),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: Text(AppLocalizations.of(context)!.uninstallApp),
+                onTap: () => Navigator.pop(context, AppDialogOptions.uninstall),
+              ),
+              if (!isInFolder)
+                ListTile(
+                  leading: const Icon(Icons.create_new_folder),
+                  title: Text(AppLocalizations.of(context)!.createFolder),
+                  onTap: () => Navigator.pop(context, AppDialogOptions.createFolder),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (result == null) return;
+    if (!mounted) return;
+
+    switch (result) {
+      case AppDialogOptions.info:
+        await AndroidIntent(
+          action: 'android.settings.APPLICATION_DETAILS_SETTINGS',
+          data: 'package:${app.packageName}',
+        ).launch();
+        break;
+      case AppDialogOptions.uninstall:
+        final shouldUninstall = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.uninstallApp),
+              content: Text(
+                AppLocalizations.of(context)!.confirmUninstall(app.name),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(AppLocalizations.of(context)!.uninstallApp),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (shouldUninstall == true) {
+          await InstalledApps.uninstallApp(app.packageName);
+          setState(() {
+            _selectedApps.remove(app.packageName);
+            widget.prefs.setStringList('selectedApps', _selectedApps);
+          });
+        }
+        break;
+      case AppDialogOptions.createFolder:
+        final folderName = await showDialog<String>(
+          context: context,
+          builder: (BuildContext context) {
+            final controller = TextEditingController();
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.createFolder),
+              content: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.folderName,
+                ),
+                autofocus: true,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, controller.text),
+                  child: Text(AppLocalizations.of(context)!.save),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (folderName != null && folderName.isNotEmpty) {
+          final newFolder = Folder(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            name: folderName,
+            appPackageNames: [app.packageName],
+          );
+
+          setState(() {
+            _folders.add(newFolder);
+            final foldersJson =
+                jsonEncode(_folders.map((f) => f.toJson()).toList());
+            widget.prefs.setString('folders', foldersJson);
+          });
+        }
+        break;
+    }
+  }
+
   Widget _buildAppItem(AppInfo app) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => InstalledApps.startApp(app.packageName),
+        onTap: () {
+          InstalledApps.startApp(app.packageName);
+          setState(() {
+            _expandedFolders.clear(); // Close all folders
+          });
+        },
+        onLongPress: () => _showAppOptionsDialog(app),
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
         hoverColor: Colors.transparent,
@@ -573,8 +887,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       app.name,
                       style: TextStyle(
                         fontSize: _appFontSize,
-                        fontWeight:
-                            _useBoldFont ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: FontWeight.normal,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -594,8 +907,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   app.name,
                   style: TextStyle(
                     fontSize: _appFontSize,
-                    fontWeight:
-                        _useBoldFont ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: FontWeight.normal,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -625,9 +937,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return GestureDetector(
       onVerticalDragUpdate: gestureHandler.handleVerticalDrag,
       onHorizontalDragUpdate: gestureHandler.handleHorizontalDrag,
-      onLongPress: widget.prefs.getBool('enableLongPressGesture') ?? true
-          ? _openSettings
-          : null,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Stack(
@@ -646,11 +955,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             Text(
                               _currentTime,
                               textAlign: TextAlign.left,
-                              style: TextStyle(
-                                fontSize: 64,
-                                fontWeight: _useBoldFont
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                              style: const TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.normal,
                               ),
                             ),
                             Padding(
@@ -659,28 +966,44 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                 children: [
                                   Text(
                                     _currentDate,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 18,
-                                      fontWeight: _useBoldFont
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
+                                      fontWeight: FontWeight.normal,
                                     ),
                                   ),
                                   const Text(
                                     ' | ',
                                     style: TextStyle(fontSize: 18),
                                   ),
-                                  Icon(_getBatteryIcon(_batteryLevel), size: 18),
+                                  Icon(_getBatteryIcon(_batteryLevel),
+                                      size: 18),
                                   const SizedBox(width: 4),
                                   Text(
                                     '$_batteryLevel%',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 18,
-                                      fontWeight: _useBoldFont
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
+                                      fontWeight: FontWeight.normal,
                                     ),
                                   ),
+                                  if (_weatherInfo != null) ...[
+                                    const Text(
+                                      ' | ',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    Image.network(
+                                      _weatherInfo!.iconUrl,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${_weatherInfo!.temperature.round()}°C',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
