@@ -6,19 +6,27 @@
 
 **Think Launcher** is a minimalist Android launcher designed specifically for **e-ink devices**. It prioritizes **simplicity**, **customization**, and uses only pure black and white tones and no animations.
 
-## Fork 🍴
+## Fork Changes 🍴
 
-- Changed date format
-- Added internalization support (English, Dutch)
-- Added icon for app list
-- Removed app grid support
-- Added notification support in app list
-- Added folder support
+- Feat: Changed date format
+- Feat: Added internalization support (English, Dutch)
+- Feat: Added icon for app list
+- Feat: Added notification support in app list
+- Feat: Added folder support
+- Feat: Weather support
+- Feat: Removed app grid, bold font & long press gesture support
+- Feat: Remove app limit
+- Feat: Automatic Save feature after changes in settings
+- Feat: Added Clear selected gesture app button
+- Feat: App & Folder long press dialog options
+- Bug: Fixed for uninstalled apps
 
 ## Screenshots 📷
 
 <p align="center">
   <img src="assets/home_screen.png" alt="Home" width="200"/>
+  <img src="assets/folder_options.png" alt="Folder Options" width="200"/>
+  <img src="assets/app_options.png" alt="App Options" width="200"/>
   <img src="assets/settings_screen.png" alt="Settings" width="200"/>
   <img src="assets/manage_folder_screen.png" alt="Columns View" width="200"/>
   <img src="assets/gestures_screen.png" alt="Gestures" width="200"/>
@@ -40,6 +48,7 @@
   - Notification support directly in the app list.
   - Folder support for organizing apps.
   - Gesture support for quick actions.
+  - Long tap for app & folder options.
 
 - **Search** 🔍
 
