@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
+import 'dart:convert';
 
 // Theme and style constants
 const _kSearchPadding = EdgeInsets.all(16.0);
@@ -80,6 +81,8 @@ class _SearchScreenState extends State<SearchScreen> {
     if (widget.autoFocus && mounted) {
       Future.microtask(() => _searchFocusNode.requestFocus());
     }
+    // Refresh app list when dependencies change to show updated custom names
+    _refreshAppsWithCustomNames();
   }
 
   @override
@@ -116,6 +119,19 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted) return;
 
       final apps = installedApps.map(AppInfo.fromInstalledApps).toList();
+
+      // Load custom names for all apps
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+
+      for (int i = 0; i < apps.length; i++) {
+        final app = apps[i];
+        final customName = customNames[app.packageName];
+        if (customName != null) {
+          apps[i] = app.copyWith(customName: customName);
+        }
+      }
+
       await _AppCache.updateCache(apps);
 
       setState(() {
@@ -148,10 +164,30 @@ class _SearchScreenState extends State<SearchScreen> {
       _searchResults = query.isEmpty
           ? List.from(_installedApps)
           : _installedApps
-              .where(
-                  (app) => app.name.toLowerCase().contains(query.toLowerCase()))
+              .where((app) =>
+                  app.displayName.toLowerCase().contains(query.toLowerCase()))
               .toList();
     });
+  }
+
+  /// Refreshes the app list with updated custom names
+  void _refreshAppsWithCustomNames() {
+    // Load custom names for all apps
+    final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+    final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+
+    for (int i = 0; i < _installedApps.length; i++) {
+      final app = _installedApps[i];
+      final customName = customNames[app.packageName];
+      if (customName != null) {
+        _installedApps[i] = app.copyWith(customName: customName);
+      } else {
+        _installedApps[i] = app.copyWith(customName: null);
+      }
+    }
+
+    // Re-filter with updated names
+    _filterApps(_searchController.text);
   }
 
   Future<void> _launchApp(String packageName) async {
@@ -238,7 +274,7 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Padding(
           padding: _kItemPadding,
           child: Text(
-            app.name,
+            app.displayName,
             style: const TextStyle(
               fontSize: _kFontSize,
               fontWeight: FontWeight.bold,

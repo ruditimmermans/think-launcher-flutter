@@ -211,7 +211,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _updateBattery();
       _updateDateTime();
       _updateWeather();
+
+      // Refresh app info cache to get updated custom names
+      _refreshAppInfoCache();
     }
+  }
+
+  /// Refreshes the entire app info cache to get updated custom names
+  Future<void> _refreshAppInfoCache() async {
+    for (final packageName in _selectedApps) {
+      await _refreshAppInfo(packageName);
+    }
+    setState(() {});
   }
 
   Future<AppInfo?> _getAppInfo(String packageName) async {
@@ -233,11 +244,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       final app = await InstalledApps.getAppInfo(packageName, null);
       final appInfo = AppInfo.fromInstalledApps(app);
-      _appInfoCache[packageName] = appInfo;
-      return appInfo;
+
+      // Load custom name if exists
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+      final customName = customNames[packageName];
+
+      final finalAppInfo = customName != null
+          ? appInfo.copyWith(customName: customName)
+          : appInfo;
+      _appInfoCache[packageName] = finalAppInfo;
+      return finalAppInfo;
     } catch (e) {
       if (!mounted) return null;
-      debugPrint(AppLocalizations.of(context)!.errorGettingAppInfo(packageName));
+      debugPrint(
+          AppLocalizations.of(context)!.errorGettingAppInfo(packageName));
       // Remove from selected apps and save
       setState(() {
         _selectedApps.remove(packageName);
@@ -253,6 +274,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         .where((packageName) => !_appInfoCache.containsKey(packageName))
         .map((packageName) => _getAppInfo(packageName));
     await Future.wait(futures);
+  }
+
+  /// Refreshes app info cache for a specific app
+  Future<void> _refreshAppInfo(String packageName) async {
+    try {
+      final app = await InstalledApps.getAppInfo(packageName, null);
+      final appInfo = AppInfo.fromInstalledApps(app);
+
+      // Load custom name if exists
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+      final customName = customNames[packageName];
+
+      final finalAppInfo = customName != null
+          ? appInfo.copyWith(customName: customName)
+          : appInfo;
+      _appInfoCache[packageName] = finalAppInfo;
+    } catch (e) {
+      debugPrint('Error refreshing app info for $packageName: $e');
+    }
   }
 
   void _loadSettings() {
@@ -522,7 +563,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               ListTile(
                 leading: const Icon(Icons.reorder),
                 title: Text(AppLocalizations.of(context)!.reorderAppsInFolder),
-                onTap: () => Navigator.pop(context, FolderDialogOptions.reorder),
+                onTap: () =>
+                    Navigator.pop(context, FolderDialogOptions.reorder),
               ),
             ],
           ),
@@ -691,14 +733,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Future<void> _showAppOptionsDialog(AppInfo app) async {
     // Check if app is already in a folder
-    final isInFolder = _folders.any((folder) => folder.appPackageNames.contains(app.packageName));
+    final isInFolder = _folders
+        .any((folder) => folder.appPackageNames.contains(app.packageName));
 
     final result = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            AppLocalizations.of(context)!.appOptions,
+            app.displayName,
             style: const TextStyle(fontSize: 20),
           ),
           content: Column(
@@ -710,6 +753,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 onTap: () => Navigator.pop(context, AppDialogOptions.info),
               ),
               ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text(AppLocalizations.of(context)!.renameApp),
+                onTap: () => Navigator.pop(context, AppDialogOptions.rename),
+              ),
+              if (app.customName != null)
+                ListTile(
+                  leading: const Icon(Icons.refresh),
+                  title: Text(AppLocalizations.of(context)!.resetAppName),
+                  onTap: () =>
+                      Navigator.pop(context, AppDialogOptions.resetAppName),
+                ),
+              ListTile(
                 leading: const Icon(Icons.delete),
                 title: Text(AppLocalizations.of(context)!.uninstallApp),
                 onTap: () => Navigator.pop(context, AppDialogOptions.uninstall),
@@ -718,7 +773,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 ListTile(
                   leading: const Icon(Icons.create_new_folder),
                   title: Text(AppLocalizations.of(context)!.createFolder),
-                  onTap: () => Navigator.pop(context, AppDialogOptions.createFolder),
+                  onTap: () =>
+                      Navigator.pop(context, AppDialogOptions.createFolder),
+                ),
+              if (_folders.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.folder_open),
+                  title: Text(AppLocalizations.of(context)!.moveToFolder),
+                  onTap: () =>
+                      Navigator.pop(context, AppDialogOptions.moveToFolder),
                 ),
             ],
           ),
@@ -810,6 +873,150 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           });
         }
         break;
+      case AppDialogOptions.rename:
+        final newName = await showDialog<String>(
+          context: context,
+          builder: (BuildContext context) {
+            final controller = TextEditingController(text: app.displayName);
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.renameApp),
+              content: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.folderName,
+                ),
+                autofocus: true,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, controller.text),
+                  child: Text(AppLocalizations.of(context)!.save),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (newName != null && newName.isNotEmpty && newName != app.name) {
+          final updatedApp = app.copyWith(customName: newName);
+          _appInfoCache[app.packageName] = updatedApp;
+
+          // Save custom names to preferences
+          final customNamesJson =
+              widget.prefs.getString('customAppNames') ?? '{}';
+          final customNames =
+              Map<String, String>.from(jsonDecode(customNamesJson));
+          customNames[app.packageName] = newName;
+          widget.prefs.setString('customAppNames', jsonEncode(customNames));
+
+          // Force refresh of the app grid to show updated names
+          setState(() {});
+        }
+        break;
+      case AppDialogOptions.resetAppName:
+        // Remove custom name and reset to system name
+        final updatedApp = app.copyWith(customName: null);
+        _appInfoCache[app.packageName] = updatedApp;
+
+        // Remove from custom names preferences
+        final customNamesJson =
+            widget.prefs.getString('customAppNames') ?? '{}';
+        final customNames =
+            Map<String, String>.from(jsonDecode(customNamesJson));
+        customNames.remove(app.packageName);
+        widget.prefs.setString('customAppNames', jsonEncode(customNames));
+
+        // Refresh the app info to ensure system name is loaded
+        await _refreshAppInfo(app.packageName);
+
+        // Force refresh of the app grid to show updated names
+        setState(() {});
+        break;
+      case AppDialogOptions.moveToFolder:
+        // Filter out the folder the app is currently in
+        final availableFolders = _folders
+            .where(
+                (folder) => !folder.appPackageNames.contains(app.packageName))
+            .toList();
+
+        if (availableFolders.isEmpty) {
+          // Show message if no other folders available
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(AppLocalizations.of(context)!.moveToFolder),
+                content: Text(AppLocalizations.of(context)!.noOtherFoldersAvailable),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(AppLocalizations.of(context)!.cancel),
+                  ),
+                ],
+              );
+            },
+          );
+          return;
+        }
+
+        final selectedFolder = await showDialog<Folder>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.selectFolder),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: availableFolders
+                    .map((folder) => ListTile(
+                          leading: const Icon(Icons.folder),
+                          title: Text(folder.name),
+                          subtitle:
+                              Text('${folder.appPackageNames.length} apps'),
+                          onTap: () => Navigator.pop(context, folder),
+                        ))
+                    .toList(),
+              ),
+            );
+          },
+        );
+
+        if (selectedFolder != null) {
+          setState(() {
+            // First, remove app from any existing folder
+            for (int i = 0; i < _folders.length; i++) {
+              if (_folders[i].appPackageNames.contains(app.packageName)) {
+                _folders[i] = _folders[i].copyWith(
+                  appPackageNames: _folders[i]
+                      .appPackageNames
+                      .where((packageName) => packageName != app.packageName)
+                      .toList(),
+                );
+              }
+            }
+
+            // Then add app to selected folder
+            final folderIndex =
+                _folders.indexWhere((f) => f.id == selectedFolder.id);
+            if (folderIndex != -1) {
+              _folders[folderIndex] = selectedFolder.copyWith(
+                appPackageNames: [
+                  ...selectedFolder.appPackageNames,
+                  app.packageName
+                ],
+              );
+            }
+
+            // Save updated folders
+            final foldersJson =
+                jsonEncode(_folders.map((f) => f.toJson()).toList());
+            widget.prefs.setString('folders', foldersJson);
+          });
+        }
+        break;
     }
   }
 
@@ -884,7 +1091,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      app.name,
+                      app.displayName,
                       style: TextStyle(
                         fontSize: _appFontSize,
                         fontWeight: FontWeight.normal,
@@ -904,7 +1111,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   ],
                 )
               : Text(
-                  app.name,
+                  app.displayName,
                   style: TextStyle(
                     fontSize: _appFontSize,
                     fontWeight: FontWeight.normal,
@@ -935,7 +1142,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
 
     return GestureDetector(
-      onVerticalDragUpdate: gestureHandler.handleVerticalDrag,
       onHorizontalDragUpdate: gestureHandler.handleHorizontalDrag,
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -951,6 +1157,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       if (_showDateTime)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
                               _currentTime,
@@ -960,52 +1167,59 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                 fontWeight: FontWeight.normal,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: Row(
-                                children: [
-                                  Text(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: Text(
                                     _currentDate,
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.normal,
                                     ),
                                   ),
-                                  const Text(
-                                    ' | ',
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                  Icon(_getBatteryIcon(_batteryLevel),
-                                      size: 18),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$_batteryLevel%',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                  if (_weatherInfo != null) ...[
-                                    const Text(
-                                      ' | ',
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    Image.network(
-                                      _weatherInfo!.iconUrl,
-                                      width: 24,
-                                      height: 24,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${_weatherInfo!.temperature.round()}°C',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.normal,
+                                ),
+                                const SizedBox(height: 4),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 2.25),
+                                  child: Row(
+                                    children: [
+                                      Icon(_getBatteryIcon(_batteryLevel),
+                                          size: 18),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '$_batteryLevel%',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.normal,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
+                                ),
+                                if (_weatherInfo != null) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Image.network(
+                                        _weatherInfo!.iconUrl,
+                                        width: 24,
+                                        height: 24,
+                                        fit: BoxFit.fill,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${_weatherInfo!.temperature.round()}°C',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
-                              ),
+                              ],
                             ),
                           ],
                         )
@@ -1034,10 +1248,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   child: Stack(
                     children: [
                       if (_selectedApps.isEmpty)
-                        const Center(
+                        Center(
                           child: Text(
-                            'Press the settings button to start',
-                            style: TextStyle(fontSize: 18),
+                            AppLocalizations.of(context)!.pressSettingsButtonToStart,
+                            style: const TextStyle(fontSize: 18),
                           ),
                         )
                       else

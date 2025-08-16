@@ -107,17 +107,29 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
+  /// content for initial text
+  ///
+  /// In en, this message translates to:
+  /// **'Press the settings button to start'**
+  String get pressSettingsButtonToStart;
+
   /// Label for number of apps setting
   ///
   /// In en, this message translates to:
   /// **'Number of apps'**
   String get numberOfApps;
 
-  /// Label for date time and battery setting
+  /// Label for back
   ///
   /// In en, this message translates to:
-  /// **'Show date, time and battery'**
-  String get showDateTimeAndBattery;
+  /// **'Back'**
+  String get back;
+
+  /// Label for showing information panel
+  ///
+  /// In en, this message translates to:
+  /// **'Show information panel at top'**
+  String get showInformationPanel;
 
   /// Title for search apps
   ///
@@ -190,6 +202,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} of {total} apps selected'**
   String appsSelected(int count, int total);
+
+  /// Title for reordering both apps and folders
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder apps and folders'**
+  String get reorderAppsAndFolders;
+
+  /// Option in context menu to reorder items
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder items'**
+  String get reorderItems;
 
   /// Label for reorder apps option
   ///
@@ -269,6 +293,36 @@ abstract class AppLocalizations {
   /// **'Create Folder'**
   String get createFolder;
 
+  /// Title for rename app dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rename App'**
+  String get renameApp;
+
+  /// Title for move to folder dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Move to Folder'**
+  String get moveToFolder;
+
+  /// content for move to folder dialog
+  ///
+  /// In en, this message translates to:
+  /// **'No other folders available to move this app to.'**
+  String get noOtherFoldersAvailable;
+
+  /// Title for folder selection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Select Folder'**
+  String get selectFolder;
+
+  /// Title for reset app name option
+  ///
+  /// In en, this message translates to:
+  /// **'Reset App Name'**
+  String get resetAppName;
+
   /// Label for folder name input
   ///
   /// In en, this message translates to:
@@ -317,23 +371,11 @@ abstract class AppLocalizations {
   /// **'Gesture Settings'**
   String get gestureSettings;
 
-  /// Label for enabling search gesture
-  ///
-  /// In en, this message translates to:
-  /// **'Enable search gesture'**
-  String get enableSearchGestures;
-
   /// Label for swipe up gesture
   ///
   /// In en, this message translates to:
   /// **'Swipe Up'**
   String get swipeUp;
-
-  /// Label for swipe down gesture
-  ///
-  /// In en, this message translates to:
-  /// **'Swipe Down'**
-  String get swipeDown;
 
   /// Label for swipe left gesture
   ///

@@ -4,12 +4,12 @@ import 'package:installed_apps/installed_apps.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
+import 'dart:convert';
 
 // Theme and style constants
 const _kFontSize = 18.0;
 const _kSubtitleFontSize = 12.0;
 const _kPadding = EdgeInsets.all(16.0);
-
 
 class GestureSettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -21,7 +21,6 @@ class GestureSettingsScreen extends StatefulWidget {
 }
 
 class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
-  bool _enableSearchGesture = true;
   bool _autoFocusSearch = true;
 
   String? _leftToRightApp;
@@ -34,6 +33,13 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
     super.initState();
     _loadSettings();
     _preloadAppInfo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh app info when dependencies change (e.g., returning from other screens)
+    _refreshAppInfoCache();
   }
 
   Future<void> _preloadAppInfo() async {
@@ -67,8 +73,17 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
     try {
       final app = await InstalledApps.getAppInfo(packageName, null);
       final appInfo = AppInfo.fromInstalledApps(app);
-      _appInfoCache[packageName] = appInfo;
-      return appInfo;
+
+      // Load custom name if exists
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+      final customName = customNames[packageName];
+
+      final finalAppInfo = customName != null
+          ? appInfo.copyWith(customName: customName)
+          : appInfo;
+      _appInfoCache[packageName] = finalAppInfo;
+      return finalAppInfo;
     } catch (e) {
       debugPrint('Error getting app info for $packageName: $e');
       return AppInfo(
@@ -77,15 +92,13 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
         versionName: '',
         versionCode: 0,
         builtWith: BuiltWith.unknown,
-                  installedTimestamp: 0,
+        installedTimestamp: 0,
       );
     }
   }
 
   void _loadSettings() {
     setState(() {
-      _enableSearchGesture =
-          widget.prefs.getBool('enableSearchGesture') ?? true;
       _autoFocusSearch = widget.prefs.getBool('autoFocusSearch') ?? true;
 
       _leftToRightApp = widget.prefs.getString('leftToRightApp');
@@ -94,7 +107,6 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
   }
 
   Future<void> _saveSettings() async {
-    await widget.prefs.setBool('enableSearchGesture', _enableSearchGesture);
     await widget.prefs.setBool('autoFocusSearch', _autoFocusSearch);
 
     if (_leftToRightApp != null) {
@@ -102,6 +114,37 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
     }
     if (_rightToLeftApp != null) {
       await widget.prefs.setString('rightToLeftApp', _rightToLeftApp!);
+    }
+  }
+
+  /// Refreshes the app info cache to get updated custom names
+  Future<void> _refreshAppInfoCache() async {
+    if (_leftToRightApp != null) {
+      await _refreshAppInfo(_leftToRightApp!);
+    }
+    if (_rightToLeftApp != null) {
+      await _refreshAppInfo(_rightToLeftApp!);
+    }
+    setState(() {});
+  }
+
+  /// Refreshes app info for a specific app
+  Future<void> _refreshAppInfo(String packageName) async {
+    try {
+      final app = await InstalledApps.getAppInfo(packageName, null);
+      final appInfo = AppInfo.fromInstalledApps(app);
+
+      // Load custom name if exists
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+      final customName = customNames[packageName];
+
+      final finalAppInfo = customName != null
+          ? appInfo.copyWith(customName: customName)
+          : appInfo;
+      _appInfoCache[packageName] = finalAppInfo;
+    } catch (e) {
+      debugPrint('Error refreshing app info for $packageName: $e');
     }
   }
 
@@ -148,8 +191,6 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Container(
       color: Colors.white,
       child: Padding(
@@ -187,26 +228,6 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                       children: [
                         SwitchListTile(
                           title: Text(
-                            AppLocalizations.of(context)!.enableSearchGestures,
-                            style: const TextStyle(
-                              fontSize: _kFontSize,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Text(
-                            AppLocalizations.of(context)!.swipeDown,
-                            style: const TextStyle(fontSize: _kSubtitleFontSize),
-                          ),
-                          value: _enableSearchGesture,
-                          onChanged: (value) {
-                            setState(() {
-                              _enableSearchGesture = value;
-                            });
-                            _saveSettings();
-                          },
-                        ),
-                        SwitchListTile(
-                          title: Text(
                             AppLocalizations.of(context)!.autoFocusSearch,
                             style: const TextStyle(
                               fontSize: _kFontSize,
@@ -214,8 +235,10 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                             ),
                           ),
                           subtitle: Text(
-                            AppLocalizations.of(context)!.autoFocusSearchDescription,
-                            style: const TextStyle(fontSize: _kSubtitleFontSize),
+                            AppLocalizations.of(context)!
+                                .autoFocusSearchDescription,
+                            style:
+                                const TextStyle(fontSize: _kSubtitleFontSize),
                           ),
                           value: _autoFocusSearch,
                           onChanged: (value) {
@@ -236,13 +259,14 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                           subtitle: _leftToRightApp != null &&
                                   _appInfoCache.containsKey(_leftToRightApp!)
                               ? Text(
-                                  _appInfoCache[_leftToRightApp!]!.name,
+                                  _appInfoCache[_leftToRightApp!]!.displayName,
                                   style: const TextStyle(
                                       fontSize: _kSubtitleFontSize),
                                 )
                               : Text(
                                   AppLocalizations.of(context)!.notSelected,
-                                  style: const TextStyle(fontSize: _kSubtitleFontSize),
+                                  style: const TextStyle(
+                                      fontSize: _kSubtitleFontSize),
                                 ),
                           trailing: _leftToRightApp != null
                               ? Row(
@@ -269,13 +293,14 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                           subtitle: _rightToLeftApp != null &&
                                   _appInfoCache.containsKey(_rightToLeftApp!)
                               ? Text(
-                                  _appInfoCache[_rightToLeftApp!]!.name,
+                                  _appInfoCache[_rightToLeftApp!]!.displayName,
                                   style: const TextStyle(
                                       fontSize: _kSubtitleFontSize),
                                 )
                               : Text(
                                   AppLocalizations.of(context)!.notSelected,
-                                  style: const TextStyle(fontSize: _kSubtitleFontSize),
+                                  style: const TextStyle(
+                                      fontSize: _kSubtitleFontSize),
                                 ),
                           trailing: _rightToLeftApp != null
                               ? Row(
@@ -332,6 +357,13 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh app list when dependencies change to show updated custom names
+    _refreshAppsWithCustomNames();
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -350,8 +382,22 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
         '', // packageNamePrefix
       );
 
-      final appInfos = installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
-      appInfos.sort((a, b) => a.name.compareTo(b.name));
+      final appInfos =
+          installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
+
+      // Load custom names for all apps
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+
+      for (final app in appInfos) {
+        final customName = customNames[app.packageName];
+        if (customName != null) {
+          final index = appInfos.indexOf(app);
+          appInfos[index] = app.copyWith(customName: customName);
+        }
+      }
+
+      appInfos.sort((a, b) => a.displayName.compareTo(b.displayName));
 
       if (mounted) {
         setState(() {
@@ -377,11 +423,32 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
         _filteredApps = List.from(_apps);
       } else {
         _filteredApps = _apps
-            .where(
-                (app) => app.name.toLowerCase().contains(query.toLowerCase()))
+            .where((app) =>
+                app.displayName.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
+  }
+
+  /// Refreshes the app list with updated custom names
+  void _refreshAppsWithCustomNames() {
+    // Load custom names for all apps
+    final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+    final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+
+    for (int i = 0; i < _apps.length; i++) {
+      final app = _apps[i];
+      final customName = customNames[app.packageName];
+      if (customName != null) {
+        _apps[i] = app.copyWith(customName: customName);
+      } else {
+        _apps[i] = app.copyWith(customName: null);
+      }
+    }
+
+    // Re-sort and re-filter
+    _apps.sort((a, b) => a.displayName.compareTo(b.displayName));
+    _filterApps(_searchController.text);
   }
 
   @override
@@ -470,7 +537,7 @@ class _GestureAppSelectionScreenState extends State<GestureAppSelectionScreen> {
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              app.name,
+                                              app.displayName,
                                               style: const TextStyle(
                                                 fontSize: _kFontSize,
                                                 fontWeight: FontWeight.bold,

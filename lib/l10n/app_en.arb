@@ -11,14 +11,24 @@
     "description": "Title for the settings screen"
   },
 
+  "pressSettingsButtonToStart": "Press the settings button to start",
+  "@pressSettingsButtonToStart": {
+    "description": "content for initial text"
+  },
+
   "numberOfApps": "Number of apps",
   "@numberOfApps": {
     "description": "Label for number of apps setting"
   },
 
-  "showDateTimeAndBattery": "Show date, time and battery",
-  "@showDateTimeAndBattery": {
-    "description": "Label for date time and battery setting"
+  "back": "Back",
+  "@back": {
+    "description": "Label for back"
+  },
+
+  "showInformationPanel": "Show information panel at top",
+  "@showInformationPanel": {
+    "description": "Label for showing information panel"
   },
 
   "searchApps": "Search apps",
@@ -154,6 +164,31 @@
     "description": "Title for create folder dialog"
   },
 
+  "renameApp": "Rename App",
+  "@renameApp": {
+    "description": "Title for rename app dialog"
+  },
+
+  "moveToFolder": "Move to Folder",
+  "@moveToFolder": {
+    "description": "Title for move to folder dialog"
+  },
+
+  "noOtherFoldersAvailable": "No other folders available to move this app to.",
+  "@noOtherFoldersAvailable": {
+    "description": "content for move to folder dialog"
+  },
+
+  "selectFolder": "Select Folder",
+  "@selectFolder": {
+    "description": "Title for folder selection dialog"
+  },
+
+  "resetAppName": "Reset App Name",
+  "@resetAppName": {
+    "description": "Title for reset app name option"
+  },
+
   "folderName": "Folder Name",
   "@folderName": {
     "description": "Label for folder name input"
@@ -204,19 +239,9 @@
     "description": "Title for gesture settings screen"
   },
 
-  "enableSearchGestures": "Enable search gesture",
-  "@enableSearchGestures": {
-    "description": "Label for enabling search gesture"
-  },
-
   "swipeUp": "Swipe Up",
   "@swipeUp": {
     "description": "Label for swipe up gesture"
-  },
-
-  "swipeDown": "Swipe Down",
-  "@swipeDown": {
-    "description": "Label for swipe down gesture"
   },
 
   "swipeLeft": "Swipe Left",

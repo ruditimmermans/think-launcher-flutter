@@ -34,6 +34,13 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh app info when dependencies change to show updated custom names
+    _refreshAppInfoWithCustomNames();
+  }
+
+  @override
   void dispose() {
     _folderNameController.dispose();
     super.dispose();
@@ -43,7 +50,18 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     final futures = widget.selectedApps.map((packageName) async {
       try {
         final app = await InstalledApps.getAppInfo(packageName, null);
-        return AppInfo.fromInstalledApps(app);
+        final appInfo = AppInfo.fromInstalledApps(app);
+
+        // Load custom name if exists
+        final customNamesJson =
+            widget.prefs.getString('customAppNames') ?? '{}';
+        final customNames =
+            Map<String, String>.from(jsonDecode(customNamesJson));
+        final customName = customNames[packageName];
+
+        return customName != null
+            ? appInfo.copyWith(customName: customName)
+            : appInfo;
       } catch (e) {
         debugPrint('Error loading app info: $e');
         return null;
@@ -54,8 +72,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     if (mounted) {
       setState(() {
         _appInfoCache = {
-          for (var app in apps.whereType<AppInfo>())
-            app.packageName: app
+          for (var app in apps.whereType<AppInfo>()) app.packageName: app
         };
         _isLoading = false;
       });
@@ -75,6 +92,25 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
   Future<void> _saveFolders() async {
     final encoded = jsonEncode(_folders.map((f) => f.toJson()).toList());
     await widget.prefs.setString('folders', encoded);
+  }
+
+  /// Refreshes app info with updated custom names
+  void _refreshAppInfoWithCustomNames() {
+    // Load custom names for all apps
+    final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+    final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+
+    for (final packageName in _appInfoCache.keys) {
+      final app = _appInfoCache[packageName]!;
+      final customName = customNames[packageName];
+      if (customName != null) {
+        _appInfoCache[packageName] = app.copyWith(customName: customName);
+      } else {
+        _appInfoCache[packageName] = app.copyWith(customName: null);
+      }
+    }
+
+    setState(() {});
   }
 
   void _createFolder() {
@@ -169,7 +205,8 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.deleteFolder),
-        content: Text(AppLocalizations.of(context)!.deleteFolderConfirm(folder.name)),
+        content: Text(
+            AppLocalizations.of(context)!.deleteFolderConfirm(folder.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -201,7 +238,8 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)!.manageAppsInFolder(folder.name)),
+          title: Text(
+              AppLocalizations.of(context)!.manageAppsInFolder(folder.name)),
           content: SizedBox(
             width: double.maxFinite,
             height: MediaQuery.of(context).size.height * 0.4,
@@ -214,23 +252,30 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                 if (app == null) return const SizedBox();
 
                 final isInFolder = selectedApps.contains(packageName);
-                final isInOtherFolder = _folders.any((f) => 
-                  f.id != folder.id && f.appPackageNames.contains(packageName)
-                );
+                final isInOtherFolder = _folders.any((f) =>
+                    f.id != folder.id &&
+                    f.appPackageNames.contains(packageName));
+
+                // Use custom app name if available
+                String displayName = app.customName?.isNotEmpty == true
+                    ? app.customName!
+                    : app.name;
 
                 return CheckboxListTile(
-                  title: Text(app.name),
+                  title: Text(displayName),
                   value: isInFolder,
                   enabled: !isInOtherFolder,
-                  onChanged: isInOtherFolder ? null : (bool? value) {
-                    setDialogState(() {
-                      if (value == true) {
-                        selectedApps.add(packageName);
-                      } else {
-                        selectedApps.remove(packageName);
-                      }
-                    });
-                  },
+                  onChanged: isInOtherFolder
+                      ? null
+                      : (bool? value) {
+                          setDialogState(() {
+                            if (value == true) {
+                              selectedApps.add(packageName);
+                            } else {
+                              selectedApps.remove(packageName);
+                            }
+                          });
+                        },
                 );
               },
             ),
@@ -245,7 +290,8 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                 setState(() {
                   final index = _folders.indexWhere((f) => f.id == folder.id);
                   if (index != -1) {
-                    _folders[index] = folder.copyWith(appPackageNames: selectedApps);
+                    _folders[index] =
+                        folder.copyWith(appPackageNames: selectedApps);
                   }
                 });
                 _saveFolders();
@@ -291,7 +337,8 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                     return ListTile(
                       leading: const Icon(Icons.folder),
                       title: Text(folder.name),
-                      subtitle: Text(AppLocalizations.of(context)!.appsInFolder(folder.appPackageNames.length)),
+                      subtitle: Text(AppLocalizations.of(context)!
+                          .appsInFolder(folder.appPackageNames.length)),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

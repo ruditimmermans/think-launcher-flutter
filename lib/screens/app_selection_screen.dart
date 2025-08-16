@@ -9,12 +9,10 @@ class AppSelectionScreen extends StatefulWidget {
   final SharedPreferences prefs;
   final List<String> selectedApps;
 
-
   const AppSelectionScreen({
     super.key,
     required this.prefs,
     required this.selectedApps,
-
   });
 
   @override
@@ -53,7 +51,8 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
         '', // packageNamePrefix
       );
 
-      final appInfos = installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
+      final appInfos =
+          installedApps.map((app) => AppInfo.fromInstalledApps(app)).toList();
       appInfos.sort((a, b) => a.name.compareTo(b.name));
 
       if (mounted) {
@@ -112,6 +111,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context, widget.selectedApps),
+              tooltip: AppLocalizations.of(context)!.cancel,
             ),
           ),
           body: Column(
@@ -159,6 +159,11 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                         final isSelected =
                             widget.selectedApps.contains(app.packageName);
 
+                        // Use custom app name if available
+                        String displayName = app.customName?.isNotEmpty == true
+                            ? app.customName!
+                            : app.name;
+
                         return Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -173,7 +178,7 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      app.name,
+                                      displayName,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,

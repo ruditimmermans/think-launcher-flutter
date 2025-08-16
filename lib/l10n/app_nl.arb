@@ -11,14 +11,24 @@
     "description": "Title for the settings screen"
   },
 
+  "pressSettingsButtonToStart": "Druk op de instellingenknop om te starten",
+  "@pressSettingsButtonToStart": {
+    "description": "content for initial text"
+  },
+
   "numberOfApps": "Aantal apps",
   "@numberOfApps": {
     "description": "Label for number of apps setting"
   },
 
-  "showDateTimeAndBattery": "Toon datum, tijd en batterij",
-  "@showDateTimeAndBattery": {
-    "description": "Label for date time and battery setting"
+  "back": "Rug",
+  "@back": {
+    "description": "Label for back"
+  },
+
+  "showInformationPanel": "Informatiepaneel bovenaan weergeven",
+  "@showInformationPanel": {
+    "description": "Label for showing information panel"
   },
 
   "searchApps": "Zoek apps",
@@ -154,6 +164,31 @@
     "description": "Title for create folder dialog"
   },
 
+  "renameApp": "App hernoemen",
+  "@renameApp": {
+    "description": "Title for rename app dialog"
+  },
+
+  "moveToFolder": "Verplaats naar map",
+  "@moveToFolder": {
+    "description": "Title for move to folder dialog"
+  },
+
+  "noOtherFoldersAvailable": "Er zijn geen andere mappen beschikbaar om deze app naartoe te verplaatsen.",
+  "@noOtherFoldersAvailable": {
+    "description": "content for move to folder dialog"
+  },
+
+  "selectFolder": "Selecteer map",
+  "@selectFolder": {
+    "description": "Title for folder selection dialog"
+  },
+
+  "resetAppName": "App-naam resetten",
+  "@resetAppName": {
+    "description": "Title for reset app name option"
+  },
+
   "folderName": "Mapnaam",
   "@folderName": {
     "description": "Label for folder name input"
@@ -204,19 +239,9 @@
     "description": "Title for gesture settings screen"
   },
 
-  "enableSearchGestures": "Zoekgebaar inschakelen",
-  "@enableSearchGestures": {
-    "description": "Label for enabling search gesture"
-  },
-
   "swipeUp": "Omhoog vegen",
   "@swipeUp": {
     "description": "Label for swipe up gesture"
-  },
-
-  "swipeDown": "Omlaag vegen",
-  "@swipeDown": {
-    "description": "Label for swipe down gesture"
   },
 
   "swipeLeft": "Links vegen",

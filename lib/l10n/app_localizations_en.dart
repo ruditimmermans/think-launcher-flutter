@@ -15,10 +15,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
+  String get pressSettingsButtonToStart => 'Press the settings button to start';
+
+  @override
   String get numberOfApps => 'Number of apps';
 
   @override
-  String get showDateTimeAndBattery => 'Show date, time and battery';
+  String get back => 'Back';
+
+  @override
+  String get showInformationPanel => 'Show information panel at top';
 
   @override
   String get searchApps => 'Search apps';
@@ -57,6 +63,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String appsSelected(int count, int total) {
     return '$count of $total apps selected';
   }
+
+  @override
+  String get reorderAppsAndFolders => 'Reorder apps and folders';
+
+  @override
+  String get reorderItems => 'Reorder items';
 
   @override
   String get reorderApps => 'Reorder apps';
@@ -98,6 +110,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createFolder => 'Create Folder';
 
   @override
+  String get renameApp => 'Rename App';
+
+  @override
+  String get moveToFolder => 'Move to Folder';
+
+  @override
+  String get noOtherFoldersAvailable => 'No other folders available to move this app to.';
+
+  @override
+  String get selectFolder => 'Select Folder';
+
+  @override
+  String get resetAppName => 'Reset App Name';
+
+  @override
   String get folderName => 'Folder Name';
 
   @override
@@ -126,13 +153,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gestureSettings => 'Gesture Settings';
 
   @override
-  String get enableSearchGestures => 'Enable search gesture';
-
-  @override
   String get swipeUp => 'Swipe Up';
-
-  @override
-  String get swipeDown => 'Swipe Down';
 
   @override
   String get swipeLeft => 'Swipe Left';

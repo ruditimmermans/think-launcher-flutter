@@ -3,6 +3,9 @@ class AppDialogOptions {
   static const String info = 'info';
   static const String uninstall = 'uninstall';
   static const String createFolder = 'create_folder';
+  static const String rename = 'rename';
+  static const String moveToFolder = 'move_to_folder';
+  static const String resetAppName = 'reset_app_name';
 }
 
 /// Constants for folder dialog options

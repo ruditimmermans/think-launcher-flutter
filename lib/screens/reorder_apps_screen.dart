@@ -37,6 +37,13 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
     _preloadAppInfo();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh app info when dependencies change to show updated custom names
+    _refreshAppInfoWithCustomNames();
+  }
+
   void _loadFolders() {
     final foldersJson = widget.prefs.getString('folders');
     if (foldersJson != null) {
@@ -45,17 +52,67 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
     }
   }
 
+  /// Refreshes app info with updated custom names
+  void _refreshAppInfoWithCustomNames() {
+    // Load custom names for all apps
+    final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+    final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+
+    for (final packageName in _appInfoCache.keys) {
+      final app = _appInfoCache[packageName]!;
+      final customName = customNames[packageName];
+      if (customName != null) {
+        _appInfoCache[packageName] = app.copyWith(customName: customName);
+      } else {
+        _appInfoCache[packageName] = app.copyWith(customName: null);
+      }
+    }
+
+    // Rebuild items with updated app info
+    final appPackageNames =
+        widget.folder?.appPackageNames ?? widget.selectedApps ?? [];
+    if (widget.folder != null) {
+      setState(() {
+        _items = appPackageNames
+            .where((packageName) => _appInfoCache.containsKey(packageName))
+            .map((packageName) =>
+                ReorderableItem.fromApp(_appInfoCache[packageName]!))
+            .toList();
+      });
+    } else if (widget.selectedApps != null) {
+      setState(() {
+        _items = appPackageNames
+            .where((packageName) => _appInfoCache.containsKey(packageName))
+            .map((packageName) =>
+                ReorderableItem.fromApp(_appInfoCache[packageName]!))
+            .toList();
+      });
+    }
+  }
+
   Future<void> _preloadAppInfo() async {
-    final appPackageNames = widget.folder?.appPackageNames ?? widget.selectedApps ?? [];
-    
+    final appPackageNames =
+        widget.folder?.appPackageNames ?? widget.selectedApps ?? [];
+
     for (final packageName in appPackageNames) {
       if (!_appInfoCache.containsKey(packageName)) {
         try {
           final app = await InstalledApps.getAppInfo(packageName, null);
           if (mounted) {
             final appInfo = AppInfo.fromInstalledApps(app);
+
+            // Load custom name if exists
+            final customNamesJson =
+                widget.prefs.getString('customAppNames') ?? '{}';
+            final customNames =
+                Map<String, String>.from(jsonDecode(customNamesJson));
+            final customName = customNames[packageName];
+
+            final finalAppInfo = customName != null
+                ? appInfo.copyWith(customName: customName)
+                : appInfo;
             setState(() {
-              _appInfoCache[packageName] = appInfo;
+              _appInfoCache[packageName] = finalAppInfo;
             });
           }
         } catch (e) {
@@ -69,7 +126,8 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
       setState(() {
         _items = appPackageNames
             .where((packageName) => _appInfoCache.containsKey(packageName))
-            .map((packageName) => ReorderableItem.fromApp(_appInfoCache[packageName]!))
+            .map((packageName) =>
+                ReorderableItem.fromApp(_appInfoCache[packageName]!))
             .toList();
       });
     } else if (widget.selectedApps != null) {
@@ -77,7 +135,8 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
       setState(() {
         _items = appPackageNames
             .where((packageName) => _appInfoCache.containsKey(packageName))
-            .map((packageName) => ReorderableItem.fromApp(_appInfoCache[packageName]!))
+            .map((packageName) =>
+                ReorderableItem.fromApp(_appInfoCache[packageName]!))
             .toList();
       });
     } else {
@@ -87,8 +146,10 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
           ..._folders.map((f) => ReorderableItem.fromFolder(f)),
           ...appPackageNames
               .where((packageName) => _appInfoCache.containsKey(packageName))
-              .map((packageName) => ReorderableItem.fromApp(_appInfoCache[packageName]!))
-              .where((item) => !_folders.any((f) => f.appPackageNames.contains(item.id)))
+              .map((packageName) =>
+                  ReorderableItem.fromApp(_appInfoCache[packageName]!))
+              .where((item) =>
+                  !_folders.any((f) => f.appPackageNames.contains(item.id)))
         ];
       });
     }
@@ -106,11 +167,13 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
           .where((item) => item.type == ReorderableItemType.app)
           .map((item) => item.id)
           .toList();
-      
-      final updatedFolder = widget.folder!.copyWith(appPackageNames: appPackageNames);
-      final folders = (jsonDecode(widget.prefs.getString('folders') ?? '[]') as List)
-          .map((f) => Folder.fromJson(f))
-          .toList();
+
+      final updatedFolder =
+          widget.folder!.copyWith(appPackageNames: appPackageNames);
+      final folders =
+          (jsonDecode(widget.prefs.getString('folders') ?? '[]') as List)
+              .map((f) => Folder.fromJson(f))
+              .toList();
 
       final index = folders.indexWhere((f) => f.id == widget.folder!.id);
       if (index != -1) {
@@ -120,20 +183,18 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
       }
     } else if (widget.selectedApps != null) {
       // Save reordered apps from settings
-      final appPackageNames = _items
-          .map((item) => item.id)
-          .toList();
+      final appPackageNames = _items.map((item) => item.id).toList();
       widget.prefs.setStringList('selectedApps', appPackageNames);
     } else {
       // Save main screen order while preserving folder contents
-      final currentFolders = (jsonDecode(widget.prefs.getString('folders') ?? '[]') as List)
-          .map((f) => Folder.fromJson(f))
-          .toList();
+      final currentFolders =
+          (jsonDecode(widget.prefs.getString('folders') ?? '[]') as List)
+              .map((f) => Folder.fromJson(f))
+              .toList();
 
       // Create a map of folder ID to its contents
       final folderContents = {
-        for (var folder in currentFolders)
-          folder.id: folder.appPackageNames
+        for (var folder in currentFolders) folder.id: folder.appPackageNames
       };
 
       // Get the new folder order while preserving their contents
@@ -143,14 +204,15 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                 appPackageNames: folderContents[item.folder!.id] ?? [],
               ))
           .toList();
-      
+
       // Get unorganized apps
       final appPackageNames = _items
           .where((item) => item.type == ReorderableItemType.app)
           .map((item) => item.id)
           .toList();
 
-      final foldersJson = jsonEncode(reorderedFolders.map((f) => f.toJson()).toList());
+      final foldersJson =
+          jsonEncode(reorderedFolders.map((f) => f.toJson()).toList());
       widget.prefs.setString('folders', foldersJson);
       widget.prefs.setStringList('selectedApps', appPackageNames);
     }
@@ -169,12 +231,13 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.folder != null 
-          ? AppLocalizations.of(context)!.reorderAppsInFolder 
-          : AppLocalizations.of(context)!.reorderApps),
+        title: Text(widget.folder != null
+            ? AppLocalizations.of(context)!.reorderAppsInFolder
+            : AppLocalizations.of(context)!.reorderApps),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
+          tooltip: AppLocalizations.of(context)!.back,
         ),
         actions: [
           if (_isSaving)
@@ -195,17 +258,33 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
         itemCount: _items.length,
         itemBuilder: (context, index) {
           final item = _items[index];
-          
+
           Widget? leadingIcon;
           if (item.type == ReorderableItemType.folder) {
             leadingIcon = const Icon(Icons.folder, color: Colors.grey);
           } else if (item.appInfo?.icon != null) {
             leadingIcon = ColorFiltered(
               colorFilter: const ColorFilter.matrix([
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0, 0, 0, 1, 0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
               ]),
               child: Image.memory(
                 item.appInfo!.icon!,
@@ -213,6 +292,17 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                 height: 24,
               ),
             );
+          }
+
+          // Use custom app name if available
+          String displayName = item.name;
+          if (item.type == ReorderableItemType.app && item.appInfo != null) {
+            displayName = item.appInfo!.customName?.isNotEmpty == true
+                ? item.appInfo!.customName!
+                : item.appInfo!.name;
+          }
+          if (item.type == ReorderableItemType.folder && item.folder != null) {
+            displayName = item.folder!.name;
           }
 
           return ListTile(
@@ -225,7 +315,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                 if (leadingIcon != null) leadingIcon,
               ],
             ),
-            title: Text(item.name),
+            title: Text(displayName),
           );
         },
         onReorder: (oldIndex, newIndex) async {

@@ -14,6 +14,7 @@ class AppInfo {
   final int versionCode;
   final BuiltWith builtWith;
   final int installedTimestamp;
+  final String? customName;
 
   AppInfo({
     required this.name,
@@ -23,7 +24,34 @@ class AppInfo {
     required this.versionCode,
     required this.builtWith,
     required this.installedTimestamp,
+    this.customName,
   });
+
+  /// Returns the display name - custom name if set, otherwise system name
+  String get displayName => customName ?? name;
+
+  /// Creates a copy of this AppInfo with updated fields
+  AppInfo copyWith({
+    String? name,
+    Uint8List? icon,
+    String? packageName,
+    String? versionName,
+    int? versionCode,
+    BuiltWith? builtWith,
+    int? installedTimestamp,
+    String? customName,
+  }) {
+    return AppInfo(
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      packageName: packageName ?? this.packageName,
+      versionName: versionName ?? this.versionName,
+      versionCode: versionCode ?? this.versionCode,
+      builtWith: builtWith ?? this.builtWith,
+      installedTimestamp: installedTimestamp ?? this.installedTimestamp,
+      customName: customName ?? this.customName,
+    );
+  }
 
   factory AppInfo.fromInstalledApps(dynamic app) {
     return AppInfo(
@@ -52,6 +80,7 @@ class AppInfo {
         orElse: () => BuiltWith.unknown,
       ),
       installedTimestamp: json['installedTimestamp'] as int,
+      customName: json['customName'] as String?,
     );
   }
 
@@ -64,6 +93,7 @@ class AppInfo {
       'versionCode': versionCode,
       'builtWith': builtWith.toString().split('.').last,
       'installedTimestamp': installedTimestamp,
+      'customName': customName,
     };
   }
 }

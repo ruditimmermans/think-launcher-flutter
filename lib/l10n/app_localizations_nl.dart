@@ -15,10 +15,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settingsTitle => 'Instellingen';
 
   @override
+  String get pressSettingsButtonToStart => 'Druk op de instellingenknop om te starten';
+
+  @override
   String get numberOfApps => 'Aantal apps';
 
   @override
-  String get showDateTimeAndBattery => 'Toon datum, tijd en batterij';
+  String get back => 'Rug';
+
+  @override
+  String get showInformationPanel => 'Informatiepaneel bovenaan weergeven';
 
   @override
   String get searchApps => 'Zoek apps';
@@ -57,6 +63,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String appsSelected(int count, int total) {
     return '$count van $total apps geselecteerd';
   }
+
+  @override
+  String get reorderAppsAndFolders => 'Apps en mappen herschikken';
+
+  @override
+  String get reorderItems => 'Items herschikken';
 
   @override
   String get reorderApps => 'Apps herschikken';
@@ -98,6 +110,21 @@ class AppLocalizationsNl extends AppLocalizations {
   String get createFolder => 'Map maken';
 
   @override
+  String get renameApp => 'App hernoemen';
+
+  @override
+  String get moveToFolder => 'Verplaats naar map';
+
+  @override
+  String get noOtherFoldersAvailable => 'Er zijn geen andere mappen beschikbaar om deze app naartoe te verplaatsen.';
+
+  @override
+  String get selectFolder => 'Selecteer map';
+
+  @override
+  String get resetAppName => 'App-naam resetten';
+
+  @override
   String get folderName => 'Mapnaam';
 
   @override
@@ -126,13 +153,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get gestureSettings => 'Gebareninstellingen';
 
   @override
-  String get enableSearchGestures => 'Zoekgebaar inschakelen';
-
-  @override
   String get swipeUp => 'Omhoog vegen';
-
-  @override
-  String get swipeDown => 'Omlaag vegen';
 
   @override
   String get swipeLeft => 'Links vegen';

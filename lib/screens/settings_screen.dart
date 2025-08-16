@@ -175,7 +175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       // 1. Show date, time and battery
                       SwitchListTile(
                         title: Text(
-                          AppLocalizations.of(context)!.showDateTimeAndBattery,
+                          AppLocalizations.of(context)!.showInformationPanel,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
