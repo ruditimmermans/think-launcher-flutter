@@ -76,3 +76,6 @@ This project is licensed under the **MIT License**.
 You are free to use, modify, and distribute it, including for commercial purposes, as long as proper credit is given.
 
 [View full license](./LICENSE)
+
+## Fork 🍽️
+[MatiasDesuu/ThinkLauncher](https://github.com/MatiasDesuu/ThinkLauncher)
