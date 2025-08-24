@@ -109,7 +109,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _setupBatteryListener();
     _setupNotificationListener();
     _setupWeatherService();
-    // Clean up any uninstalled apps at startup
     _cleanupUninstalledApps();
   }
 
@@ -134,17 +133,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   void _setupWeatherService() {
     _weatherService = WeatherService(
-        apiKey: const String.fromEnvironment('OPENWEATHER_API_KEY'));
+      apiKey: const String.fromEnvironment('OPENWEATHER_API_KEY'),
+    );
     _updateWeather();
   }
 
   void _setupTimers() {
-    _dateTimeTimer =
-        Timer.periodic(const Duration(minutes: 1), (_) => _updateDateTime());
-    _batteryTimer =
-        Timer.periodic(const Duration(minutes: 5), (_) => _updateBattery());
-    _weatherTimer =
-        Timer.periodic(const Duration(minutes: 30), (_) => _updateWeather());
+    _dateTimeTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _updateDateTime(),
+    );
+    _batteryTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _updateBattery(),
+    );
+    _weatherTimer = Timer.periodic(
+      const Duration(minutes: 30),
+      (_) => _updateWeather(),
+    );
   }
 
   void _setupBatteryListener() {
@@ -242,7 +248,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // First check if app is still installed
       final isInstalled = await InstalledApps.isAppInstalled(packageName);
       if (isInstalled == false) {
-        debugPrint('App $packageName is no longer installed');
         await _handleUninstalledApp(packageName);
         return null;
       }
@@ -352,8 +357,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       // Save updated folders if changed
       if (foldersChanged) {
-        final foldersJson =
-            jsonEncode(_folders.map((f) => f.toJson()).toList());
+        final foldersJson = jsonEncode(
+          _folders.map((f) => f.toJson()).toList(),
+        );
         widget.prefs.setString('folders', foldersJson);
       }
     });
@@ -392,8 +398,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   /// Cleans up data for uninstalled apps from all storage locations.
   /// This ensures consistency across the app's state.
-  Future<void> _cleanupUninstalledApps(
-      [List<String>? knownUninstalledApps]) async {
+  Future<void> _cleanupUninstalledApps([
+    List<String>? knownUninstalledApps,
+  ]) async {
     try {
       final uninstalledApps = knownUninstalledApps ?? <String>[];
 
@@ -409,8 +416,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       if (uninstalledApps.isEmpty) return;
 
-      debugPrint('Cleaning up ${uninstalledApps.length} uninstalled apps');
-
       // Update all state in a single setState call
       setState(() {
         // 1. Clean up selected apps
@@ -423,10 +428,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
 
         // 3. Clean up custom names
-        final customNamesJson =
-            widget.prefs.getString('customAppNames') ?? '{}';
-        final customNames =
-            Map<String, String>.from(jsonDecode(customNamesJson));
+        final customNamesJson = widget.prefs.getString('customAppNames');
+        final customNames = Map<String, String>.from(
+          jsonDecode(customNamesJson ?? '{}'),
+        );
         customNames.removeWhere((key, _) => uninstalledApps.contains(key));
         widget.prefs.setString('customAppNames', jsonEncode(customNames));
 
@@ -454,8 +459,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
         // 6. Save updated folders if changed
         if (foldersChanged) {
-          final foldersJson =
-              jsonEncode(_folders.map((f) => f.toJson()).toList());
+          final foldersJson = jsonEncode(
+            _folders.map((f) => f.toJson()).toList(),
+          );
           widget.prefs.setString('folders', foldersJson);
         }
       });
@@ -504,9 +510,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
       };
-
-      final selectedApps = settings['selectedApps'] as List<String>;
-      debugPrint('Loading settings - Selected apps: ${selectedApps.length}');
 
       // Check if any settings have changed
       final hasChanges = _numApps != settings['numApps'] ||
@@ -1417,69 +1420,61 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       if (_showDateTime)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
                               _currentTime,
                               textAlign: TextAlign.left,
                               style: const TextStyle(
-                                fontSize: 48,
+                                fontSize: 46,
                                 fontWeight: FontWeight.normal,
                               ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: Text(
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4.0),
+                              child: Row(
+                                children: [
+                                  Text(
                                     _currentDate,
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.normal,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 2.25),
-                                  child: Row(
-                                    children: [
-                                      Icon(_getBatteryIcon(_batteryLevel),
-                                          size: 18),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '$_batteryLevel%',
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                      ),
-                                    ],
+                                  const Text(
+                                    ' | ',
+                                    style: TextStyle(fontSize: 18),
                                   ),
-                                ),
-                                if (_weatherInfo != null) ...[
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Image.network(
-                                        _weatherInfo!.iconUrl,
-                                        width: 24,
-                                        height: 24,
-                                        fit: BoxFit.fill,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${_weatherInfo!.temperature.round()}°C',
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                      ),
-                                    ],
+                                  Icon(_getBatteryIcon(_batteryLevel),
+                                      size: 18),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$_batteryLevel%',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.normal,
+                                    ),
                                   ),
+                                  if (_weatherInfo != null) ...[
+                                    const Text(
+                                      ' | ',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    Image.network(
+                                      _weatherInfo!.iconUrl,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${_weatherInfo!.temperature.round()}°C',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ],
                         )
@@ -1488,13 +1483,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.settings, size: 28),
+                            icon: const Icon(Icons.settings, size: 26),
                             onPressed: _openSettings,
                             padding: EdgeInsets.zero,
                           ),
                           if (_showSearchButton)
                             IconButton(
-                              icon: const Icon(Icons.search, size: 28),
+                              icon: const Icon(Icons.search, size: 26),
                               onPressed: _openSearch,
                               padding: EdgeInsets.zero,
                             ),

@@ -8,13 +8,16 @@ class WeatherService {
   final String apiKey;
   final String baseUrl = 'https://api.openweathermap.org/data/2.5';
 
+  // Cache variables
+  WeatherInfo? _cachedWeather;
+  DateTime? _lastFetchTime;
+  final Duration cacheDuration = const Duration(seconds: 120);
+
   WeatherService({required this.apiKey});
 
   Future<Position> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Location services are disabled.');
-    }
+    if (!serviceEnabled) throw Exception('Location services are disabled.');
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -33,11 +36,25 @@ class WeatherService {
 
   Future<WeatherInfo> getCurrentWeather() async {
     try {
+      // Check cache first
+      if (_cachedWeather != null && _lastFetchTime != null) {
+        final timeSinceFetch = DateTime.now().difference(_lastFetchTime!);
+        if (timeSinceFetch < cacheDuration) return _cachedWeather!;
+      }
+
+      // Fetch fresh data
       final position = await _getCurrentLocation();
-      final response = await http.get(Uri.parse('$baseUrl/weather?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric'));
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/weather?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric',
+        ),
+      );
 
       if (response.statusCode == 200) {
-        return WeatherInfo.fromJson(jsonDecode(response.body));
+        final weather = WeatherInfo.fromJson(jsonDecode(response.body));
+        _cachedWeather = weather;
+        _lastFetchTime = DateTime.now();
+        return weather;
       } else {
         throw Exception('Failed to load weather data');
       }

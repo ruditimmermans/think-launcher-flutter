@@ -108,17 +108,16 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
   Future<void> _selectApp(String packageName) async {
     final newSelectedApps = List<String>.from(widget.selectedApps);
     final isDeselecting = newSelectedApps.contains(packageName);
-    
+
     if (isDeselecting) {
       newSelectedApps.remove(packageName);
-      
+
       // Clean up folders when app is deselected
       final foldersJson = widget.prefs.getString('folders') ?? '[]';
       final List<dynamic> decodedFolders = jsonDecode(foldersJson);
       final folders = decodedFolders.map((f) => Folder.fromJson(f)).toList();
-      
       bool foldersChanged = false;
-      
+
       // Remove app from any folders it's in
       for (int i = 0; i < folders.length; i++) {
         final folder = folders[i];
@@ -131,19 +130,21 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
           foldersChanged = true;
         }
       }
-      
+
       // Remove empty folders
       folders.removeWhere((folder) => folder.appPackageNames.isEmpty);
-      
+
       // Save updated folders if changed
       if (foldersChanged) {
-        final updatedFoldersJson = jsonEncode(folders.map((f) => f.toJson()).toList());
+        final updatedFoldersJson = jsonEncode(
+          folders.map((f) => f.toJson()).toList(),
+        );
         await widget.prefs.setString('folders', updatedFoldersJson);
       }
     } else {
       newSelectedApps.add(packageName);
     }
-    
+
     await _updateSelectedApps(newSelectedApps);
   }
 
@@ -201,7 +202,9 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                         const SizedBox(width: 8),
                         TextButton(
                           onPressed: _deselectAll,
-                          child: Text(AppLocalizations.of(context)!.deselectAll),
+                          child: Text(
+                            AppLocalizations.of(context)!.deselectAll,
+                          ),
                         ),
                       ],
                     ),
@@ -226,8 +229,9 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                   ),
                   onChanged: _filterApps,
                 ),
@@ -265,7 +269,9 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                             hoverColor: Colors.transparent,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8.0),
+                                horizontal: 16.0,
+                                vertical: 8.0,
+                              ),
                               child: Row(
                                 children: [
                                   Expanded(

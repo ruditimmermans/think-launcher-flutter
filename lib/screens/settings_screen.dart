@@ -38,7 +38,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       showDateTime = widget.prefs.getBool('showDateTime') ?? true;
       showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
-
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
       appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
@@ -56,7 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       await widget.prefs.setBool('showDateTime', showDateTime);
       await widget.prefs.setBool('showSearchButton', showSearchButton);
-
       await widget.prefs.setDouble('appFontSize', appFontSize);
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);

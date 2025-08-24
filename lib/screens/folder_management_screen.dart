@@ -36,7 +36,6 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh app info when dependencies change to show updated custom names
     _refreshAppInfoWithCustomNames();
   }
 
@@ -53,10 +52,13 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
         final appInfo = AppInfo.fromInstalledApps(app);
 
         // Load custom name if exists
-        final customNamesJson =
-            widget.prefs.getString('customAppNames') ?? '{}';
-        final customNames =
-            Map<String, String>.from(jsonDecode(customNamesJson));
+        final customNamesJson = widget.prefs.getString(
+              'customAppNames',
+            ) ??
+            '{}';
+        final customNames = Map<String, String>.from(
+          jsonDecode(customNamesJson),
+        );
         final customName = customNames[packageName];
 
         return customName != null

@@ -24,14 +24,13 @@
 
 ## Screenshots 📷
 
-<p align="center">
-  <img src="assets/home_screen.png" alt="Home" width="200"/>
-  <img src="assets/folder_options.png" alt="Folder Options" width="200"/>
-  <img src="assets/app_options.png" alt="App Options" width="200"/>
-  <img src="assets/settings_screen.png" alt="Settings" width="200"/>
-  <img src="assets/manage_folder_screen.png" alt="Columns View" width="200"/>
-  <img src="assets/gestures_screen.png" alt="Gestures" width="200"/>
-</p>
+| Home                            | Folder Options                               | App Options                            | Search                              |
+| ------------------------------- | -------------------------------------------- | -------------------------------------- | ----------------------------------- |
+| ![Home](assets/home_screen.png) | ![Folder Options](assets/folder_options.png) | ![App Options](assets/app_options.png) | ![Search](assets/search_screen.png) |
+
+| Settings                                | App Selection                                     | Manage Folder                                     | Gestures                                |
+| --------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | --------------------------------------- |
+| ![Settings](assets/settings_screen.png) | ![App Selection](assets/app_selection_screen.png) | ![Manage Folder](assets/manage_folder_screen.png) | ![Gestures](assets/gestures_screen.png) |
 
 ## Features ✨
 

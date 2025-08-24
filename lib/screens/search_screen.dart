@@ -35,12 +35,11 @@ class _AppCache {
     if (!_isInitialized) return true;
 
     try {
-      final currentApps =
-          await InstalledApps.getInstalledApps(
-            true, // excludeSystemApps
-            false, // withIcon
-            '', // packageNamePrefix
-          );
+      final currentApps = await InstalledApps.getInstalledApps(
+        false, // excludeSystemApps
+        false, // withIcon
+        '', // packageNamePrefix
+      );
       final currentPackageList =
           currentApps.map((app) => app.packageName).join(',');
       return currentPackageList != _lastPackageList;
@@ -118,12 +117,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _loadAndCacheApps() async {
     try {
-      final installedApps =
-          await InstalledApps.getInstalledApps(
-            true, // excludeSystemApps
-            false, // withIcon
-            '', // packageNamePrefix
-          );
+      final installedApps = await InstalledApps.getInstalledApps(
+        false, // excludeSystemApps
+        false, // withIcon
+        '', // packageNamePrefix
+      );
       if (!mounted) return;
 
       final apps = installedApps.map(AppInfo.fromInstalledApps).toList();
@@ -152,7 +150,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Error loading applications';
+        _errorMessage = AppLocalizations.of(context)!.errorLoadingApps;
         _isLoading = false;
       });
     }
@@ -255,8 +253,10 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_errorMessage != null) {
       return Padding(
         padding: _kSearchPadding,
-        child:
-            Text(_errorMessage!, style: const TextStyle(color: Colors.black)),
+        child: Text(
+          _errorMessage!,
+          style: const TextStyle(color: Colors.black),
+        ),
       );
     }
 
