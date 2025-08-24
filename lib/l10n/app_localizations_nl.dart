@@ -135,7 +135,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get reOrderApps => 'Apps opnieuw ordenen';
+  String get reOrderApps => 'Apps en mappen opnieuw ordenen';
 
   @override
   String get errorSavingSettings => 'Fout bij opslaan van instellingen';

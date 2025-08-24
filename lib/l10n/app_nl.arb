@@ -274,7 +274,7 @@
     "description": "Button text for removing apps from folder"
   },
 
-  "reorderAppsInFolder": "Map apps opnieuw ordenen",
+  "reorderAppsInFolder": "Apps opnieuw ordenen",
   "@reorderAppsInFolder": {
     "description": "Button text for reordering apps in folder"
   },
