@@ -33,6 +33,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   // Cache for app information
   static final Map<String, AppInfo> _appInfoCache = {};
+  final ScrollController _scrollController = ScrollController();
 
   // State variables
   late List<String> _selectedApps;
@@ -213,7 +214,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Clean up uninstalled apps first
       _cleanupUninstalledApps().then((_) {
         _loadData();
-
         // Refresh app info cache to get updated custom names
         _refreshAppInfoCache();
       });
@@ -781,9 +781,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         physics: _enableScroll
             ? const AlwaysScrollableScrollPhysics()
             : const NeverScrollableScrollPhysics(),
+        controller: _scrollController,
         children: items,
       ),
     );
+  }
+
+  void _scrollOnFolderExpand() {
+    try {
+      _scrollController.animateTo(
+        200,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeIn,
+      );
+    } catch (e) {
+      debugPrint('_scrollOnFolderExpand(): $e');
+    }
   }
 
   Future<void> _showFolderOptionsDialog(Folder folder) async {
@@ -926,6 +939,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               _expandedFolders.remove(folder.id);
             } else {
               _expandedFolders.add(folder.id);
+              _scrollOnFolderExpand();
             }
           });
         },
@@ -1348,7 +1362,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     app.icon!,
                     width: _appIconSize,
                     height: _appIconSize,
+                    cacheHeight: _appIconSize.toInt(),
+                    cacheWidth: _appIconSize.toInt(),
                     fit: BoxFit.cover,
+                    gaplessPlayback: true,
                   ),
                 ),
               ),
