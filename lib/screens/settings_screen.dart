@@ -24,6 +24,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double appIconSize = 35.0;
   bool enableScroll = true;
   bool showIcons = false;
+  bool colorMode = true;
+  bool wakeOnNotification = false;
   List<String> selectedApps = [];
   bool isLoading = false;
   String? errorMessage;
@@ -42,6 +44,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
       showIcons = widget.prefs.getBool('showIcons') ?? true;
+      colorMode = widget.prefs.getBool('colorMode') ?? true;
+      wakeOnNotification = widget.prefs.getBool('wakeOnNotification') ?? false;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
     });
   }
@@ -59,6 +63,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
       await widget.prefs.setBool('showIcons', showIcons);
+      await widget.prefs.setBool('colorMode', colorMode);
+      await widget.prefs.setBool('wakeOnNotification', wakeOnNotification);
       await widget.prefs.setStringList('selectedApps', selectedApps);
 
       // Update status bar visibility
@@ -237,7 +243,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 5. Show icons
+                      // 5. Color mode
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.colorMode,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: colorMode,
+                        onChanged: (value) {
+                          setState(() {
+                            colorMode = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+
+                      // 6. Show icons
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.showIcons,
@@ -255,7 +279,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 6. App font size
+                      // 7. Wake on notification
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.wakeOnNotification,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: wakeOnNotification,
+                        onChanged: (value) {
+                          setState(() {
+                            wakeOnNotification = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+
+                      // 8. App font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(

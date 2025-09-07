@@ -249,4 +249,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorUpdatingWeather => 'Error updating weather';
+
+  @override
+  String get colorMode => 'Color mode';
+
+  @override
+  String get wakeOnNotification => 'Wake on notification';
 }

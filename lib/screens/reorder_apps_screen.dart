@@ -26,6 +26,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
   String? _errorMessage;
   late double _appIconSize;
   late double _appFontSize;
+  late bool _colorMode;
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
   void _loadSettings() {
     _appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
     _appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
+    _colorMode = widget.prefs.getBool('colorMode') ?? true;
   }
 
   Future<void> _loadData() async {
@@ -399,36 +401,39 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
         size: _appIconSize * 0.7,
       );
     } else if (item.appInfo?.icon != null) {
-      leadingIcon = ColorFiltered(
-        colorFilter: const ColorFilter.matrix([
-          0.2126,
-          0.7152,
-          0.0722,
-          0,
-          0,
-          0.2126,
-          0.7152,
-          0.0722,
-          0,
-          0,
-          0.2126,
-          0.7152,
-          0.0722,
-          0,
-          0,
-          0,
-          0,
-          0,
-          1,
-          0,
-        ]),
-        child: Image.memory(
-          item.appInfo!.icon!,
-          width: _appIconSize,
-          height: _appIconSize,
-          fit: BoxFit.cover,
-        ),
+      final imageWidget = Image.memory(
+        item.appInfo!.icon!,
+        width: _appIconSize,
+        height: _appIconSize,
+        fit: BoxFit.cover,
       );
+      leadingIcon = _colorMode
+          ? imageWidget
+          : ColorFiltered(
+              colorFilter: const ColorFilter.matrix([
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+              ]),
+              child: imageWidget,
+            );
     }
 
     return Container(

@@ -550,6 +550,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error updating weather'**
   String get errorUpdatingWeather;
+
+  /// Toggle to show icons in full color instead of grayscale
+  ///
+  /// In en, this message translates to:
+  /// **'Color mode'**
+  String get colorMode;
+
+  /// Toggle to briefly wake the screen when a notification arrives
+  ///
+  /// In en, this message translates to:
+  /// **'Wake on notification'**
+  String get wakeOnNotification;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

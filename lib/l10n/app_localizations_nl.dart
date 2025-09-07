@@ -249,4 +249,10 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get errorUpdatingWeather => 'Fout bij bijwerken van het weer';
+
+  @override
+  String get colorMode => 'Kleurmodus';
+
+  @override
+  String get wakeOnNotification => 'Wakker worden met melding';
 }

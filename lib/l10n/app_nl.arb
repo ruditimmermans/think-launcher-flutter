@@ -418,4 +418,13 @@
   "@errorUpdatingWeather": {
     "description": "Error message when weather update fails"
   }
+  ,
+  "colorMode": "Kleurmodus",
+  "@colorMode": {
+    "description": "Schakelaar om pictogrammen in kleur te tonen in plaats van grijswaarden"
+  },
+  "wakeOnNotification": "Wakker worden met melding",
+  "@wakeOnNotification": {
+    "description": "Schakelaar om het scherm kort te activeren wanneer een melding binnenkomt"
+  }
 }

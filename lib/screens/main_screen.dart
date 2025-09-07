@@ -47,6 +47,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late double _appFontSize;
   late bool _enableScroll;
   late bool _showIcons;
+  late bool _colorMode;
   late String _currentTime;
   late String _currentDate;
   late int _batteryLevel;
@@ -57,6 +58,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
+
+  static const MethodChannel _wakeChannel = MethodChannel('com.desu.think_launcher/wake');
 
   void _saveNotifications() {
     final notificationsJson =
@@ -125,6 +128,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
     _enableScroll = widget.prefs.getBool('enableScroll') ?? true;
     _showIcons = widget.prefs.getBool('showIcons') ?? true;
+    _colorMode = widget.prefs.getBool('colorMode') ?? true;
 
     _appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
     _currentTime = _timeFormatter.format(DateTime.now());
@@ -182,7 +186,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
         _saveNotifications(); // Save notifications after any change
       });
+
+      // Wake screen briefly if enabled and this is an addition
+      final shouldWake = widget.prefs.getBool('wakeOnNotification') ?? false;
+      if (shouldWake && (event.hasRemoved != true)) {
+        _wakeScreen();
+      }
     });
+  }
+
+  Future<void> _wakeScreen() async {
+    try {
+      await _wakeChannel.invokeMethod('wakeScreen', {'seconds': 3});
+    } catch (_) {
+      // ignore failures
+    }
   }
 
   void _loadFolders() {
@@ -506,6 +524,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'appFontSize': prefs.getDouble('appFontSize') ?? 18.0,
         'enableScroll': prefs.getBool('enableScroll') ?? true,
         'showIcons': prefs.getBool('showIcons') ?? false,
+        'colorMode': prefs.getBool('colorMode') ?? true,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
@@ -518,6 +537,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _appFontSize != settings['appFontSize'] ||
           _enableScroll != settings['enableScroll'] ||
           _showIcons != settings['showIcons'] ||
+          _colorMode != settings['colorMode'] ||
           !listEquals(
               _selectedApps, settings['selectedApps'] as List<String>) ||
           _appIconSize != settings['appIconSize'];
@@ -531,6 +551,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _appFontSize = settings['appFontSize'] as double;
           _enableScroll = settings['enableScroll'] as bool;
           _showIcons = settings['showIcons'] as bool;
+          _colorMode = settings['colorMode'] as bool;
           _selectedApps = List.from(settings['selectedApps'] as List<String>);
           _appIconSize = settings['appIconSize'] as double;
         });
@@ -1350,24 +1371,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 color: Colors.white,
               ),
               child: ClipOval(
-                child: ColorFiltered(
-                  colorFilter: const ColorFilter.matrix([
-                    // Convert to grayscale using luminance values
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0, 0, 0, 1, 0,
-                  ]),
-                  child: Image.memory(
-                    app.icon!,
-                    width: _appIconSize,
-                    height: _appIconSize,
-                    cacheHeight: _appIconSize.toInt(),
-                    cacheWidth: _appIconSize.toInt(),
-                    fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                  ),
-                ),
+                child: _colorMode
+                    ? Image.memory(
+                        app.icon!,
+                        width: _appIconSize,
+                        height: _appIconSize,
+                        cacheHeight: _appIconSize.toInt(),
+                        cacheWidth: _appIconSize.toInt(),
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                      )
+                    : ColorFiltered(
+                        colorFilter: const ColorFilter.matrix([
+                          0.2126, 0.7152, 0.0722, 0, 0,
+                          0.2126, 0.7152, 0.0722, 0, 0,
+                          0.2126, 0.7152, 0.0722, 0, 0,
+                          0, 0, 0, 1, 0,
+                        ]),
+                        child: Image.memory(
+                          app.icon!,
+                          width: _appIconSize,
+                          height: _appIconSize,
+                          cacheHeight: _appIconSize.toInt(),
+                          cacheWidth: _appIconSize.toInt(),
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -1476,11 +1506,25 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                       ' | ',
                                       style: TextStyle(fontSize: 18),
                                     ),
-                                    Image.network(
-                                      _weatherInfo!.iconUrl,
-                                      width: 24,
-                                      height: 24,
-                                    ),
+                                    _colorMode
+                                        ? Image.network(
+                                            _weatherInfo!.iconUrl,
+                                            width: 24,
+                                            height: 24,
+                                          )
+                                        : ColorFiltered(
+                                            colorFilter: const ColorFilter.matrix([
+                                              0.2126, 0.7152, 0.0722, 0, 0,
+                                              0.2126, 0.7152, 0.0722, 0, 0,
+                                              0.2126, 0.7152, 0.0722, 0, 0,
+                                              0, 0, 0, 1, 0,
+                                            ]),
+                                            child: Image.network(
+                                              _weatherInfo!.iconUrl,
+                                              width: 24,
+                                              height: 24,
+                                            ),
+                                          ),
                                     const SizedBox(width: 4),
                                     Text(
                                       '${_weatherInfo!.temperature.round()}°C',

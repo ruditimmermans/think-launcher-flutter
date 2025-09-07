@@ -418,4 +418,13 @@
   "@errorUpdatingWeather": {
     "description": "Error message when weather update fails"
   }
+  ,
+  "colorMode": "Color mode",
+  "@colorMode": {
+    "description": "Toggle to show icons in full color instead of grayscale"
+  },
+  "wakeOnNotification": "Wake on notification",
+  "@wakeOnNotification": {
+    "description": "Toggle to briefly wake the screen when a notification arrives"
+  }
 }
