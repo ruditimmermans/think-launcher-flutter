@@ -427,4 +427,13 @@
   "@wakeOnNotification": {
     "description": "Toggle to briefly wake the screen when a notification arrives"
   }
+  ,
+  "wallpaper": "Wallpaper",
+  "@wallpaper": { "description": "Section title for wallpaper settings" },
+  "selectWallpaper": "Select wallpaper",
+  "@selectWallpaper": { "description": "Action to pick a wallpaper image" },
+  "removeWallpaper": "Remove wallpaper",
+  "@removeWallpaper": { "description": "Action to clear wallpaper" },
+  "noWallpaperSet": "No wallpaper set",
+  "@noWallpaperSet": { "description": "Subtitle when no wallpaper is set" }
 }

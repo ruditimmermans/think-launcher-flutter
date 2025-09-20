@@ -255,4 +255,16 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get wakeOnNotification => 'Wakker worden met melding';
+
+  @override
+  String get wallpaper => 'Achtergrond';
+
+  @override
+  String get selectWallpaper => 'Achtergrond selecteren';
+
+  @override
+  String get removeWallpaper => 'Achtergrond verwijderen';
+
+  @override
+  String get noWallpaperSet => 'Geen achtergrond ingesteld';
 }

@@ -8,6 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:battery_plus/battery_plus.dart';
+import 'dart:io';
+import 'package:palette_generator/palette_generator.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
 import 'package:think_launcher/models/app_info.dart';
 import 'package:think_launcher/models/folder.dart';
@@ -55,6 +58,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late WeatherService _weatherService;
 
   late double _appIconSize;
+  String? _wallpaperPath;
+  Color _overlayTextColor = Colors.black;
+  ImageProvider? _wallpaperProvider;
+  bool _isPreparingWallpaper = false;
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
@@ -73,6 +80,117 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               },
             )));
     widget.prefs.setString('notifications', notificationsJson);
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (_showDateTime)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _currentTime,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 46,
+                    fontWeight: FontWeight.normal,
+                    color: _overlayTextColor,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        _currentDate,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: _overlayTextColor,
+                        ),
+                      ),
+                      Text(
+                        ' | ',
+                        style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                      ),
+                      Icon(
+                        _getBatteryIcon(_batteryLevel),
+                        size: 18,
+                        color: _overlayTextColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$_batteryLevel%',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: _overlayTextColor,
+                        ),
+                      ),
+                      if (_weatherInfo != null) ...[
+                        Text(
+                          ' | ',
+                          style:
+                              TextStyle(fontSize: 18, color: _overlayTextColor),
+                        ),
+                        _colorMode
+                            ? Image.network(
+                                _weatherInfo!.iconUrl,
+                                width: 24,
+                                height: 24,
+                              )
+                            : ColorFiltered(
+                                colorFilter: const ColorFilter.matrix([
+                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                  0, 0, 0, 1, 0,
+                                ]),
+                                child: Image.network(
+                                  _weatherInfo!.iconUrl,
+                                  width: 24,
+                                  height: 24,
+                                ),
+                              ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_weatherInfo!.temperature.round()}°C',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.normal,
+                            color: _overlayTextColor,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            )
+          else
+            const SizedBox(),
+          Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.settings, size: 26, color: _overlayTextColor),
+                onPressed: _openSettings,
+                padding: EdgeInsets.zero,
+              ),
+              if (_showSearchButton)
+                IconButton(
+                  icon: Icon(Icons.search, size: 26, color: _overlayTextColor),
+                  onPressed: _openSearch,
+                  padding: EdgeInsets.zero,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   void _loadNotifications() {
@@ -134,6 +252,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _currentTime = _timeFormatter.format(DateTime.now());
     _currentDate = _dateFormatter.format(DateTime.now());
     _batteryLevel = 0;
+    _wallpaperPath = widget.prefs.getString('wallpaperPath');
+    // Always prepare once on init (handles null/remove as well)
+    _prepareWallpaper();
   }
 
   void _setupWeatherService() {
@@ -528,6 +649,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
+        'wallpaperPath': prefs.getString('wallpaperPath'),
       };
 
       // Check if any settings have changed
@@ -538,9 +660,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _enableScroll != settings['enableScroll'] ||
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
-          !listEquals(
-              _selectedApps, settings['selectedApps'] as List<String>) ||
-          _appIconSize != settings['appIconSize'];
+          !listEquals(_selectedApps, settings['selectedApps'] as List<String>) ||
+          _appIconSize != settings['appIconSize'] ||
+          _wallpaperPath != settings['wallpaperPath'];
 
       if (hasChanges) {
         // Update all state at once to minimize rebuilds
@@ -554,6 +676,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _colorMode = settings['colorMode'] as bool;
           _selectedApps = List.from(settings['selectedApps'] as List<String>);
           _appIconSize = settings['appIconSize'] as double;
+          _wallpaperPath = settings['wallpaperPath'] as String?;
         });
 
         // Update system UI
@@ -575,9 +698,69 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             setState(() {});
           }
         }
+        // Always prepare wallpaper after settings update to ensure palette refresh
+        _prepareWallpaper();
       }
     } catch (e) {
       debugPrint('Error loading settings: $e');
+    }
+  }
+
+  Future<void> _prepareWallpaper() async {
+    if (_wallpaperPath == null) {
+      setState(() {
+        _overlayTextColor = Colors.black;
+        _wallpaperProvider = null;
+        _isPreparingWallpaper = false;
+      });
+      _wallpaperProvider = null;
+      return;
+    }
+    try {
+      setState(() => _isPreparingWallpaper = true);
+      final file = File(_wallpaperPath!);
+      if (!await file.exists()) {
+        setState(() {
+          _overlayTextColor = Colors.black;
+          _wallpaperProvider = null;
+          _isPreparingWallpaper = false;
+        });
+        _wallpaperProvider = null;
+        return;
+      }
+      final imageProvider = FileImage(file);
+      // Bust image cache by creating a new provider with unique key
+      imageCache.clear();
+      imageCache.clearLiveImages();
+      // Prefer white text until palette analysis completes
+      if (mounted) setState(() => _overlayTextColor = Colors.white);
+      final palette = await PaletteGenerator.fromImageProvider(
+        imageProvider,
+        maximumColorCount: 12,
+      );
+      final bg = palette.dominantColor?.color ?? Colors.white;
+      // Compute luminance and choose contrasting color
+      final double luminance = bg.computeLuminance();
+      setState(() {
+        _overlayTextColor = luminance > 0.6 ? Colors.black : Colors.white;
+        _wallpaperProvider = imageProvider;
+        _isPreparingWallpaper = false;
+      });
+
+      // Precache after first frame
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final contextRef = context;
+        if (_wallpaperProvider != null) {
+          precacheImage(_wallpaperProvider!, contextRef);
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _overlayTextColor = Colors.white;
+        _wallpaperProvider = null;
+        _isPreparingWallpaper = false;
+      });
     }
   }
 
@@ -693,11 +876,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting &&
             _appInfoCache.isEmpty) {
-          return Center(
-            child: Text(
-              AppLocalizations.of(context)!.loading,
-              style: const TextStyle(fontSize: 18),
-            ),
+          return Stack(
+            children: [
+              if (_wallpaperPath != null)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: _wallpaperProvider != null
+                        ? Image(image: _wallpaperProvider!, fit: BoxFit.cover)
+                        : Image.file(
+                            File(_wallpaperPath!),
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                ),
+              Center(
+                child: Text(
+                  AppLocalizations.of(context)!.loading,
+                  style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                ),
+              ),
+            ],
           );
         }
 
@@ -709,6 +907,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               style: TextStyle(
                 fontSize: _appFontSize,
                 fontWeight: FontWeight.normal,
+                color: _overlayTextColor,
               ),
             ),
           );
@@ -719,12 +918,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             .cast<AppInfo>()
             .toList();
         if (apps.isEmpty) {
+          // While preparing wallpaper/palette, show loading instead of empty
+          if (_isPreparingWallpaper) {
+            return Stack(
+              children: [
+                if (_wallpaperPath != null)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: _wallpaperProvider != null
+                          ? Image(image: _wallpaperProvider!, fit: BoxFit.cover)
+                          : Image.file(
+                              File(_wallpaperPath!),
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                  ),
+                Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.loading,
+                    style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                  ),
+                ),
+              ],
+            );
+          }
           return Center(
             child: Text(
               AppLocalizations.of(context)!.noAppsSelected,
               style: TextStyle(
                 fontSize: _appFontSize,
                 fontWeight: FontWeight.normal,
+                color: _overlayTextColor,
               ),
             ),
           );
@@ -746,8 +970,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final unorganizedApps =
         apps.where((app) => !appsInFolders.contains(app.packageName)).toList();
 
-    // Prepare final ordered items list
-    final items = <Widget>[];
+    // Prepare final ordered items list (header scrolls with items)
+    final items = <Widget>[
+      _buildHeader(),
+    ];
 
     // Sort folders by their order property just in case
     final orderedFolders = [..._folders]
@@ -996,6 +1222,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   style: TextStyle(
                     fontSize: _appFontSize,
                     fontWeight: FontWeight.normal,
+                    color: _overlayTextColor,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -1006,6 +1233,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ? Icons.expand_less
                     : Icons.expand_more,
                 size: 24.0,
+                color: _overlayTextColor,
               ),
             ],
           ),
@@ -1411,6 +1639,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       style: TextStyle(
                         fontSize: _appFontSize,
                         fontWeight: FontWeight.normal,
+                        color: _overlayTextColor,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -1419,7 +1648,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       notification.content,
                       style: TextStyle(
                         fontSize: _appFontSize - 5,
-                        color: Colors.grey[700],
+                        color: _overlayTextColor,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -1431,6 +1660,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   style: TextStyle(
                     fontSize: _appFontSize,
                     fontWeight: FontWeight.normal,
+                    color: _overlayTextColor,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -1454,120 +1684,44 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Scaffold(
+        // Use white as the default background
         backgroundColor: Colors.white,
         body: Stack(
           children: [
+            // Wallpaper layer
+            if (_wallpaperPath != null)
+              Positioned.fill(
+                child: _wallpaperProvider != null
+                    ? Image(
+                        image: _wallpaperProvider!,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.file(
+                        File(_wallpaperPath!),
+                        fit: BoxFit.cover,
+                      ),
+              ),
             Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_showDateTime)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _currentTime,
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                fontSize: 46,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    _currentDate,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                  const Text(
-                                    ' | ',
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                  Icon(_getBatteryIcon(_batteryLevel),
-                                      size: 18),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$_batteryLevel%',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                  if (_weatherInfo != null) ...[
-                                    const Text(
-                                      ' | ',
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    _colorMode
-                                        ? Image.network(
-                                            _weatherInfo!.iconUrl,
-                                            width: 24,
-                                            height: 24,
-                                          )
-                                        : ColorFiltered(
-                                            colorFilter: const ColorFilter.matrix([
-                                              0.2126, 0.7152, 0.0722, 0, 0,
-                                              0.2126, 0.7152, 0.0722, 0, 0,
-                                              0.2126, 0.7152, 0.0722, 0, 0,
-                                              0, 0, 0, 1, 0,
-                                            ]),
-                                            child: Image.network(
-                                              _weatherInfo!.iconUrl,
-                                              width: 24,
-                                              height: 24,
-                                            ),
-                                          ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${_weatherInfo!.temperature.round()}°C',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      else
-                        const SizedBox(),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.settings, size: 26),
-                            onPressed: _openSettings,
-                            padding: EdgeInsets.zero,
-                          ),
-                          if (_showSearchButton)
-                            IconButton(
-                              icon: const Icon(Icons.search, size: 26),
-                              onPressed: _openSearch,
-                              padding: EdgeInsets.zero,
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
                 Expanded(
                   child: Stack(
                     children: [
+                      // Keep wallpaper visible in both loading and loaded states
+                      if (_wallpaperPath != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Image.file(
+                              File(_wallpaperPath!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                       if (_selectedApps.isEmpty)
                         Center(
                           child: Text(
                             AppLocalizations.of(context)!
                                 .pressSettingsButtonToStart,
-                            style: const TextStyle(fontSize: 18),
+                            style: TextStyle(fontSize: 18, color: _overlayTextColor),
                           ),
                         )
                       else

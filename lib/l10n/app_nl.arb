@@ -427,4 +427,13 @@
   "@wakeOnNotification": {
     "description": "Schakelaar om het scherm kort te activeren wanneer een melding binnenkomt"
   }
+  ,
+  "wallpaper": "Achtergrond",
+  "@wallpaper": { "description": "Sectietitel voor achtergrondinstellingen" },
+  "selectWallpaper": "Achtergrond selecteren",
+  "@selectWallpaper": { "description": "Actie om een achtergrondafbeelding te kiezen" },
+  "removeWallpaper": "Achtergrond verwijderen",
+  "@removeWallpaper": { "description": "Actie om de achtergrond te verwijderen" },
+  "noWallpaperSet": "Geen achtergrond ingesteld",
+  "@noWallpaperSet": { "description": "Subtitel wanneer geen achtergrond is ingesteld" }
 }

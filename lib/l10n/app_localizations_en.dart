@@ -255,4 +255,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wakeOnNotification => 'Wake on notification';
+
+  @override
+  String get wallpaper => 'Wallpaper';
+
+  @override
+  String get selectWallpaper => 'Select wallpaper';
+
+  @override
+  String get removeWallpaper => 'Remove wallpaper';
+
+  @override
+  String get noWallpaperSet => 'No wallpaper set';
 }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
@@ -29,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<String> selectedApps = [];
   bool isLoading = false;
   String? errorMessage;
+  String? wallpaperPath;
 
   @override
   void initState() {
@@ -47,6 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       colorMode = widget.prefs.getBool('colorMode') ?? true;
       wakeOnNotification = widget.prefs.getBool('wakeOnNotification') ?? false;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
+      wallpaperPath = widget.prefs.getString('wallpaperPath');
     });
   }
 
@@ -66,6 +71,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.prefs.setBool('colorMode', colorMode);
       await widget.prefs.setBool('wakeOnNotification', wakeOnNotification);
       await widget.prefs.setStringList('selectedApps', selectedApps);
+      if (wallpaperPath == null) {
+        await widget.prefs.remove('wallpaperPath');
+      } else {
+        await widget.prefs.setString('wallpaperPath', wallpaperPath!);
+      }
 
       // Update status bar visibility
       final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
@@ -146,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.settingsTitle),
             backgroundColor: Colors.white,
@@ -297,7 +307,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 8. App font size
+                      // 8. Wallpaper (single setting item)
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.wallpaper,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          wallpaperPath == null
+                              ? AppLocalizations.of(context)!.noWallpaperSet
+                              : Uri.file(wallpaperPath!).pathSegments.isNotEmpty
+                                  ? Uri.file(wallpaperPath!).pathSegments.last
+                                  : wallpaperPath!,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        trailing: wallpaperPath == null
+                            ? const Icon(Icons.chevron_right)
+                            : IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () async {
+                                  setState(() {
+                                    wallpaperPath = null;
+                                  });
+                                  await _saveSettings();
+                                },
+                              ),
+                        onTap: () async {
+                          final picker = ImagePicker();
+                          final XFile? picked = await picker.pickImage(
+                            source: ImageSource.gallery,
+                            requestFullMetadata: false,
+                          );
+                          if (picked != null) {
+                            try {
+                              final appDir = await getApplicationDocumentsDirectory();
+                              final wallpapersDir = Directory('${appDir.path}/wallpapers');
+                              if (!await wallpapersDir.exists()) {
+                                await wallpapersDir.create(recursive: true);
+                              }
+
+                              final String filename = Uri.file(picked.path).pathSegments.last;
+                              final String destPath = '${wallpapersDir.path}/$filename';
+
+                              final savedFile = await File(picked.path).copy(destPath);
+
+                              setState(() {
+                                wallpaperPath = savedFile.path;
+                              });
+                              await _saveSettings();
+                            } catch (e) {
+                              setState(() {
+                                wallpaperPath = picked.path;
+                              });
+                              await _saveSettings();
+                            }
+                          }
+                        },
+                      ),
+
+                      // 9. App font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -369,7 +441,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 7. App icon size
+                      // 10. App icon size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -441,7 +513,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 8. App list
+                      // 11. App list
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.appList,
@@ -457,7 +529,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _selectApps,
                       ),
 
-                      // 9. Reorder apps
+                      // 12. Reorder apps
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.reorderAppsFolders,
@@ -470,7 +542,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
 
-                      // 10. Manage folders
+                      // 13. Manage folders
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.manageFolders,
@@ -497,7 +569,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 11. Gestures
+                      // 14. Gestures
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.gestures,

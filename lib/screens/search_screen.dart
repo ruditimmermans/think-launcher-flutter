@@ -302,7 +302,7 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.searchApps),
             backgroundColor: Colors.white,

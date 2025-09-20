@@ -562,6 +562,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wake on notification'**
   String get wakeOnNotification;
+
+  /// Section title for wallpaper settings
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper'**
+  String get wallpaper;
+
+  /// Action to pick a wallpaper image
+  ///
+  /// In en, this message translates to:
+  /// **'Select wallpaper'**
+  String get selectWallpaper;
+
+  /// Action to clear wallpaper
+  ///
+  /// In en, this message translates to:
+  /// **'Remove wallpaper'**
+  String get removeWallpaper;
+
+  /// Subtitle when no wallpaper is set
+  ///
+  /// In en, this message translates to:
+  /// **'No wallpaper set'**
+  String get noWallpaperSet;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
