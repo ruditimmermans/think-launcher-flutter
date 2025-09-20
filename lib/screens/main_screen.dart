@@ -66,7 +66,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
 
-  static const MethodChannel _wakeChannel = MethodChannel('com.desu.think_launcher/wake');
+  static const MethodChannel _wakeChannel = MethodChannel(
+    'com.desu.think_launcher/wake',
+  );
 
   void _saveNotifications() {
     final notificationsJson =
@@ -115,7 +117,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       ),
                       Text(
                         ' | ',
-                        style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: _overlayTextColor,
+                        ),
                       ),
                       Icon(
                         _getBatteryIcon(_batteryLevel),
@@ -145,10 +150,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                               )
                             : ColorFiltered(
                                 colorFilter: const ColorFilter.matrix([
-                                  0.2126, 0.7152, 0.0722, 0, 0,
-                                  0.2126, 0.7152, 0.0722, 0, 0,
-                                  0.2126, 0.7152, 0.0722, 0, 0,
-                                  0, 0, 0, 1, 0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  1,
+                                  0,
                                 ]),
                                 child: Image.network(
                                   _weatherInfo!.iconUrl,
@@ -660,7 +681,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _enableScroll != settings['enableScroll'] ||
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
-          !listEquals(_selectedApps, settings['selectedApps'] as List<String>) ||
+          !listEquals(
+            _selectedApps,
+            settings['selectedApps'] as List<String>,
+          ) ||
           _appIconSize != settings['appIconSize'] ||
           _wallpaperPath != settings['wallpaperPath'];
 
@@ -1611,10 +1635,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       )
                     : ColorFiltered(
                         colorFilter: const ColorFilter.matrix([
-                          0.2126, 0.7152, 0.0722, 0, 0,
-                          0.2126, 0.7152, 0.0722, 0, 0,
-                          0.2126, 0.7152, 0.0722, 0, 0,
-                          0, 0, 0, 1, 0,
+                          0.2126,
+                          0.7152,
+                          0.0722,
+                          0,
+                          0,
+                          0.2126,
+                          0.7152,
+                          0.0722,
+                          0,
+                          0,
+                          0.2126,
+                          0.7152,
+                          0.0722,
+                          0,
+                          0,
+                          0,
+                          0,
+                          0,
+                          1,
+                          0,
                         ]),
                         child: Image.memory(
                           app.icon!,
@@ -1682,7 +1722,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         // Use white as the default background
         backgroundColor: Colors.white,
@@ -1721,7 +1762,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           child: Text(
                             AppLocalizations.of(context)!
                                 .pressSettingsButtonToStart,
-                            style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: _overlayTextColor,
+                            ),
                           ),
                         )
                       else
