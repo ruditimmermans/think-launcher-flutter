@@ -270,4 +270,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wallpaperBlur => 'Wallpaper blur';
+
+  @override
+  String get exportSettings => 'Export settings';
+
+  @override
+  String get exportSettingsSubtitle => 'Save current settings to JSON file';
+
+  @override
+  String get importSettings => 'Import settings';
+
+  @override
+  String get importSettingsSubtitle => 'Load settings from JSON file';
+
+  @override
+  String get exportSuccess => 'Settings exported successfully.';
+
+  @override
+  String exportFallbackSaved(String fileName) {
+    return 'Exported to app storage: $fileName';
+  }
+
+  @override
+  String get exportFailed => 'Failed to export settings';
+
+  @override
+  String get invalidFileSelection => 'Invalid file selection';
+
+  @override
+  String get invalidJsonFile => 'Invalid JSON file';
+
+  @override
+  String get importSuccess => 'Settings imported successfully.';
+
+  @override
+  String get importFailed => 'Failed to import settings';
+
+  @override
+  String exportSavedToDownloads(String fileName) {
+    return 'Saved to Downloads: $fileName';
+  }
 }

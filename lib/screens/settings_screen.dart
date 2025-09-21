@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
@@ -150,6 +152,215 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         selectedApps = result;
         _saveSettings();
+      });
+    }
+  }
+
+  Future<void> _exportSettings() async {
+    try {
+      final prefs = widget.prefs;
+      final Map<String, dynamic> data = {
+        'showDateTime': prefs.getBool('showDateTime') ?? true,
+        'showSearchButton': prefs.getBool('showSearchButton') ?? true,
+        'enableScroll': prefs.getBool('enableScroll') ?? true,
+        'showIcons': prefs.getBool('showIcons') ?? true,
+        'colorMode': prefs.getBool('colorMode') ?? true,
+        'wakeOnNotification': prefs.getBool('wakeOnNotification') ?? false,
+        'appFontSize': prefs.getDouble('appFontSize') ?? 18.0,
+        'appIconSize': prefs.getDouble('appIconSize') ?? 35.0,
+        'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
+        'showStatusBar': prefs.getBool('showStatusBar') ?? false,
+        'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
+      };
+
+      final String jsonText = const JsonEncoder.withIndent('  ').convert(data);
+
+      String? savePath;
+      try {
+        savePath = await FilePicker.platform.saveFile(
+          dialogTitle: AppLocalizations.of(context)!.exportSettings,
+          fileName: 'think_launcher_settings.json',
+          type: FileType.custom,
+          allowedExtensions: const ['json'],
+        );
+      } catch (_) {
+        savePath = null;
+      }
+
+      if (savePath == null) {
+        // Try saving to public Downloads directory first (Android only)
+        try {
+          final downloadsDir = Directory('/storage/emulated/0/Download');
+          if (!await downloadsDir.exists()) {
+            await downloadsDir.create(recursive: true);
+          }
+          final fallback =
+              '${downloadsDir.path}/think_launcher_settings_${DateTime.now().millisecondsSinceEpoch}.json';
+          await File(fallback).writeAsString(jsonText);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!
+                  .exportSavedToDownloads(Uri.file(fallback).pathSegments.last),
+            ),
+          ));
+          return;
+        } catch (_) {
+          // Fallback to app-specific external storage if Downloads isn't writable
+          final dir = await getExternalStorageDirectory();
+          final fallback =
+              '${dir?.path}/think_launcher_settings_${DateTime.now().millisecondsSinceEpoch}.json';
+          await File(fallback).writeAsString(jsonText);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!
+                  .exportFallbackSaved(Uri.file(fallback).pathSegments.last),
+            ),
+          ));
+          return;
+        }
+      }
+
+      await File(savePath).writeAsString(jsonText);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context)!.exportSuccess),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = AppLocalizations.of(context)!.exportFailed;
+      });
+    }
+  }
+
+  Future<void> _importSettings() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        withData: false,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final String? path = result.files.single.path;
+      if (path == null) {
+        setState(() {
+          errorMessage = AppLocalizations.of(context)!.invalidFileSelection;
+        });
+        return;
+      }
+
+      final String content = await File(path).readAsString();
+      Map<String, dynamic> data;
+      try {
+        final decoded = jsonDecode(content);
+        if (decoded is! Map<String, dynamic>) {
+          throw const FormatException('Root is not an object');
+        }
+        data = decoded;
+      } catch (_) {
+        setState(() {
+          errorMessage = AppLocalizations.of(context)!.invalidJsonFile;
+        });
+        return;
+      }
+
+      // Helper getters with type safety and descriptive names
+      bool? getBoolOrNull(String key) {
+        return data[key] is bool ? data[key] as bool : null;
+      }
+
+      double? getDoubleOrNull(String key) {
+        return data[key] is num ? data[key].toDouble() : null;
+      }
+
+      List<String>? getStringListOrNull(String key) {
+        final value = data[key];
+        if (value is List) {
+          final list = value.whereType<String>().toList();
+          return list.length == value.length ? list : null;
+        }
+        return null;
+      }
+
+      final prefs = widget.prefs;
+
+      // Apply known keys only
+      final bool? vShowDateTime = getBoolOrNull('showDateTime');
+      if (vShowDateTime != null) {
+        await prefs.setBool('showDateTime', vShowDateTime);
+      }
+
+      final bool? vShowSearchButton = getBoolOrNull('showSearchButton');
+      if (vShowSearchButton != null) {
+        await prefs.setBool('showSearchButton', vShowSearchButton);
+      }
+
+      final bool? vEnableScroll = getBoolOrNull('enableScroll');
+      if (vEnableScroll != null) {
+        await prefs.setBool('enableScroll', vEnableScroll);
+      }
+
+      final bool? vShowIcons = getBoolOrNull('showIcons');
+      if (vShowIcons != null) {
+        await prefs.setBool('showIcons', vShowIcons);
+      }
+
+      final bool? vColorMode = getBoolOrNull('colorMode');
+      if (vColorMode != null) {
+        await prefs.setBool('colorMode', vColorMode);
+      }
+
+      final bool? vWakeOnNotification = getBoolOrNull('wakeOnNotification');
+      if (vWakeOnNotification != null) {
+        await prefs.setBool('wakeOnNotification', vWakeOnNotification);
+      }
+
+      final double? vAppFontSize = getDoubleOrNull('appFontSize');
+      if (vAppFontSize != null) {
+        await prefs.setDouble('appFontSize', vAppFontSize);
+      }
+
+      final double? vAppIconSize = getDoubleOrNull('appIconSize');
+      if (vAppIconSize != null) {
+        await prefs.setDouble('appIconSize', vAppIconSize);
+      }
+
+      final List<String>? vSelectedApps = getStringListOrNull('selectedApps');
+      if (vSelectedApps != null) {
+        await prefs.setStringList('selectedApps', vSelectedApps);
+      }
+
+      final bool? vShowStatusBar = getBoolOrNull('showStatusBar');
+      if (vShowStatusBar != null) {
+        await prefs.setBool('showStatusBar', vShowStatusBar);
+      }
+
+      final double? vWallpaperBlur = getDoubleOrNull('wallpaperBlur');
+      if (vWallpaperBlur != null) {
+        await prefs.setDouble('wallpaperBlur', vWallpaperBlur);
+      }
+
+      // Refresh UI and system UI overlays
+      if (!mounted) return;
+      _loadSettings();
+      final showStatusBar = prefs.getBool('showStatusBar') ?? false;
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: showStatusBar
+            ? [SystemUiOverlay.top, SystemUiOverlay.bottom]
+            : [SystemUiOverlay.bottom],
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context)!.importSuccess),
+      ));
+    } catch (e) {
+      debugPrint('Error importing settings: $e');
+      if (!mounted) return;
+      setState(() {
+        errorMessage = AppLocalizations.of(context)!.importFailed;
       });
     }
   }
@@ -706,6 +917,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           );
                         },
+                      ),
+
+                      // 15. Export settings
+                      const Divider(height: 32),
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.exportSettings,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          AppLocalizations.of(context)!
+                              .exportSettingsSubtitle,
+                        ),
+                        onTap: _exportSettings,
+                      ),
+
+                      // 16. Import settings
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.importSettings,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          AppLocalizations.of(context)!
+                              .importSettingsSubtitle,
+                        ),
+                        onTap: _importSettings,
                       ),
                     ],
                   ),

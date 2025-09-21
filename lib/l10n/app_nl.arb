@@ -442,5 +442,47 @@
   "@noWallpaperSet": { "description": "Subtitel wanneer geen achtergrond is ingesteld" },
 
   "wallpaperBlur": "Achtergrond vervagen",
-  "@wallpaperBlur": { "description": "Label voor schuifregelaar voor achtergrondvervaging" }
+  "@wallpaperBlur": { "description": "Label voor schuifregelaar voor achtergrondvervaging" },
+
+  "exportSettings": "Instellingen exporteren",
+  "@exportSettings": { "description": "Titel voor tegel instellingen exporteren" },
+
+  "exportSettingsSubtitle": "Huidige instellingen opslaan als JSON",
+  "@exportSettingsSubtitle": { "description": "Subtitel voor instellingen exporteren" },
+
+  "importSettings": "Instellingen importeren",
+  "@importSettings": { "description": "Titel voor tegel instellingen importeren" },
+
+  "importSettingsSubtitle": "Instellingen laden uit JSON-bestand",
+  "@importSettingsSubtitle": { "description": "Subtitel voor instellingen importeren" },
+
+  "exportSuccess": "Instellingen succesvol geëxporteerd.",
+  "@exportSuccess": { "description": "Snackbarmelding na succesvolle export" },
+
+  "exportFallbackSaved": "Geëxporteerd naar app-opslag: {fileName}",
+  "@exportFallbackSaved": {
+    "description": "Bericht wanneer export naar app-opslag is opgeslagen",
+    "placeholders": {"fileName": {"type": "String"}}
+  },
+
+  "exportFailed": "Exporteren van instellingen mislukt",
+  "@exportFailed": { "description": "Foutmelding wanneer export mislukt" },
+
+  "invalidFileSelection": "Ongeldige bestandsselectie",
+  "@invalidFileSelection": { "description": "Fout wanneer bestandspad ontbreekt" },
+
+  "invalidJsonFile": "Ongeldig JSON-bestand",
+  "@invalidJsonFile": { "description": "Fout wanneer JSON niet kan worden geparseerd" },
+
+  "importSuccess": "Instellingen succesvol geïmporteerd.",
+  "@importSuccess": { "description": "Snackbarmelding na succesvolle import" },
+
+  "importFailed": "Importeren van instellingen mislukt",
+  "@importFailed": { "description": "Foutmelding wanneer import mislukt" },
+
+  "exportSavedToDownloads": "Opgeslagen in Downloads: {fileName}",
+  "@exportSavedToDownloads": {
+    "description": "Bericht wanneer export is opgeslagen in de Downloads-map",
+    "placeholders": {"fileName": {"type": "String"}}
+  }
 }

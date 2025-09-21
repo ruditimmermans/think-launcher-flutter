@@ -1266,7 +1266,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   child: Icon(
                     Icons.folder,
                     size: _appIconSize * 0.7,
-                    color: Colors.grey[700],
+                    color: _overlayTextColor.withAlpha(200),
                   ),
                 ),
               if (_showIcons) const SizedBox(width: 16.0),

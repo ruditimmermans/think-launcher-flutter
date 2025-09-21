@@ -270,4 +270,44 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get wallpaperBlur => 'Achtergrond vervagen';
+
+  @override
+  String get exportSettings => 'Instellingen exporteren';
+
+  @override
+  String get exportSettingsSubtitle => 'Huidige instellingen opslaan als JSON';
+
+  @override
+  String get importSettings => 'Instellingen importeren';
+
+  @override
+  String get importSettingsSubtitle => 'Instellingen laden uit JSON-bestand';
+
+  @override
+  String get exportSuccess => 'Instellingen succesvol geëxporteerd.';
+
+  @override
+  String exportFallbackSaved(String fileName) {
+    return 'Geëxporteerd naar app-opslag: $fileName';
+  }
+
+  @override
+  String get exportFailed => 'Exporteren van instellingen mislukt';
+
+  @override
+  String get invalidFileSelection => 'Ongeldige bestandsselectie';
+
+  @override
+  String get invalidJsonFile => 'Ongeldig JSON-bestand';
+
+  @override
+  String get importSuccess => 'Instellingen succesvol geïmporteerd.';
+
+  @override
+  String get importFailed => 'Importeren van instellingen mislukt';
+
+  @override
+  String exportSavedToDownloads(String fileName) {
+    return 'Opgeslagen in Downloads: $fileName';
+  }
 }

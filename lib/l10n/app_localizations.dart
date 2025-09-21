@@ -592,6 +592,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wallpaper blur'**
   String get wallpaperBlur;
+
+  /// Title for export settings tile
+  ///
+  /// In en, this message translates to:
+  /// **'Export settings'**
+  String get exportSettings;
+
+  /// Subtitle for export settings
+  ///
+  /// In en, this message translates to:
+  /// **'Save current settings to JSON file'**
+  String get exportSettingsSubtitle;
+
+  /// Title for import settings tile
+  ///
+  /// In en, this message translates to:
+  /// **'Import settings'**
+  String get importSettings;
+
+  /// Subtitle for import settings
+  ///
+  /// In en, this message translates to:
+  /// **'Load settings from JSON file'**
+  String get importSettingsSubtitle;
+
+  /// Snack bar message after successful export
+  ///
+  /// In en, this message translates to:
+  /// **'Settings exported successfully.'**
+  String get exportSuccess;
+
+  /// Message when export saved to app storage fallback
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to app storage: {fileName}'**
+  String exportFallbackSaved(String fileName);
+
+  /// Error message when export fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export settings'**
+  String get exportFailed;
+
+  /// Error when file path missing
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid file selection'**
+  String get invalidFileSelection;
+
+  /// Error when JSON parse fails
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid JSON file'**
+  String get invalidJsonFile;
+
+  /// Snack bar message after successful import
+  ///
+  /// In en, this message translates to:
+  /// **'Settings imported successfully.'**
+  String get importSuccess;
+
+  /// Error message when import fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to import settings'**
+  String get importFailed;
+
+  /// Message when export saved in Downloads directory
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Downloads: {fileName}'**
+  String exportSavedToDownloads(String fileName);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

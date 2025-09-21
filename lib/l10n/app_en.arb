@@ -442,5 +442,47 @@
   "@noWallpaperSet": { "description": "Subtitle when no wallpaper is set" },
 
   "wallpaperBlur": "Wallpaper blur",
-  "@wallpaperBlur": { "description": "Label for wallpaper blur slider" }
+  "@wallpaperBlur": { "description": "Label for wallpaper blur slider" },
+
+  "exportSettings": "Export settings",
+  "@exportSettings": { "description": "Title for export settings tile" },
+
+  "exportSettingsSubtitle": "Save current settings to JSON file",
+  "@exportSettingsSubtitle": { "description": "Subtitle for export settings" },
+
+  "importSettings": "Import settings",
+  "@importSettings": { "description": "Title for import settings tile" },
+
+  "importSettingsSubtitle": "Load settings from JSON file",
+  "@importSettingsSubtitle": { "description": "Subtitle for import settings" },
+
+  "exportSuccess": "Settings exported successfully.",
+  "@exportSuccess": { "description": "Snack bar message after successful export" },
+
+  "exportFallbackSaved": "Exported to app storage: {fileName}",
+  "@exportFallbackSaved": {
+    "description": "Message when export saved to app storage fallback",
+    "placeholders": {"fileName": {"type": "String"}}
+  },
+
+  "exportFailed": "Failed to export settings",
+  "@exportFailed": { "description": "Error message when export fails" },
+
+  "invalidFileSelection": "Invalid file selection",
+  "@invalidFileSelection": { "description": "Error when file path missing" },
+
+  "invalidJsonFile": "Invalid JSON file",
+  "@invalidJsonFile": { "description": "Error when JSON parse fails" },
+
+  "importSuccess": "Settings imported successfully.",
+  "@importSuccess": { "description": "Snack bar message after successful import" },
+
+  "importFailed": "Failed to import settings",
+  "@importFailed": { "description": "Error message when import fails" },
+
+  "exportSavedToDownloads": "Saved to Downloads: {fileName}",
+  "@exportSavedToDownloads": {
+    "description": "Message when export saved in Downloads directory",
+    "placeholders": {"fileName": {"type": "String"}}
+  }
 }
