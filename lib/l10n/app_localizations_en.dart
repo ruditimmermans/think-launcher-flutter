@@ -267,4 +267,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noWallpaperSet => 'No wallpaper set';
+
+  @override
+  String get wallpaperBlur => 'Wallpaper blur';
 }

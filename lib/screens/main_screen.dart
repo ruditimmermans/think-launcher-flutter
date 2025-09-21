@@ -23,6 +23,7 @@ import 'package:think_launcher/services/weather_service.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/screens/reorder_apps_screen.dart';
 import 'package:think_launcher/constants/dialog_options.dart';
+import 'dart:ui';
 
 class MainScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -62,6 +63,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Color _overlayTextColor = Colors.black;
   ImageProvider? _wallpaperProvider;
   bool _isPreparingWallpaper = false;
+  double _wallpaperBlur = 0.0;
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
@@ -274,6 +276,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _currentDate = _dateFormatter.format(DateTime.now());
     _batteryLevel = 0;
     _wallpaperPath = widget.prefs.getString('wallpaperPath');
+    _wallpaperBlur = widget.prefs.getDouble('wallpaperBlur') ?? 0.0;
     // Always prepare once on init (handles null/remove as well)
     _prepareWallpaper();
   }
@@ -671,6 +674,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
         'wallpaperPath': prefs.getString('wallpaperPath'),
+        'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
       };
 
       // Check if any settings have changed
@@ -686,7 +690,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             settings['selectedApps'] as List<String>,
           ) ||
           _appIconSize != settings['appIconSize'] ||
-          _wallpaperPath != settings['wallpaperPath'];
+          _wallpaperPath != settings['wallpaperPath'] ||
+          _wallpaperBlur != settings['wallpaperBlur'];
 
       if (hasChanges) {
         // Update all state at once to minimize rebuilds
@@ -701,6 +706,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _selectedApps = List.from(settings['selectedApps'] as List<String>);
           _appIconSize = settings['appIconSize'] as double;
           _wallpaperPath = settings['wallpaperPath'] as String?;
+          _wallpaperBlur = settings['wallpaperBlur'] as double;
         });
 
         // Update system UI
@@ -905,12 +911,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               if (_wallpaperPath != null)
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: _wallpaperProvider != null
-                        ? Image(image: _wallpaperProvider!, fit: BoxFit.cover)
-                        : Image.file(
-                            File(_wallpaperPath!),
-                            fit: BoxFit.cover,
-                          ),
+                    child: _buildBlurredWallpaper(),
                   ),
                 ),
               Center(
@@ -949,12 +950,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 if (_wallpaperPath != null)
                   Positioned.fill(
                     child: IgnorePointer(
-                      child: _wallpaperProvider != null
-                          ? Image(image: _wallpaperProvider!, fit: BoxFit.cover)
-                          : Image.file(
-                              File(_wallpaperPath!),
-                              fit: BoxFit.cover,
-                            ),
+                      child: _buildBlurredWallpaper(),
                     ),
                   ),
                 Center(
@@ -980,6 +976,41 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
         return _buildListView(apps);
       },
+    );
+  }
+
+  Widget _buildBlurredWallpaper() {
+    if (_wallpaperPath == null) {
+      return const SizedBox();
+    }
+
+    final Widget imageChild = _wallpaperProvider != null
+        ? Image(
+            image: _wallpaperProvider!,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          )
+        : Image.file(
+            File(_wallpaperPath!),
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          );
+
+    return ClipRect(
+      child: ImageFiltered(
+        imageFilter: _wallpaperBlur > 0
+            ? ImageFilter.blur(
+                sigmaX: _wallpaperBlur,
+                sigmaY: _wallpaperBlur,
+                tileMode: TileMode.clamp,
+              )
+            : ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
+        child: Transform.scale(
+          scale: 1.02,
+          alignment: Alignment.center,
+          child: imageChild,
+        ),
+      ),
     );
   }
 
@@ -1141,8 +1172,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             final index = _folders.indexWhere((f) => f.id == folder.id);
             if (index != -1) {
               _folders[index] = folder.copyWith(name: newName);
-              final foldersJson =
-                  jsonEncode(_folders.map((f) => f.toJson()).toList());
+              final foldersJson = jsonEncode(_folders.map((f) => f.toJson()).toList());
               widget.prefs.setString('folders', foldersJson);
             }
           });
@@ -1443,15 +1473,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           },
         );
 
-        if (newName != null && newName.isNotEmpty && newName != app.name) {
+        if (newName != null && newName.isNotEmpty) {
           final updatedApp = app.copyWith(customName: newName);
           _appInfoCache[app.packageName] = updatedApp;
 
           // Save custom names to preferences
-          final customNamesJson =
-              widget.prefs.getString('customAppNames') ?? '{}';
-          final customNames =
-              Map<String, String>.from(jsonDecode(customNamesJson));
+          final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+          final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
           customNames[app.packageName] = newName;
           widget.prefs.setString('customAppNames', jsonEncode(customNames));
 
@@ -1731,17 +1759,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           children: [
             // Wallpaper layer
             if (_wallpaperPath != null)
-              Positioned.fill(
-                child: _wallpaperProvider != null
-                    ? Image(
-                        image: _wallpaperProvider!,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.file(
-                        File(_wallpaperPath!),
-                        fit: BoxFit.cover,
-                      ),
-              ),
+              Positioned.fill(child: _buildBlurredWallpaper()),
             Column(
               children: [
                 Expanded(
@@ -1750,12 +1768,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       // Keep wallpaper visible in both loading and loaded states
                       if (_wallpaperPath != null)
                         Positioned.fill(
-                          child: IgnorePointer(
-                            child: Image.file(
-                              File(_wallpaperPath!),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                          child: IgnorePointer(child: _buildBlurredWallpaper()),
                         ),
                       if (_selectedApps.isEmpty)
                         Center(

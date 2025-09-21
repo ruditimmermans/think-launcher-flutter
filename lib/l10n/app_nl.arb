@@ -417,23 +417,30 @@
   "errorUpdatingWeather": "Fout bij bijwerken van het weer",
   "@errorUpdatingWeather": {
     "description": "Error message when weather update fails"
-  }
-  ,
+  },
+
   "colorMode": "Kleurmodus",
   "@colorMode": {
     "description": "Schakelaar om pictogrammen in kleur te tonen in plaats van grijswaarden"
   },
+
   "wakeOnNotification": "Wakker worden met melding",
   "@wakeOnNotification": {
     "description": "Schakelaar om het scherm kort te activeren wanneer een melding binnenkomt"
-  }
-  ,
+  },
+
   "wallpaper": "Achtergrond",
   "@wallpaper": { "description": "Sectietitel voor achtergrondinstellingen" },
+ 
   "selectWallpaper": "Achtergrond selecteren",
   "@selectWallpaper": { "description": "Actie om een achtergrondafbeelding te kiezen" },
+
   "removeWallpaper": "Achtergrond verwijderen",
   "@removeWallpaper": { "description": "Actie om de achtergrond te verwijderen" },
+
   "noWallpaperSet": "Geen achtergrond ingesteld",
-  "@noWallpaperSet": { "description": "Subtitel wanneer geen achtergrond is ingesteld" }
+  "@noWallpaperSet": { "description": "Subtitel wanneer geen achtergrond is ingesteld" },
+
+  "wallpaperBlur": "Achtergrond vervagen",
+  "@wallpaperBlur": { "description": "Label voor schuifregelaar voor achtergrondvervaging" }
 }

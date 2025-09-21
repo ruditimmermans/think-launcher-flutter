@@ -267,4 +267,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get noWallpaperSet => 'Geen achtergrond ingesteld';
+
+  @override
+  String get wallpaperBlur => 'Achtergrond vervagen';
 }

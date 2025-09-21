@@ -586,6 +586,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No wallpaper set'**
   String get noWallpaperSet;
+
+  /// Label for wallpaper blur slider
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper blur'**
+  String get wallpaperBlur;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

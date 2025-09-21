@@ -33,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool isLoading = false;
   String? errorMessage;
   String? wallpaperPath;
+  double wallpaperBlur = 0.0; // 0 = no blur when no wallpaper; 1-10 when set
 
   @override
   void initState() {
@@ -52,6 +53,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       wakeOnNotification = widget.prefs.getBool('wakeOnNotification') ?? false;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
       wallpaperPath = widget.prefs.getString('wallpaperPath');
+      wallpaperBlur = wallpaperPath == null
+          ? 0.0
+          : (widget.prefs.getDouble('wallpaperBlur') ?? 3.0);
+      if (wallpaperPath != null && wallpaperBlur < 1.0) {
+        wallpaperBlur = 1.0;
+      }
     });
   }
 
@@ -76,6 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         await widget.prefs.setString('wallpaperPath', wallpaperPath!);
       }
+      await widget.prefs.setDouble('wallpaperBlur', wallpaperBlur);
 
       // Update status bar visibility
       final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
@@ -131,10 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
-          return ReorderAppsScreen(
-            prefs: widget.prefs,
-            folder: null
-          );
+          return ReorderAppsScreen(prefs: widget.prefs, folder: null);
         },
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
@@ -332,6 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 onPressed: () async {
                                   setState(() {
                                     wallpaperPath = null;
+                                    wallpaperBlur = 0.0;
                                   });
                                   await _saveSettings();
                                 },
@@ -344,30 +350,132 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           );
                           if (picked != null) {
                             try {
-                              final appDir = await getApplicationDocumentsDirectory();
-                              final wallpapersDir = Directory('${appDir.path}/wallpapers');
+                              final appDir =
+                                  await getApplicationDocumentsDirectory();
+                              final wallpapersDir =
+                                  Directory('${appDir.path}/wallpapers');
                               if (!await wallpapersDir.exists()) {
                                 await wallpapersDir.create(recursive: true);
                               }
 
-                              final String filename = Uri.file(picked.path).pathSegments.last;
-                              final String destPath = '${wallpapersDir.path}/$filename';
+                              final String filename =
+                                  Uri.file(picked.path).pathSegments.last;
+                              final String destPath =
+                                  '${wallpapersDir.path}/$filename';
 
-                              final savedFile = await File(picked.path).copy(destPath);
+                              final savedFile =
+                                  await File(picked.path).copy(destPath);
 
                               setState(() {
                                 wallpaperPath = savedFile.path;
+                                if (wallpaperBlur == 0.0) {
+                                  wallpaperBlur = 3.0;
+                                }
                               });
                               await _saveSettings();
                             } catch (e) {
                               setState(() {
                                 wallpaperPath = picked.path;
+                                if (wallpaperBlur == 0.0) {
+                                  wallpaperBlur = 3.0;
+                                }
                               });
                               await _saveSettings();
                             }
                           }
                         },
                       ),
+
+                      // 8b. Wallpaper blur slider (only when wallpaper is set)
+                      if (wallpaperPath != null) ...[
+                        Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(16.0, 0, 16.0, 8.0),
+                          child: Text(
+                            AppLocalizations.of(context)!.wallpaperBlur,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: wallpaperBlur > 1.0
+                                        ? () {
+                                            setState(() {
+                                              wallpaperBlur =
+                                                  (wallpaperBlur - 1)
+                                                      .clamp(1.0, 10.0);
+                                            });
+                                            _saveSettings();
+                                          }
+                                        : null,
+                                    icon: const Icon(Icons.remove),
+                                  ),
+                                  Expanded(
+                                    child: SliderTheme(
+                                      data: SliderTheme.of(context).copyWith(
+                                        overlayShape:
+                                            SliderComponentShape.noOverlay,
+                                        valueIndicatorColor: Colors.transparent,
+                                        valueIndicatorTextStyle:
+                                            const TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                        thumbShape: const RoundSliderThumbShape(
+                                          enabledThumbRadius: 12,
+                                          elevation: 0,
+                                          pressedElevation: 0,
+                                        ),
+                                        trackHeight: 2,
+                                        activeTrackColor: Colors.black,
+                                        inactiveTrackColor: Colors.grey,
+                                        thumbColor: Colors.black,
+                                        overlayColor: Colors.transparent,
+                                        showValueIndicator: ShowValueIndicator
+                                            .always,
+                                      ),
+                                      child: Slider(
+                                        value: wallpaperBlur,
+                                        min: 1,
+                                        max: 10,
+                                        divisions: 9,
+                                        label: wallpaperBlur.toStringAsFixed(0),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            wallpaperBlur = value;
+                                          });
+                                          _saveSettings();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: wallpaperBlur < 10.0
+                                        ? () {
+                                            setState(() {
+                                              wallpaperBlur =
+                                                  (wallpaperBlur + 1)
+                                                      .clamp(1.0, 10.0);
+                                            });
+                                            _saveSettings();
+                                          }
+                                        : null,
+                                    icon: const Icon(Icons.add),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       // 9. App font size
                       Padding(
@@ -411,7 +519,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   inactiveTrackColor: Colors.grey,
                                   thumbColor: Colors.black,
                                   overlayColor: Colors.transparent,
-                                  showValueIndicator: ShowValueIndicator.onlyForContinuous,
+                                  showValueIndicator:
+                                      ShowValueIndicator.onlyForContinuous,
                                 ),
                                 child: Slider(
                                   value: appFontSize,
@@ -483,7 +592,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   inactiveTrackColor: Colors.grey,
                                   thumbColor: Colors.black,
                                   overlayColor: Colors.transparent,
-                                  showValueIndicator: ShowValueIndicator.onlyForContinuous,
+                                  showValueIndicator:
+                                      ShowValueIndicator.onlyForContinuous,
                                 ),
                                 child: Slider(
                                   value: appIconSize,
@@ -523,7 +633,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          AppLocalizations.of(context)!.selectedAppsCount(selectedApps.length),
+                          AppLocalizations.of(context)!
+                              .selectedAppsCount(selectedApps.length),
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: _selectApps,
@@ -551,14 +662,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Text(AppLocalizations.of(context)!.createAndOrganizeFolders),
+                        subtitle: Text(AppLocalizations.of(context)!
+                            .createAndOrganizeFolders),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                  FolderManagementScreen(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      FolderManagementScreen(
                                 prefs: widget.prefs,
                                 selectedApps: selectedApps,
                               ),
@@ -578,7 +691,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Text(AppLocalizations.of(context)!.configureGestures),
+                        subtitle: Text(
+                            AppLocalizations.of(context)!.configureGestures),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           Navigator.push(

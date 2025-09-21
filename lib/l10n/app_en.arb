@@ -417,23 +417,30 @@
   "errorUpdatingWeather": "Error updating weather",
   "@errorUpdatingWeather": {
     "description": "Error message when weather update fails"
-  }
-  ,
+  },
+
   "colorMode": "Color mode",
   "@colorMode": {
     "description": "Toggle to show icons in full color instead of grayscale"
   },
+
   "wakeOnNotification": "Wake on notification",
   "@wakeOnNotification": {
     "description": "Toggle to briefly wake the screen when a notification arrives"
-  }
-  ,
+  },
+
   "wallpaper": "Wallpaper",
   "@wallpaper": { "description": "Section title for wallpaper settings" },
+
   "selectWallpaper": "Select wallpaper",
   "@selectWallpaper": { "description": "Action to pick a wallpaper image" },
+
   "removeWallpaper": "Remove wallpaper",
   "@removeWallpaper": { "description": "Action to clear wallpaper" },
+
   "noWallpaperSet": "No wallpaper set",
-  "@noWallpaperSet": { "description": "Subtitle when no wallpaper is set" }
+  "@noWallpaperSet": { "description": "Subtitle when no wallpaper is set" },
+
+  "wallpaperBlur": "Wallpaper blur",
+  "@wallpaperBlur": { "description": "Label for wallpaper blur slider" }
 }
