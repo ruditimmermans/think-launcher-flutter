@@ -167,6 +167,12 @@ abstract class AppLocalizations {
   /// **'Show icons'**
   String get showIcons;
 
+  /// Label for folder chevron visibility setting
+  ///
+  /// In en, this message translates to:
+  /// **'Show folder chevron'**
+  String get showFolderChevron;
+
   /// Label for status bar visibility setting
   ///
   /// In en, this message translates to:

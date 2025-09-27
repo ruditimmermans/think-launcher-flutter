@@ -61,6 +61,11 @@
     "description": "Label for icon visibility setting"
   },
 
+  "showFolderChevron": "Map-chevron tonen",
+  "@showFolderChevron": {
+    "description": "Label voor zichtbaarheid van map-chevron"
+  },
+
   "showStatusBar": "Toon statusbalk",
   "@showStatusBar": {
     "description": "Label for status bar visibility setting"

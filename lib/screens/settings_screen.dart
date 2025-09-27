@@ -29,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double appIconSize = 35.0;
   bool enableScroll = true;
   bool showIcons = false;
+  bool showFolderChevron = true;
   bool colorMode = true;
   bool wakeOnNotification = false;
   List<String> selectedApps = [];
@@ -51,6 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
       showIcons = widget.prefs.getBool('showIcons') ?? true;
+      showFolderChevron = widget.prefs.getBool('showFolderChevron') ?? true;
       colorMode = widget.prefs.getBool('colorMode') ?? true;
       wakeOnNotification = widget.prefs.getBool('wakeOnNotification') ?? false;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
@@ -77,6 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
       await widget.prefs.setBool('showIcons', showIcons);
+      await widget.prefs.setBool('showFolderChevron', showFolderChevron);
       await widget.prefs.setBool('colorMode', colorMode);
       await widget.prefs.setBool('wakeOnNotification', wakeOnNotification);
       await widget.prefs.setStringList('selectedApps', selectedApps);
@@ -170,6 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'appIconSize': prefs.getDouble('appIconSize') ?? 35.0,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
+        'showFolderChevron': prefs.getBool('showFolderChevron') ?? true,
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
       };
 
@@ -310,6 +314,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final bool? vColorMode = getBoolOrNull('colorMode');
       if (vColorMode != null) {
         await prefs.setBool('colorMode', vColorMode);
+      }
+
+      final bool? vShowFolderChevron = getBoolOrNull('showFolderChevron');
+      if (vShowFolderChevron != null) {
+        await prefs.setBool('showFolderChevron', vShowFolderChevron);
       }
 
       final bool? vWakeOnNotification = getBoolOrNull('wakeOnNotification');
@@ -523,7 +532,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 8. Wallpaper (single setting item)
+                      // 8. Show folder chevron
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showFolderChevron,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: showFolderChevron,
+                        onChanged: (value) {
+                          setState(() {
+                            showFolderChevron = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+
+                      // 9. Wallpaper (single setting item)
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.wallpaper,
@@ -597,7 +624,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 8b. Wallpaper blur slider (only when wallpaper is set)
+                      // 9b. Wallpaper blur slider (only when wallpaper is set)
                       if (wallpaperPath != null) ...[
                         Padding(
                           padding:
@@ -688,7 +715,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ],
 
-                      // 9. App font size
+                      // 10. App font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -761,7 +788,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 10. App icon size
+                      // 11. App icon size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -834,7 +861,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 11. App list
+                      // 12. App list
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.appList,
@@ -851,7 +878,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _selectApps,
                       ),
 
-                      // 12. Reorder apps
+                      // 13. Reorder apps
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.reorderAppsFolders,
@@ -864,7 +891,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
 
-                      // 13. Manage folders
+                      // 14. Manage folders
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.manageFolders,
@@ -893,7 +920,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 14. Gestures
+                      // 15. Gestures
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.gestures,
@@ -919,7 +946,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 15. Export settings
+                      // 16. Export settings
                       const Divider(height: 32),
                       ListTile(
                         title: Text(

@@ -45,6 +45,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showIcons => 'Show icons';
 
   @override
+  String get showFolderChevron => 'Show folder chevron';
+
+  @override
   String get showStatusBar => 'Show status bar';
 
   @override

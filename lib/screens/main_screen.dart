@@ -52,6 +52,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late bool _enableScroll;
   late bool _showIcons;
   late bool _colorMode;
+  late bool _showFolderChevron;
   late String _currentTime;
   late String _currentDate;
   late int _batteryLevel;
@@ -270,6 +271,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _enableScroll = widget.prefs.getBool('enableScroll') ?? true;
     _showIcons = widget.prefs.getBool('showIcons') ?? true;
     _colorMode = widget.prefs.getBool('colorMode') ?? true;
+    _showFolderChevron = widget.prefs.getBool('showFolderChevron') ?? true;
 
     _appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
     _currentTime = _timeFormatter.format(DateTime.now());
@@ -670,6 +672,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'enableScroll': prefs.getBool('enableScroll') ?? true,
         'showIcons': prefs.getBool('showIcons') ?? false,
         'colorMode': prefs.getBool('colorMode') ?? true,
+        'showFolderChevron': prefs.getBool('showFolderChevron') ?? true,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
@@ -685,12 +688,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _enableScroll != settings['enableScroll'] ||
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
-          !listEquals(
-            _selectedApps,
-            settings['selectedApps'] as List<String>,
-          ) ||
+          !listEquals(_selectedApps, settings['selectedApps'] as List<String>) ||
           _appIconSize != settings['appIconSize'] ||
           _wallpaperPath != settings['wallpaperPath'] ||
+          _showFolderChevron != settings['showFolderChevron'] ||
           _wallpaperBlur != settings['wallpaperBlur'];
 
       if (hasChanges) {
@@ -703,6 +704,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _enableScroll = settings['enableScroll'] as bool;
           _showIcons = settings['showIcons'] as bool;
           _colorMode = settings['colorMode'] as bool;
+          _showFolderChevron = settings['showFolderChevron'] as bool;
           _selectedApps = List.from(settings['selectedApps'] as List<String>);
           _appIconSize = settings['appIconSize'] as double;
           _wallpaperPath = settings['wallpaperPath'] as String?;
@@ -1048,7 +1050,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       // Insert the folder
       if (folder.appPackageNames.isNotEmpty) {
-        items.add(_buildFolderItem(folder));
+        items.add(_buildFolderItem(currentIndex, folder));
         currentIndex++;
 
         // If folder is expanded, add its apps
@@ -1089,15 +1091,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _scrollOnFolderExpand() {
+  void _scrollOnFolderExpand(int currentIndex) {
     try {
       _scrollController.animateTo(
-        200,
+        currentIndex * 150,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeIn,
       );
     } catch (e) {
-      debugPrint('_scrollOnFolderExpand(): $e');
+      debugPrint('_scrollOnFolderExpand($currentIndex): $e');
     }
   }
 
@@ -1230,7 +1232,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  Widget _buildFolderItem(Folder folder) {
+  Widget _buildFolderItem(int currentIndex, Folder folder) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1240,7 +1242,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               _expandedFolders.remove(folder.id);
             } else {
               _expandedFolders.add(folder.id);
-              _scrollOnFolderExpand();
+              _scrollOnFolderExpand(currentIndex);
             }
           });
         },
@@ -1282,13 +1284,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   maxLines: 1,
                 ),
               ),
-              Icon(
-                _expandedFolders.contains(folder.id)
-                    ? Icons.expand_less
-                    : Icons.expand_more,
-                size: 24.0,
-                color: _overlayTextColor,
-              ),
+              if (_showFolderChevron)
+                Icon(
+                  _expandedFolders.contains(folder.id)
+                      ? Icons.expand_less
+                      : Icons.expand_more,
+                  size: 24.0,
+                  color: _overlayTextColor,
+                ),
             ],
           ),
         ),
@@ -1753,7 +1756,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        // Use white as the default background
         backgroundColor: Colors.white,
         body: Stack(
           children: [

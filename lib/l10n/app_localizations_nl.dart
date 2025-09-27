@@ -45,6 +45,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get showIcons => 'Toon pictogrammen';
 
   @override
+  String get showFolderChevron => 'Map-chevron tonen';
+
+  @override
   String get showStatusBar => 'Toon statusbalk';
 
   @override

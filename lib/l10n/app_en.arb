@@ -61,6 +61,11 @@
     "description": "Label for icon visibility setting"
   },
 
+  "showFolderChevron": "Show folder chevron",
+  "@showFolderChevron": {
+    "description": "Label for folder chevron visibility setting"
+  },
+
   "showStatusBar": "Show status bar",
   "@showStatusBar": {
     "description": "Label for status bar visibility setting"
