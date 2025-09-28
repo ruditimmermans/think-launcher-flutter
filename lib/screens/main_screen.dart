@@ -38,6 +38,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   // Cache for app information
   static final Map<String, AppInfo> _appInfoCache = {};
   final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _folderItemKeys = {};
 
   // State variables
   late List<String> _selectedApps;
@@ -361,6 +362,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           (id) => !_folders.any((f) => f.id == id),
         );
       });
+      _syncFolderItemKeys();
     }
   }
 
@@ -1017,6 +1019,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildListView(List<AppInfo> apps) {
+    _syncFolderItemKeys();
     // Map of package name → app info
     final appMap = {for (var app in apps) app.packageName: app};
 
@@ -1091,15 +1094,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _scrollOnFolderExpand(int currentIndex) {
+  void _scrollOnFolderExpand(String folderId) {
     try {
-      _scrollController.animateTo(
-        currentIndex * 150,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeIn,
+      final key = _folderItemKeys[folderId];
+      final context = key?.currentContext;
+      if (context == null) return;
+      Scrollable.ensureVisible(
+        context,
+        alignment: 0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
       );
     } catch (e) {
-      debugPrint('_scrollOnFolderExpand($currentIndex): $e');
+      debugPrint('_scrollOnFolderExpand($folderId): $e');
+    }
+  }
+
+  void _syncFolderItemKeys() {
+    try {
+      final existingIds = _folders.map((f) => f.id).toSet();
+      _folderItemKeys.removeWhere((id, _) => !existingIds.contains(id));
+    } catch (e) {
+      // ignore errors
     }
   }
 
@@ -1208,8 +1224,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           setState(() {
             _folders.removeWhere((f) => f.id == folder.id);
             _expandedFolders.remove(folder.id);
-            final foldersJson =
-                jsonEncode(_folders.map((f) => f.toJson()).toList());
+            _folderItemKeys.remove(folder.id);
+            final foldersJson = jsonEncode(_folders.map((f) => f.toJson()).toList());
             widget.prefs.setString('folders', foldersJson);
           });
         }
@@ -1234,6 +1250,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Widget _buildFolderItem(int currentIndex, Folder folder) {
     return Material(
+      key: _folderItemKeys.putIfAbsent(folder.id, () => GlobalKey()),
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
@@ -1242,7 +1259,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               _expandedFolders.remove(folder.id);
             } else {
               _expandedFolders.add(folder.id);
-              _scrollOnFolderExpand(currentIndex);
+              _scrollOnFolderExpand(folder.id);
             }
           });
         },
