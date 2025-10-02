@@ -32,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool showFolderChevron = true;
   bool colorMode = true;
   bool wakeOnNotification = false;
+  bool scrollToTop = false;
   List<String> selectedApps = [];
   bool isLoading = false;
   String? errorMessage;
@@ -55,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       showFolderChevron = widget.prefs.getBool('showFolderChevron') ?? true;
       colorMode = widget.prefs.getBool('colorMode') ?? true;
       wakeOnNotification = widget.prefs.getBool('wakeOnNotification') ?? false;
+      scrollToTop = widget.prefs.getBool('scrollToTop') ?? false;
       selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
       wallpaperPath = widget.prefs.getString('wallpaperPath');
       wallpaperBlur = wallpaperPath == null
@@ -82,6 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.prefs.setBool('showFolderChevron', showFolderChevron);
       await widget.prefs.setBool('colorMode', colorMode);
       await widget.prefs.setBool('wakeOnNotification', wakeOnNotification);
+      await widget.prefs.setBool('scrollToTop', scrollToTop);
       await widget.prefs.setStringList('selectedApps', selectedApps);
       if (wallpaperPath == null) {
         await widget.prefs.remove('wallpaperPath');
@@ -169,6 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'showIcons': prefs.getBool('showIcons') ?? true,
         'colorMode': prefs.getBool('colorMode') ?? true,
         'wakeOnNotification': prefs.getBool('wakeOnNotification') ?? false,
+        'scrollToTop': prefs.getBool('scrollToTop') ?? false,
         'appFontSize': prefs.getDouble('appFontSize') ?? 18.0,
         'appIconSize': prefs.getDouble('appIconSize') ?? 35.0,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
@@ -324,6 +328,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final bool? vWakeOnNotification = getBoolOrNull('wakeOnNotification');
       if (vWakeOnNotification != null) {
         await prefs.setBool('wakeOnNotification', vWakeOnNotification);
+      }
+
+      final bool? vScrollToTop = getBoolOrNull('scrollToTop');
+      if (vScrollToTop != null) {
+        await prefs.setBool('scrollToTop', vScrollToTop);
       }
 
       final double? vAppFontSize = getDoubleOrNull('appFontSize');
@@ -527,6 +536,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onChanged: (value) {
                           setState(() {
                             wakeOnNotification = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+
+                      // 7b. Scroll to top on folder close
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.scrollToTop,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: scrollToTop,
+                        onChanged: (value) {
+                          setState(() {
+                            scrollToTop = value;
                           });
                           _saveSettings();
                         },

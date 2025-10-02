@@ -449,6 +449,9 @@
   "wallpaperBlur": "Wallpaper blur",
   "@wallpaperBlur": { "description": "Label for wallpaper blur slider" },
 
+  "scrollToTop": "Scroll to top",
+  "@scrollToTop": { "description": "Label for Scroll to top" },
+
   "exportSettings": "Export settings",
   "@exportSettings": { "description": "Title for export settings tile" },
 

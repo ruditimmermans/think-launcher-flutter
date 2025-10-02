@@ -436,7 +436,7 @@
 
   "wallpaper": "Achtergrond",
   "@wallpaper": { "description": "Sectietitel voor achtergrondinstellingen" },
- 
+
   "selectWallpaper": "Achtergrond selecteren",
   "@selectWallpaper": { "description": "Actie om een achtergrondafbeelding te kiezen" },
 
@@ -448,6 +448,9 @@
 
   "wallpaperBlur": "Achtergrond vervagen",
   "@wallpaperBlur": { "description": "Label voor schuifregelaar voor achtergrondvervaging" },
+
+  "scrollToTop": "Naar boven scrollen",
+  "@scrollToTop": { "description": "Label for Scroll to top" },
 
   "exportSettings": "Instellingen exporteren",
   "@exportSettings": { "description": "Titel voor tegel instellingen exporteren" },

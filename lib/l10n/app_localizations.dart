@@ -599,6 +599,12 @@ abstract class AppLocalizations {
   /// **'Wallpaper blur'**
   String get wallpaperBlur;
 
+  /// Label for Scroll to top
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to top'**
+  String get scrollToTop;
+
   /// Title for export settings tile
   ///
   /// In en, this message translates to:

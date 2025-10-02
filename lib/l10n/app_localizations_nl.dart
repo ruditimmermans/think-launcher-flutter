@@ -275,6 +275,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get wallpaperBlur => 'Achtergrond vervagen';
 
   @override
+  String get scrollToTop => 'Naar boven scrollen';
+
+  @override
   String get exportSettings => 'Instellingen exporteren';
 
   @override

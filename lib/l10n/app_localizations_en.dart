@@ -275,6 +275,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wallpaperBlur => 'Wallpaper blur';
 
   @override
+  String get scrollToTop => 'Scroll to top';
+
+  @override
   String get exportSettings => 'Export settings';
 
   @override

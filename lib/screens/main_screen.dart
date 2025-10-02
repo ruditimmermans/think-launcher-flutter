@@ -1110,6 +1110,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _scrollToTopIfEnabled() {
+    try {
+      final shouldScroll = widget.prefs.getBool('scrollToTop') ?? false;
+      if (!shouldScroll) return;
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } catch (_) {
+      // ignore
+    }
+  }
+
   void _syncFolderItemKeys() {
     try {
       final existingIds = _folders.map((f) => f.id).toSet();
@@ -1257,6 +1272,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           setState(() {
             if (_expandedFolders.contains(folder.id)) {
               _expandedFolders.remove(folder.id);
+              _scrollToTopIfEnabled();
             } else {
               _expandedFolders.add(folder.id);
               _scrollOnFolderExpand(folder.id);
