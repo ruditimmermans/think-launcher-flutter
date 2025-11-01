@@ -51,6 +51,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get showStatusBar => 'Toon statusbalk';
 
   @override
+  String get clockFontSize => 'Klok lettergrootte';
+
+  @override
   String get appFontSize => 'App lettergrootte';
 
   @override
@@ -205,6 +208,9 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get uninstallApp => 'App verwijderen';
+
+  @override
+  String get clearNotification => 'Melding wissen';
 
   @override
   String confirmUninstall(String appName) {

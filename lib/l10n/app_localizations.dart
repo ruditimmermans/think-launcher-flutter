@@ -179,6 +179,12 @@ abstract class AppLocalizations {
   /// **'Show status bar'**
   String get showStatusBar;
 
+  /// Label for clock font size setting
+  ///
+  /// In en, this message translates to:
+  /// **'Clock font size'**
+  String get clockFontSize;
+
   /// Label for app font size setting
   ///
   /// In en, this message translates to:
@@ -478,6 +484,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Uninstall App'**
   String get uninstallApp;
+
+  /// Label for clear notification option
+  ///
+  /// In en, this message translates to:
+  /// **'Clear notification'**
+  String get clearNotification;
 
   /// Confirmation message for app uninstallation
   ///

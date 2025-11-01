@@ -25,6 +25,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool showDateTime = true;
   bool showSearchButton = true;
+  double clockFontSize = 18.0;
   double appFontSize = 18.0;
   double appIconSize = 35.0;
   bool enableScroll = true;
@@ -49,6 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       showDateTime = widget.prefs.getBool('showDateTime') ?? true;
       showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
+      clockFontSize = widget.prefs.getDouble('clockFontSize') ?? 18.0;
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
       appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
@@ -77,6 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       await widget.prefs.setBool('showDateTime', showDateTime);
       await widget.prefs.setBool('showSearchButton', showSearchButton);
+      await widget.prefs.setDouble('clockFontSize', clockFontSize);
       await widget.prefs.setDouble('appFontSize', appFontSize);
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
@@ -173,6 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'colorMode': prefs.getBool('colorMode') ?? true,
         'wakeOnNotification': prefs.getBool('wakeOnNotification') ?? false,
         'scrollToTop': prefs.getBool('scrollToTop') ?? false,
+        'clockFontSize': prefs.getDouble('clockFontSize') ?? 18.0,
         'appFontSize': prefs.getDouble('appFontSize') ?? 18.0,
         'appIconSize': prefs.getDouble('appIconSize') ?? 35.0,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
@@ -333,6 +337,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final bool? vScrollToTop = getBoolOrNull('scrollToTop');
       if (vScrollToTop != null) {
         await prefs.setBool('scrollToTop', vScrollToTop);
+      }
+
+      final double? vClockFontSize = getDoubleOrNull('clockFontSize');
+      if (vClockFontSize != null) {
+        await prefs.setDouble('clockFontSize', vClockFontSize);
       }
 
       final double? vAppFontSize = getDoubleOrNull('appFontSize');
@@ -742,7 +751,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ],
 
-                      // 10. App font size
+                      // 10. Clock font size
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          AppLocalizations.of(context)!.clockFontSize,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: clockFontSize > 18
+                                  ? () {
+                                      setState(() {
+                                        clockFontSize--;
+                                      });
+                                      _saveSettings();
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  overlayShape: SliderComponentShape.noOverlay,
+                                  valueIndicatorColor: Colors.transparent,
+                                  valueIndicatorTextStyle:
+                                      const TextStyle(color: Colors.black),
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 12,
+                                    elevation: 0,
+                                    pressedElevation: 0,
+                                  ),
+                                  trackHeight: 2,
+                                  activeTrackColor: Colors.black,
+                                  inactiveTrackColor: Colors.grey,
+                                  thumbColor: Colors.black,
+                                  overlayColor: Colors.transparent,
+                                  showValueIndicator:
+                                      ShowValueIndicator.onlyForContinuous,
+                                ),
+                                child: Slider(
+                                  value: clockFontSize,
+                                  min: 18,
+                                  max: 72,
+                                  label: clockFontSize.toStringAsFixed(0),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      clockFontSize = value.roundToDouble();
+                                    });
+                                    _saveSettings();
+                                  },
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: clockFontSize < 72
+                                  ? () {
+                                      setState(() {
+                                        clockFontSize++;
+                                      });
+                                      _saveSettings();
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 11. App font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -815,7 +899,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 11. App icon size
+                      // 12. App icon size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -888,7 +972,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 12. App list
+                      // 13. App list
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.appList,
@@ -905,7 +989,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _selectApps,
                       ),
 
-                      // 13. Reorder apps
+                      // 14. Reorder apps
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.reorderAppsFolders,
@@ -918,7 +1002,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
 
-                      // 14. Manage folders
+                      // 15. Manage folders
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.manageFolders,
@@ -947,7 +1031,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 15. Gestures
+                      // 16. Gestures
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.gestures,
@@ -973,7 +1057,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 16. Export settings
+                      // 17. Export settings
                       const Divider(height: 32),
                       ListTile(
                         title: Text(
@@ -990,7 +1074,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _exportSettings,
                       ),
 
-                      // 16. Import settings
+                      // 18. Import settings
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.importSettings,

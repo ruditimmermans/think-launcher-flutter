@@ -71,6 +71,11 @@
     "description": "Label for status bar visibility setting"
   },
 
+  "clockFontSize": "Clock font size",
+  "@clockFontSize": {
+    "description": "Label for clock font size setting"
+  },
+
   "appFontSize": "App font size",
   "@appFontSize": {
     "description": "Label for app font size setting"
@@ -337,6 +342,11 @@
   "uninstallApp": "Uninstall App",
   "@uninstallApp": {
     "description": "Label for uninstall app option"
+  },
+
+  "clearNotification": "Clear notification",
+  "@clearNotification": {
+    "description": "Label for clear notification option"
   },
 
   "confirmUninstall": "Are you sure you want to uninstall {appName}?",

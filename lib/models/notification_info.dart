@@ -3,12 +3,14 @@ class NotificationInfo {
   final String title;
   final String content;
   final int id;
+  final bool onGoing;
 
   NotificationInfo({
     required this.packageName,
     required this.title,
     required this.content,
     required this.id,
+    required this.onGoing,
   });
 
   @override

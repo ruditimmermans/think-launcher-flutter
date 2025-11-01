@@ -424,10 +424,11 @@ packages:
   notification_listener_service:
     dependency: "direct main"
     description:
-      name: notification_listener_service
-      sha256: "8b9bd50aaa6b98e8aea4e1f060ebc6ceedade5a1613760d1ba3b724d4b3d7485"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: "feat/on-going-flag"
+      resolved-ref: f3944585f27609cbf1e16fa414488875e7d7f3dc
+      url: "https://github.com/jagadeesh-k-2802/notification-listener-service-flutter.git"
+    source: git
     version: "0.3.4"
   palette_generator:
     dependency: "direct main"

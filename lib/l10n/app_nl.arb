@@ -71,6 +71,11 @@
     "description": "Label for status bar visibility setting"
   },
 
+  "clockFontSize": "Klok lettergrootte",
+  "@clockFontSize": {
+    "description": "Label for clock font size setting"
+  },
+
   "appFontSize": "App lettergrootte",
   "@appFontSize": {
     "description": "Label for app font size setting"
@@ -337,6 +342,11 @@
   "uninstallApp": "App verwijderen",
   "@uninstallApp": {
     "description": "Label for uninstall app option"
+  },
+
+  "clearNotification": "Melding wissen",
+  "@clearNotification": {
+    "description": "Label for clear notification option"
   },
 
   "confirmUninstall": "Weet je zeker dat je {appName} wilt verwijderen?",

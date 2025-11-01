@@ -54,6 +54,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late bool _showIcons;
   late bool _colorMode;
   late bool _showFolderChevron;
+  late bool _showStatusBar;
+  late double _clockFontSize;
   late String _currentTime;
   late String _currentDate;
   late int _batteryLevel;
@@ -83,14 +85,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 'title': notification.title,
                 'content': notification.content,
                 'id': notification.id,
+                'onGoing': notification.onGoing,
               },
             )));
     widget.prefs.setString('notifications', notificationsJson);
   }
 
   Widget _buildHeader() {
+    final statusBarPadding = _showStatusBar ? MediaQuery.of(context).padding.top : 0.0;
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.fromLTRB(
+        16.0,
+        16.0 + statusBarPadding,
+        16.0,
+        16.0,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -102,7 +111,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   _currentTime,
                   textAlign: TextAlign.left,
                   style: TextStyle(
-                    fontSize: 46,
+                    fontSize: _clockFontSize,
                     fontWeight: FontWeight.normal,
                     color: _overlayTextColor,
                   ),
@@ -198,20 +207,25 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             )
           else
             const SizedBox(),
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.settings, size: 26, color: _overlayTextColor),
-                onPressed: _openSettings,
-                padding: EdgeInsets.zero,
-              ),
-              if (_showSearchButton)
+          Flexible(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
                 IconButton(
-                  icon: Icon(Icons.search, size: 26, color: _overlayTextColor),
-                  onPressed: _openSearch,
+                  icon: Icon(Icons.settings, size: 26, color: _overlayTextColor),
+                  onPressed: _openSettings,
                   padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
-            ],
+                if (_showSearchButton)
+                  IconButton(
+                    icon: Icon(Icons.search, size: 26, color: _overlayTextColor),
+                    onPressed: _openSearch,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -230,6 +244,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             title: value['title'],
             content: value['content'],
             id: value['id'],
+            onGoing: value['onGoing'] ?? false,
           );
         });
       });
@@ -273,6 +288,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _showIcons = widget.prefs.getBool('showIcons') ?? true;
     _colorMode = widget.prefs.getBool('colorMode') ?? true;
     _showFolderChevron = widget.prefs.getBool('showFolderChevron') ?? true;
+    _showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
+    _clockFontSize = widget.prefs.getDouble('clockFontSize') ?? 18.0;
 
     _appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
     _currentTime = _timeFormatter.format(DateTime.now());
@@ -330,6 +347,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             title: event.title ?? '',
             content: event.content ?? '',
             id: event.id ?? 0,
+            onGoing: event.onGoing ?? false,
           );
         }
         _saveNotifications(); // Save notifications after any change
@@ -378,6 +396,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // Update status bar color when app resumes
+      _updateStatusBarColor();
       // Clean up uninstalled apps first
       _cleanupUninstalledApps().then((_) {
         _loadData();
@@ -677,6 +697,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'showFolderChevron': prefs.getBool('showFolderChevron') ?? true,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
+        'clockFontSize': prefs.getDouble('clockFontSize') ?? 18.0,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
         'wallpaperPath': prefs.getString('wallpaperPath'),
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
@@ -687,9 +708,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showDateTime != settings['showDateTime'] ||
           _showSearchButton != settings['showSearchButton'] ||
           _appFontSize != settings['appFontSize'] ||
+          _clockFontSize != settings['clockFontSize'] ||
           _enableScroll != settings['enableScroll'] ||
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
+          _showStatusBar != settings['showStatusBar'] ||
           !listEquals(_selectedApps, settings['selectedApps'] as List<String>) ||
           _appIconSize != settings['appIconSize'] ||
           _wallpaperPath != settings['wallpaperPath'] ||
@@ -703,10 +726,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showDateTime = settings['showDateTime'] as bool;
           _showSearchButton = settings['showSearchButton'] as bool;
           _appFontSize = settings['appFontSize'] as double;
+          _clockFontSize = settings['clockFontSize'] as double;
           _enableScroll = settings['enableScroll'] as bool;
           _showIcons = settings['showIcons'] as bool;
           _colorMode = settings['colorMode'] as bool;
           _showFolderChevron = settings['showFolderChevron'] as bool;
+          _showStatusBar = settings['showStatusBar'] as bool;
           _selectedApps = List.from(settings['selectedApps'] as List<String>);
           _appIconSize = settings['appIconSize'] as double;
           _wallpaperPath = settings['wallpaperPath'] as String?;
@@ -740,6 +765,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _updateStatusBarColor() {
+    final isLightText = _overlayTextColor.computeLuminance() > 0.5;
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isLightText ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
+
+  void _setStatusBarForWhiteBackground() {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
+
   Future<void> _prepareWallpaper() async {
     if (_wallpaperPath == null) {
       setState(() {
@@ -748,6 +796,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _isPreparingWallpaper = false;
       });
       _wallpaperProvider = null;
+      _updateStatusBarColor();
       return;
     }
     try {
@@ -760,6 +809,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _isPreparingWallpaper = false;
         });
         _wallpaperProvider = null;
+        _updateStatusBarColor();
         return;
       }
       final imageProvider = FileImage(file);
@@ -767,7 +817,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       imageCache.clear();
       imageCache.clearLiveImages();
       // Prefer white text until palette analysis completes
-      if (mounted) setState(() => _overlayTextColor = Colors.white);
+      if (mounted) {
+        setState(() => _overlayTextColor = Colors.white);
+        _updateStatusBarColor();
+      }
       final palette = await PaletteGenerator.fromImageProvider(
         imageProvider,
         maximumColorCount: 12,
@@ -780,6 +833,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _wallpaperProvider = imageProvider;
         _isPreparingWallpaper = false;
       });
+      _updateStatusBarColor();
 
       // Precache after first frame
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -795,6 +849,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _wallpaperProvider = null;
         _isPreparingWallpaper = false;
       });
+      _updateStatusBarColor();
     }
   }
 
@@ -837,6 +892,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _isNavigating = true;
     try {
       if (!mounted) return;
+      _setStatusBarForWhiteBackground();
       await Navigator.push<bool>(
         context,
         PageRouteBuilder(
@@ -854,6 +910,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     } catch (e) {
       debugPrint('Error in settings flow: $e');
     } finally {
+      if (mounted) {
+        _updateStatusBarColor();
+      }
       _isNavigating = false;
     }
   }
@@ -881,6 +940,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _isNavigating = true;
     try {
       if (!mounted) return;
+      _setStatusBarForWhiteBackground();
       final autoFocus = widget.prefs.getBool('autoFocusSearch') ?? true;
       await Navigator.push(
         context,
@@ -898,6 +958,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     } catch (e) {
       // Error silently
     } finally {
+      if (mounted) {
+        _updateStatusBarColor();
+      }
       _isNavigating = false;
     }
   }
@@ -966,15 +1029,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               ],
             );
           }
-          return Center(
-            child: Text(
-              AppLocalizations.of(context)!.noAppsSelected,
-              style: TextStyle(
-                fontSize: _appFontSize,
-                fontWeight: FontWeight.normal,
-                color: _overlayTextColor,
+          return Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.noAppsSelected,
+                    style: TextStyle(
+                      fontSize: _appFontSize,
+                      fontWeight: FontWeight.normal,
+                      color: _overlayTextColor,
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           );
         }
 
@@ -1249,6 +1319,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       case FolderDialogOptions.reorder:
         // Navigate to reorder screen
         if (!mounted) return;
+        _setStatusBarForWhiteBackground();
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -1258,7 +1329,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
           ),
         );
-        _loadFolders(); // Reload folders after returning from reorder screen
+        if (mounted) {
+          _updateStatusBarColor();
+          _loadFolders(); // Reload folders after returning from reorder screen
+        }
         break;
     }
   }
@@ -1337,6 +1411,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final isInFolder = _folders
         .any((folder) => folder.appPackageNames.contains(app.packageName));
 
+    // Check if app has a notification (excluding ongoing ones)
+    final hasNotification = _notifications.values
+        .any((n) => n.packageName == app.packageName && !n.onGoing);
+
     final result = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -1364,6 +1442,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   title: Text(AppLocalizations.of(context)!.resetAppName),
                   onTap: () =>
                       Navigator.pop(context, AppDialogOptions.resetAppName),
+                ),
+              if (hasNotification)
+                ListTile(
+                  leading: const Icon(Icons.notifications_off),
+                  title: Text(AppLocalizations.of(context)!.clearNotification),
+                  onTap: () =>
+                      Navigator.pop(context, AppDialogOptions.clearNotification),
                 ),
               ListTile(
                 leading: const Icon(Icons.delete),
@@ -1624,8 +1709,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           });
         }
         break;
+      case AppDialogOptions.clearNotification:
+        // Remove all notifications for this app
+        setState(() {
+          _notifications.removeWhere(
+            (key, notification) => notification.packageName == app.packageName,
+          );
+          _saveNotifications();
+        });
+        break;
       case AppDialogOptions.reorderApps:
         if (!mounted) return;
+        _setStatusBarForWhiteBackground();
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -1635,7 +1730,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
           ),
         );
-        _reloadData();
+        if (mounted) {
+          _updateStatusBarColor();
+          _reloadData();
+        }
         break;
     }
   }
@@ -1669,9 +1767,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildListAppItem(AppInfo app) {
-    // Find notification for this app
+    // Find notification for this app (filter out ongoing notifications)
     final notification = _notifications.values
-        .where((n) => n.packageName == app.packageName)
+        .where((n) => n.packageName == app.packageName && !n.onGoing)
         .firstOrNull;
 
     return Row(
@@ -1805,18 +1903,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         Positioned.fill(
                           child: IgnorePointer(child: _buildBlurredWallpaper()),
                         ),
-                      if (_selectedApps.isEmpty)
-                        Center(
-                          child: Text(
-                            AppLocalizations.of(context)!
-                                .pressSettingsButtonToStart,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: _overlayTextColor,
-                            ),
-                          ),
-                        )
-                      else
                         _buildAppList(),
                     ],
                   ),

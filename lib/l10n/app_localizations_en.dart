@@ -51,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showStatusBar => 'Show status bar';
 
   @override
+  String get clockFontSize => 'Clock font size';
+
+  @override
   String get appFontSize => 'App font size';
 
   @override
@@ -205,6 +208,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uninstallApp => 'Uninstall App';
+
+  @override
+  String get clearNotification => 'Clear notification';
 
   @override
   String confirmUninstall(String appName) {
