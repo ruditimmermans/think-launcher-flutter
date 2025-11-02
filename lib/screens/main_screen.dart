@@ -100,130 +100,132 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         16.0,
         16.0,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_showDateTime)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _currentTime,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontSize: _clockFontSize,
+                  fontWeight: FontWeight.normal,
+                  color: _overlayTextColor,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.settings,
+                      size: 26,
+                      color: _overlayTextColor,
+                    ),
+                    onPressed: _openSettings,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  if (_showSearchButton)
+                    IconButton(
+                      icon: Icon(
+                        Icons.search,
+                        size: 26,
+                        color: _overlayTextColor,
+                      ),
+                      onPressed: _openSearch,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: Row(
               children: [
                 Text(
-                  _currentTime,
-                  textAlign: TextAlign.left,
+                  _currentDate,
                   style: TextStyle(
-                    fontSize: _clockFontSize,
+                    fontSize: 18,
                     fontWeight: FontWeight.normal,
                     color: _overlayTextColor,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        _currentDate,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.normal,
-                          color: _overlayTextColor,
-                        ),
-                      ),
-                      Text(
-                        ' | ',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: _overlayTextColor,
-                        ),
-                      ),
-                      Icon(
-                        _getBatteryIcon(_batteryLevel),
-                        size: 18,
-                        color: _overlayTextColor,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$_batteryLevel%',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.normal,
-                          color: _overlayTextColor,
-                        ),
-                      ),
-                      if (_weatherInfo != null) ...[
-                        Text(
-                          ' | ',
-                          style:
-                              TextStyle(fontSize: 18, color: _overlayTextColor),
-                        ),
-                        _colorMode
-                            ? Image.network(
-                                _weatherInfo!.iconUrl,
-                                width: 24,
-                                height: 24,
-                              )
-                            : ColorFiltered(
-                                colorFilter: const ColorFilter.matrix([
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0,
-                                  0,
-                                  0,
-                                  1,
-                                  0,
-                                ]),
-                                child: Image.network(
-                                  _weatherInfo!.iconUrl,
-                                  width: 24,
-                                  height: 24,
-                                ),
-                              ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_weatherInfo!.temperature.round()}°C',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.normal,
-                            color: _overlayTextColor,
+                Text(
+                  ' | ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: _overlayTextColor,
+                  ),
+                ),
+                Icon(
+                  _getBatteryIcon(_batteryLevel),
+                  size: 18,
+                  color: _overlayTextColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '$_batteryLevel%',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.normal,
+                    color: _overlayTextColor,
+                  ),
+                ),
+                if (_weatherInfo != null) ...[
+                  Text(
+                    ' | ',
+                    style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                  ),
+                  _colorMode
+                      ? Image.network(
+                          _weatherInfo!.iconUrl,
+                          width: 24,
+                          height: 24,
+                        )
+                      : ColorFiltered(
+                          colorFilter: const ColorFilter.matrix([
+                            0.2126,
+                            0.7152,
+                            0.0722,
+                            0,
+                            0,
+                            0.2126,
+                            0.7152,
+                            0.0722,
+                            0,
+                            0,
+                            0.2126,
+                            0.7152,
+                            0.0722,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                          ]),
+                          child: Image.network(
+                            _weatherInfo!.iconUrl,
+                            width: 24,
+                            height: 24,
                           ),
                         ),
-                      ],
-                    ],
+                  const SizedBox(width: 4),
+                  Text(
+                    '${_weatherInfo!.temperature.round()}°C',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: _overlayTextColor,
+                    ),
                   ),
-                ),
-              ],
-            )
-          else
-            const SizedBox(),
-          Flexible(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.settings, size: 26, color: _overlayTextColor),
-                  onPressed: _openSettings,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                if (_showSearchButton)
-                  IconButton(
-                    icon: Icon(Icons.search, size: 26, color: _overlayTextColor),
-                    onPressed: _openSearch,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
+                ],
               ],
             ),
           ),
