@@ -332,35 +332,41 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
           ),
           body: _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: _folders.length,
-                  itemBuilder: (context, index) {
-                    final folder = _folders[index];
-                    return ListTile(
-                      leading: const Icon(Icons.folder),
-                      title: Text(folder.name),
-                      subtitle: Text(AppLocalizations.of(context)!
-                          .appsInFolder(folder.appPackageNames.length)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.apps),
-                            onPressed: () => _manageApps(folder),
+              : _folders.isEmpty
+                  ? Center(
+                      child: Text(AppLocalizations.of(context)!.noFolders),
+                    )
+                  : ListView.builder(
+                      itemCount: _folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = _folders[index];
+                        return ListTile(
+                          leading: const Icon(Icons.folder),
+                          title: Text(folder.name),
+                          subtitle: Text(
+                            AppLocalizations.of(context)!
+                                .appsInFolder(folder.appPackageNames.length),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _editFolder(folder),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.apps),
+                                onPressed: () => _manageApps(folder),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _editFolder(folder),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _deleteFolder(folder),
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteFolder(folder),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
         ),
       ),
     );

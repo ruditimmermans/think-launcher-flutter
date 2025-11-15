@@ -419,10 +419,10 @@ abstract class AppLocalizations {
   /// **'Reorder Apps'**
   String get reorderAppsInFolder;
 
-  /// Message shown when no folders exist
+  /// Message when no folders are there
   ///
   /// In en, this message translates to:
-  /// **'No folders created yet'**
+  /// **'No Folders'**
   String get noFolders;
 
   /// Title for app selection for folder
@@ -688,6 +688,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved to Downloads: {fileName}'**
   String exportSavedToDownloads(String fileName);
+
+  /// Label for weather app selection setting
+  ///
+  /// In en, this message translates to:
+  /// **'Weather app'**
+  String get weatherApp;
+
+  /// Description for weather app selection
+  ///
+  /// In en, this message translates to:
+  /// **'Select app to open when tapping weather icon'**
+  String get selectWeatherApp;
+
+  /// Message when no weather app is selected
+  ///
+  /// In en, this message translates to:
+  /// **'No app selected'**
+  String get noWeatherAppSelected;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

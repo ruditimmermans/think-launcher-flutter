@@ -502,5 +502,25 @@
   "@exportSavedToDownloads": {
     "description": "Message when export saved in Downloads directory",
     "placeholders": {"fileName": {"type": "String"}}
+  },
+
+  "weatherApp": "Weather app",
+  "@weatherApp": {
+    "description": "Label for weather app selection setting"
+  },
+
+  "selectWeatherApp": "Select app to open when tapping weather icon",
+  "@selectWeatherApp": {
+    "description": "Description for weather app selection"
+  },
+
+  "noWeatherAppSelected": "No app selected",
+  "@noWeatherAppSelected": {
+    "description": "Message when no weather app is selected"
+  },
+
+  "noFolders": "No Folders",
+  "@noFolders": {
+    "description": "Message when no folders are there"
   }
 }

@@ -502,5 +502,25 @@
   "@exportSavedToDownloads": {
     "description": "Bericht wanneer export is opgeslagen in de Downloads-map",
     "placeholders": {"fileName": {"type": "String"}}
+  },
+
+  "weatherApp": "Weer-app",
+  "@weatherApp": {
+    "description": "Label voor weer-app selectie-instelling"
+  },
+
+  "selectWeatherApp": "Selecteer app om te openen bij tikken op weerpictogram",
+  "@selectWeatherApp": {
+    "description": "Beschrijving voor weer-app selectie"
+  },
+
+  "noWeatherAppSelected": "Geen app geselecteerd",
+  "@noWeatherAppSelected": {
+    "description": "Bericht wanneer geen weer-app is geselecteerd"
+  },
+
+  "noFolders": "Geen mappen",
+  "@noFolders": {
+    "description": "Message when no folders are there"
   }
 }

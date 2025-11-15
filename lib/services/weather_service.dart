@@ -59,7 +59,7 @@ class WeatherService {
         throw Exception('Failed to load weather data');
       }
     } catch (e) {
-      throw Exception('Error getting weather: $e');
+      throw Exception('Error getting weather: ${e.toString()}');
     }
   }
 }

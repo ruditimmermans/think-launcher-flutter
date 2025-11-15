@@ -12,6 +12,9 @@ import 'package:think_launcher/screens/app_selection_screen.dart';
 import 'package:think_launcher/screens/folder_management_screen.dart';
 import 'package:think_launcher/screens/gesture_settings_screen.dart';
 import 'package:think_launcher/screens/reorder_apps_screen.dart';
+import 'package:think_launcher/screens/single_app_selection_screen.dart';
+import 'package:think_launcher/models/app_info.dart';
+import 'package:installed_apps/installed_apps.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -39,6 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? errorMessage;
   String? wallpaperPath;
   double wallpaperBlur = 0.0; // 0 = no blur when no wallpaper; 1-10 when set
+  String? weatherAppPackageName;
 
   @override
   void initState() {
@@ -67,6 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (wallpaperPath != null && wallpaperBlur < 1.0) {
         wallpaperBlur = 1.0;
       }
+      weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
     });
   }
 
@@ -95,6 +100,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await widget.prefs.setString('wallpaperPath', wallpaperPath!);
       }
       await widget.prefs.setDouble('wallpaperBlur', wallpaperBlur);
+      if (weatherAppPackageName == null) {
+        await widget.prefs.remove('weatherAppPackageName');
+      } else {
+        await widget.prefs.setString('weatherAppPackageName', weatherAppPackageName!);
+      }
 
       // Update status bar visibility
       final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
@@ -162,6 +172,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
         selectedApps = result;
         _saveSettings();
       });
+    }
+  }
+
+  Future<void> _selectWeatherApp() async {
+    final result = await Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return SingleAppSelectionScreen(
+            prefs: widget.prefs,
+            currentlySelectedPackageName: weatherAppPackageName,
+          );
+        },
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+
+    if (result != null && result is String) {
+      setState(() {
+        weatherAppPackageName = result;
+      });
+      await _saveSettings();
+    }
+    // If result is null, user pressed back - don't change anything
+  }
+
+  Future<String?> _getWeatherAppName() async {
+    if (weatherAppPackageName == null) return null;
+    try {
+      final app = await InstalledApps.getAppInfo(weatherAppPackageName!, null);
+      if (app == null) return null;
+      final appInfo = AppInfo.fromInstalledApps(app);
+      // Check for custom name
+      final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
+      final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+      final customName = customNames[weatherAppPackageName!];
+      return customName ?? appInfo.name;
+    } catch (e) {
+      debugPrint('Error getting weather app name: $e');
+      return null;
     }
   }
 
@@ -1053,6 +1104,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
+                          );
+                        },
+                      ),
+
+                      // 16b. Weather app
+                      FutureBuilder<String?>(
+                        future: _getWeatherAppName(),
+                        builder: (context, snapshot) {
+                          return ListTile(
+                            title: Text(
+                              AppLocalizations.of(context)!.weatherApp,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              weatherAppPackageName == null
+                                  ? AppLocalizations.of(context)!
+                                      .noWeatherAppSelected
+                                  : snapshot.data ?? weatherAppPackageName!,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            trailing: weatherAppPackageName == null
+                                ? const Icon(Icons.chevron_right)
+                                : IconButton(
+                                    icon: const Icon(Icons.delete_outline),
+                                    onPressed: () async {
+                                      setState(() {
+                                        weatherAppPackageName = null;
+                                      });
+                                      await _saveSettings();
+                                    },
+                                  ),
+                            onTap: _selectWeatherApp,
                           );
                         },
                       ),

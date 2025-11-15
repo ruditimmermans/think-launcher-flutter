@@ -68,6 +68,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   ImageProvider? _wallpaperProvider;
   bool _isPreparingWallpaper = false;
   double _wallpaperBlur = 0.0;
+  String? _weatherAppPackageName;
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
@@ -181,48 +182,60 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ' | ',
                     style: TextStyle(fontSize: 18, color: _overlayTextColor),
                   ),
-                  _colorMode
-                      ? Image.network(
-                          _weatherInfo!.iconUrl,
-                          width: 24,
-                          height: 24,
-                        )
-                      : ColorFiltered(
-                          colorFilter: const ColorFilter.matrix([
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            1,
-                            0,
-                          ]),
-                          child: Image.network(
-                            _weatherInfo!.iconUrl,
-                            width: 24,
-                            height: 24,
+                  GestureDetector(
+                    onTap: _weatherAppPackageName != null
+                        ? () {
+                            InstalledApps.startApp(_weatherAppPackageName!);
+                          }
+                        : null,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _colorMode
+                            ? Image.network(
+                                _weatherInfo!.iconUrl,
+                                width: 24,
+                                height: 24,
+                              )
+                            : ColorFiltered(
+                                colorFilter: const ColorFilter.matrix([
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  1,
+                                  0,
+                                ]),
+                                child: Image.network(
+                                  _weatherInfo!.iconUrl,
+                                  width: 24,
+                                  height: 24,
+                                ),
+                              ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_weatherInfo!.temperature.round()}°C',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.normal,
+                            color: _overlayTextColor,
                           ),
                         ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${_weatherInfo!.temperature.round()}°C',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.normal,
-                      color: _overlayTextColor,
+                      ],
                     ),
                   ),
                 ],
@@ -299,6 +312,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _batteryLevel = 0;
     _wallpaperPath = widget.prefs.getString('wallpaperPath');
     _wallpaperBlur = widget.prefs.getDouble('wallpaperBlur') ?? 0.0;
+    _weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
     // Always prepare once on init (handles null/remove as well)
     _prepareWallpaper();
   }
@@ -703,6 +717,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
         'wallpaperPath': prefs.getString('wallpaperPath'),
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
+        'weatherAppPackageName': prefs.getString('weatherAppPackageName'),
       };
 
       // Check if any settings have changed
@@ -719,7 +734,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _appIconSize != settings['appIconSize'] ||
           _wallpaperPath != settings['wallpaperPath'] ||
           _showFolderChevron != settings['showFolderChevron'] ||
-          _wallpaperBlur != settings['wallpaperBlur'];
+          _wallpaperBlur != settings['wallpaperBlur'] ||
+          _weatherAppPackageName != settings['weatherAppPackageName'];
 
       if (hasChanges) {
         // Update all state at once to minimize rebuilds
@@ -738,6 +754,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _appIconSize = settings['appIconSize'] as double;
           _wallpaperPath = settings['wallpaperPath'] as String?;
           _wallpaperBlur = settings['wallpaperBlur'] as double;
+          _weatherAppPackageName = settings['weatherAppPackageName'] as String?;
         });
 
         // Update system UI

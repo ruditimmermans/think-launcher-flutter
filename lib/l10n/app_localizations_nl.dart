@@ -177,7 +177,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get reorderAppsInFolder => 'Apps opnieuw ordenen';
 
   @override
-  String get noFolders => 'Nog geen mappen gemaakt';
+  String get noFolders => 'Geen mappen';
 
   @override
   String get selectAppsForFolder => 'Selecteer apps voor map';
@@ -322,4 +322,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String exportSavedToDownloads(String fileName) {
     return 'Opgeslagen in Downloads: $fileName';
   }
+
+  @override
+  String get weatherApp => 'Weer-app';
+
+  @override
+  String get selectWeatherApp => 'Selecteer app om te openen bij tikken op weerpictogram';
+
+  @override
+  String get noWeatherAppSelected => 'Geen app geselecteerd';
 }
