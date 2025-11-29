@@ -1394,28 +1394,39 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           ),
           child: Row(
             children: [
-              if (_showIcons)
-                Container(
-                  width: _appIconSize,
-                  height: _appIconSize,
-                  padding: EdgeInsets.all(_appIconSize * 0.15),
-                  child: Icon(
-                    Icons.folder,
-                    size: _appIconSize * 0.7,
-                    color: _overlayTextColor.withAlpha(200),
-                  ),
-                ),
-              if (_showIcons) const SizedBox(width: 16.0),
               Expanded(
-                child: Text(
-                  folder.name,
-                  style: TextStyle(
-                    fontSize: _appFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: _overlayTextColor,
+                child: Align(
+                  alignment: _getAppItemAlignment(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_showIcons)
+                        Container(
+                          width: _appIconSize,
+                          height: _appIconSize,
+                          padding: EdgeInsets.all(_appIconSize * 0.15),
+                          child: Icon(
+                            Icons.folder,
+                            size: _appIconSize * 0.7,
+                            color: _overlayTextColor.withAlpha(200),
+                          ),
+                        ),
+                      if (_showIcons) const SizedBox(width: 16.0),
+                      Flexible(
+                        child: Text(
+                          folder.name,
+                          style: TextStyle(
+                            fontSize: _appFontSize,
+                            fontWeight: FontWeight.normal,
+                            color: _overlayTextColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          textAlign: _getAppTextAlign(),
+                        ),
+                      ),
+                    ],
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                 ),
               ),
               if (_showFolderChevron)
