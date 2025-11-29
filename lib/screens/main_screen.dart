@@ -22,6 +22,7 @@ import 'package:think_launcher/models/weather_info.dart';
 import 'package:think_launcher/services/weather_service.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/screens/reorder_apps_screen.dart';
+import 'package:think_launcher/constants/app_alignment.dart';
 import 'package:think_launcher/constants/dialog_options.dart';
 import 'dart:ui';
 
@@ -69,6 +70,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isPreparingWallpaper = false;
   double _wallpaperBlur = 0.0;
   String? _weatherAppPackageName;
+
+  late AppAlignment _appAlignment;
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
@@ -313,6 +316,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _wallpaperPath = widget.prefs.getString('wallpaperPath');
     _wallpaperBlur = widget.prefs.getDouble('wallpaperBlur') ?? 0.0;
     _weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
+    _appAlignment = appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
     // Always prepare once on init (handles null/remove as well)
     _prepareWallpaper();
   }
@@ -720,6 +724,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'weatherAppPackageName': prefs.getString('weatherAppPackageName'),
       };
 
+      final newAlignment = appAlignmentFromStorage(prefs.getString('appAlignment'));
+
       // Check if any settings have changed
       final hasChanges = _numApps != settings['numApps'] ||
           _showDateTime != settings['showDateTime'] ||
@@ -735,7 +741,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _wallpaperPath != settings['wallpaperPath'] ||
           _showFolderChevron != settings['showFolderChevron'] ||
           _wallpaperBlur != settings['wallpaperBlur'] ||
-          _weatherAppPackageName != settings['weatherAppPackageName'];
+          _weatherAppPackageName != settings['weatherAppPackageName'] ||
+          _appAlignment != newAlignment;
 
       if (hasChanges) {
         // Update all state at once to minimize rebuilds
@@ -755,6 +762,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _wallpaperPath = settings['wallpaperPath'] as String?;
           _wallpaperBlur = settings['wallpaperBlur'] as double;
           _weatherAppPackageName = settings['weatherAppPackageName'] as String?;
+          _appAlignment = newAlignment;
         });
 
         // Update system UI
@@ -1791,104 +1799,159 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         .where((n) => n.packageName == app.packageName && !n.onGoing)
         .firstOrNull;
 
-    return Row(
-      children: [
-        if (_showIcons && app.icon != null)
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Container(
-              width: _appIconSize,
-              height: _appIconSize,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
+    final textAlign = _getAppTextAlign();
+    final columnAlignment = _getAppColumnAlignment();
+
+    final textContent = notification != null
+        ? Column(
+            crossAxisAlignment: columnAlignment,
+            children: [
+              Text(
+                app.displayName,
+                style: TextStyle(
+                  fontSize: _appFontSize,
+                  fontWeight: FontWeight.normal,
+                  color: _overlayTextColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: textAlign,
               ),
-              child: ClipOval(
-                child: _colorMode
-                    ? Image.memory(
-                        app.icon!,
-                        width: _appIconSize,
-                        height: _appIconSize,
-                        cacheHeight: _appIconSize.toInt(),
-                        cacheWidth: _appIconSize.toInt(),
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                      )
-                    : ColorFiltered(
-                        colorFilter: const ColorFilter.matrix([
-                          0.2126,
-                          0.7152,
-                          0.0722,
-                          0,
-                          0,
-                          0.2126,
-                          0.7152,
-                          0.0722,
-                          0,
-                          0,
-                          0.2126,
-                          0.7152,
-                          0.0722,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                        ]),
-                        child: Image.memory(
-                          app.icon!,
-                          width: _appIconSize,
-                          height: _appIconSize,
-                          cacheHeight: _appIconSize.toInt(),
-                          cacheWidth: _appIconSize.toInt(),
-                          fit: BoxFit.cover,
-                          gaplessPlayback: true,
-                        ),
+              Text(
+                notification.content,
+                style: TextStyle(
+                  fontSize: _appFontSize - 5,
+                  color: _overlayTextColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                textAlign: textAlign,
+              ),
+            ],
+          )
+        : Text(
+            app.displayName,
+            style: TextStyle(
+              fontSize: _appFontSize,
+              fontWeight: FontWeight.normal,
+              color: _overlayTextColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            textAlign: textAlign,
+          );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Align(
+          alignment: _getAppItemAlignment(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: constraints.maxWidth,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (_showIcons && app.icon != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: Container(
+                      width: _appIconSize,
+                      height: _appIconSize,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
                       ),
-              ),
+                      child: ClipOval(
+                        child: _colorMode
+                            ? Image.memory(
+                                app.icon!,
+                                width: _appIconSize,
+                                height: _appIconSize,
+                                cacheHeight: _appIconSize.toInt(),
+                                cacheWidth: _appIconSize.toInt(),
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                              )
+                            : ColorFiltered(
+                                colorFilter: const ColorFilter.matrix([
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0.2126,
+                                  0.7152,
+                                  0.0722,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  1,
+                                  0,
+                                ]),
+                                child: Image.memory(
+                                  app.icon!,
+                                  width: _appIconSize,
+                                  height: _appIconSize,
+                                  cacheHeight: _appIconSize.toInt(),
+                                  cacheWidth: _appIconSize.toInt(),
+                                  fit: BoxFit.cover,
+                                  gaplessPlayback: true,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                Flexible(
+                  child: textContent,
+                ),
+              ],
             ),
           ),
-        Expanded(
-          child: notification != null
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      app.displayName,
-                      style: TextStyle(
-                        fontSize: _appFontSize,
-                        fontWeight: FontWeight.normal,
-                        color: _overlayTextColor,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    Text(
-                      notification.content,
-                      style: TextStyle(
-                        fontSize: _appFontSize - 5,
-                        color: _overlayTextColor,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                  ],
-                )
-              : Text(
-                  app.displayName,
-                  style: TextStyle(
-                    fontSize: _appFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: _overlayTextColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  Alignment _getAppItemAlignment() {
+    switch (_appAlignment) {
+      case AppAlignment.left:
+        return Alignment.centerLeft;
+      case AppAlignment.center:
+        return Alignment.center;
+      case AppAlignment.right:
+        return Alignment.centerRight;
+    }
+  }
+
+  TextAlign _getAppTextAlign() {
+    switch (_appAlignment) {
+      case AppAlignment.left:
+        return TextAlign.left;
+      case AppAlignment.center:
+        return TextAlign.center;
+      case AppAlignment.right:
+        return TextAlign.right;
+    }
+  }
+
+  CrossAxisAlignment _getAppColumnAlignment() {
+    switch (_appAlignment) {
+      case AppAlignment.left:
+        return CrossAxisAlignment.start;
+      case AppAlignment.center:
+        return CrossAxisAlignment.center;
+      case AppAlignment.right:
+        return CrossAxisAlignment.end;
+    }
   }
 
   IconData _getBatteryIcon(int level) {

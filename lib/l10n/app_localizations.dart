@@ -706,6 +706,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No app selected'**
   String get noWeatherAppSelected;
+
+  /// Label for app alignment setting
+  ///
+  /// In en, this message translates to:
+  /// **'App alignment'**
+  String get appAlignment;
+
+  /// Left alignment option
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get appAlignmentLeft;
+
+  /// Center alignment option
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get appAlignmentCenter;
+
+  /// Right alignment option
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get appAlignmentRight;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -331,4 +331,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noWeatherAppSelected => 'No app selected';
+
+  @override
+  String get appAlignment => 'App alignment';
+
+  @override
+  String get appAlignmentLeft => 'Left';
+
+  @override
+  String get appAlignmentCenter => 'Center';
+
+  @override
+  String get appAlignmentRight => 'Right';
 }

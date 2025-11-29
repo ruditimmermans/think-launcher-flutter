@@ -15,6 +15,7 @@ import 'package:think_launcher/screens/reorder_apps_screen.dart';
 import 'package:think_launcher/screens/single_app_selection_screen.dart';
 import 'package:think_launcher/models/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:think_launcher/constants/app_alignment.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -43,6 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? wallpaperPath;
   double wallpaperBlur = 0.0; // 0 = no blur when no wallpaper; 1-10 when set
   String? weatherAppPackageName;
+  AppAlignment appAlignment = AppAlignment.left;
 
   @override
   void initState() {
@@ -72,6 +74,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         wallpaperBlur = 1.0;
       }
       weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
+      appAlignment =
+          appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
     });
   }
 
@@ -105,6 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         await widget.prefs.setString('weatherAppPackageName', weatherAppPackageName!);
       }
+      await widget.prefs.setString('appAlignment', appAlignment.storageKey);
 
       // Update status bar visibility
       final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
@@ -234,6 +239,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
         'showFolderChevron': prefs.getBool('showFolderChevron') ?? true,
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
+        'appAlignment': prefs.getString('appAlignment') ?? AppAlignment.left.storageKey,
       };
 
       final String jsonText = const JsonEncoder.withIndent('  ').convert(data);
@@ -347,6 +353,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return null;
       }
 
+      String? getStringOrNull(String key) {
+        final value = data[key];
+        return value is String ? value : null;
+      }
+
       final prefs = widget.prefs;
 
       // Apply known keys only
@@ -420,6 +431,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await prefs.setDouble('wallpaperBlur', vWallpaperBlur);
       }
 
+      final String? vAppAlignment = getStringOrNull('appAlignment');
+      if (vAppAlignment != null) {
+        final importedAlignment = appAlignmentFromStorage(vAppAlignment);
+        await prefs.setString('appAlignment', importedAlignment.storageKey);
+      }
+
       // Refresh UI and system UI overlays
       if (!mounted) return;
       _loadSettings();
@@ -441,6 +458,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         errorMessage = AppLocalizations.of(context)!.importFailed;
       });
     }
+  }
+
+  Widget _buildAlignmentOption(
+    BuildContext context,
+    AppAlignment value,
+    String label,
+  ) {
+    final selected = appAlignment == value;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: OutlinedButton(
+          onPressed: () {
+            setState(() {
+              appAlignment = value;
+            });
+            _saveSettings();
+          },
+          style: OutlinedButton.styleFrom(
+            backgroundColor: selected ? Colors.black : Colors.white,
+            foregroundColor: selected ? Colors.white : Colors.black,
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -1023,7 +1069,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 13. App list
+                      // 13. App alignment
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          AppLocalizations.of(context)!.appAlignment,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            _buildAlignmentOption(
+                              context,
+                              AppAlignment.left,
+                              AppLocalizations.of(context)!.appAlignmentLeft,
+                            ),
+                            _buildAlignmentOption(
+                              context,
+                              AppAlignment.center,
+                              AppLocalizations.of(context)!.appAlignmentCenter,
+                            ),
+                            _buildAlignmentOption(
+                              context,
+                              AppAlignment.right,
+                              AppLocalizations.of(context)!.appAlignmentRight,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // 14. App list
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.appList,
@@ -1040,7 +1121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _selectApps,
                       ),
 
-                      // 14. Reorder apps
+                      // 15. Reorder apps
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.reorderAppsFolders,
@@ -1053,7 +1134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
 
-                      // 15. Manage folders
+                      // 16. Manage folders
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.manageFolders,
