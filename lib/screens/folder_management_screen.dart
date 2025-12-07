@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../models/folder.dart';
 import '../models/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:think_launcher/services/icon_pack_service.dart';
 
 class FolderManagementScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -49,7 +50,10 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     final futures = widget.selectedApps.map((packageName) async {
       try {
         final app = await InstalledApps.getAppInfo(packageName, null);
-        final appInfo = AppInfo.fromInstalledApps(app);
+        var appInfo = AppInfo.fromInstalledApps(app);
+
+        // Apply icon pack override if configured
+        appInfo = await IconPackService.applyIconPackToApp(appInfo, widget.prefs);
 
         // Load custom name if exists
         final customNamesJson = widget.prefs.getString(

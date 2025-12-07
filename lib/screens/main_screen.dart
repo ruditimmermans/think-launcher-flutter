@@ -13,6 +13,7 @@ import 'package:palette_generator/palette_generator.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
 import 'package:think_launcher/models/app_info.dart';
+import 'package:think_launcher/services/icon_pack_service.dart';
 import 'package:think_launcher/models/folder.dart';
 import 'package:think_launcher/models/notification_info.dart';
 import 'package:think_launcher/screens/search_screen.dart';
@@ -485,7 +486,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         return null;
       }
 
-      final appInfo = AppInfo.fromInstalledApps(app);
+      var appInfo = AppInfo.fromInstalledApps(app);
+
+      // Apply icon pack override if configured
+      appInfo = await IconPackService.applyIconPackToApp(appInfo, widget.prefs);
 
       // Handle custom names
       final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
@@ -681,7 +685,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _refreshAppInfo(String packageName) async {
     try {
       final app = await InstalledApps.getAppInfo(packageName, null);
-      final appInfo = AppInfo.fromInstalledApps(app);
+      var appInfo = AppInfo.fromInstalledApps(app);
+
+      // Apply icon pack override if configured
+      appInfo = await IconPackService.applyIconPackToApp(appInfo, widget.prefs);
 
       // Load custom name if exists
       final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';

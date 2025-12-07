@@ -13,6 +13,7 @@ import 'package:think_launcher/screens/folder_management_screen.dart';
 import 'package:think_launcher/screens/gesture_settings_screen.dart';
 import 'package:think_launcher/screens/reorder_apps_screen.dart';
 import 'package:think_launcher/screens/single_app_selection_screen.dart';
+import 'package:think_launcher/screens/icon_pack_screen.dart';
 import 'package:think_launcher/models/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:think_launcher/constants/app_alignment.dart';
@@ -45,6 +46,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double wallpaperBlur = 0.0; // 0 = no blur when no wallpaper; 1-10 when set
   String? weatherAppPackageName;
   AppAlignment appAlignment = AppAlignment.left;
+  String? iconPackPackageName;
+  String? iconPackAppName;
 
   @override
   void initState() {
@@ -76,6 +79,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
       appAlignment =
           appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
+      iconPackPackageName = widget.prefs.getString('iconPackPackageName');
+      iconPackAppName = widget.prefs.getString('iconPackAppName');
     });
   }
 
@@ -110,6 +115,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await widget.prefs.setString('weatherAppPackageName', weatherAppPackageName!);
       }
       await widget.prefs.setString('appAlignment', appAlignment.storageKey);
+
+      if (iconPackPackageName == null) {
+        await widget.prefs.remove('iconPackPackageName');
+        await widget.prefs.remove('iconPackAppName');
+      } else {
+        await widget.prefs.setString('iconPackPackageName', iconPackPackageName!);
+        if (iconPackAppName != null && iconPackAppName!.isNotEmpty) {
+          await widget.prefs.setString('iconPackAppName', iconPackAppName!);
+        }
+      }
 
       // Update status bar visibility
       final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
@@ -202,6 +217,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _saveSettings();
     }
     // If result is null, user pressed back - don't change anything
+  }
+
+  Future<void> _selectIconPack() async {
+    final result = await Navigator.push<Map<String, String>?>(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return IconPackScreen(
+            selectedIconPackPackage: iconPackPackageName,
+          );
+        },
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+
+    if (!mounted || result == null) return;
+
+    final selectedPackage = result['packageName'] ?? '';
+    final selectedName = result['name'] ?? '';
+
+    setState(() {
+      if (selectedPackage.isEmpty) {
+        // System default
+        iconPackPackageName = null;
+        iconPackAppName = null;
+      } else {
+        iconPackPackageName = selectedPackage;
+        iconPackAppName =
+            selectedName.isNotEmpty ? selectedName : selectedPackage;
+      }
+    });
+
+    await _saveSettings();
   }
 
   Future<String?> _getWeatherAppName() async {
@@ -594,21 +643,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
 
                       // 5. Color mode
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.colorMode,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      Opacity(
+                        opacity: iconPackPackageName == null ? 1.0 : 0.4,
+                        child: SwitchListTile(
+                          title: Text(
+                            AppLocalizations.of(context)!.colorMode,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                          value: colorMode,
+                          onChanged: (value) {
+                            if (iconPackPackageName != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(AppLocalizations.of(context)!.iconPackColorModeWarning),
+                              ));
+                              return;
+                            }
+                            setState(() {
+                              colorMode = value;
+                            });
+                            _saveSettings();
+                          },
                         ),
-                        value: colorMode,
-                        onChanged: (value) {
-                          setState(() {
-                            colorMode = value;
-                          });
-                          _saveSettings();
-                        },
                       ),
 
                       // 6. Show icons
@@ -628,6 +686,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _saveSettings();
                         },
                       ),
+
+                      // 6b. Icon pack
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.iconPackSettingLabel,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          iconPackAppName ?? AppLocalizations.of(context)!.iconPackSystemDefault,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _selectIconPack,
+                      ),
+                      const SizedBox(height: 8),
 
                       // 7. Wake on notification
                       SwitchListTile(

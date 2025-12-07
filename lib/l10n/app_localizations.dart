@@ -730,6 +730,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Right'**
   String get appAlignmentRight;
+
+  /// Label for the icon pack setting in settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Icon pack'**
+  String get iconPackSettingLabel;
+
+  /// Title for the icon pack selection screen
+  ///
+  /// In en, this message translates to:
+  /// **'Icon pack'**
+  String get iconPackScreenTitle;
+
+  /// Note shown on the icon pack selection screen about limited support
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Not all third-party icon packs are supported.'**
+  String get iconPackNote;
+
+  /// Label for using the system default icons instead of an icon pack
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get iconPackSystemDefault;
+
+  /// Error message when icon packs fail to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load icon packs.'**
+  String get iconPackErrorLoading;
+
+  /// Shown when color mode is not usable when custom icon pack is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot apply color mode when custom icon is selected'**
+  String get iconPackColorModeWarning;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -343,4 +343,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appAlignmentRight => 'Right';
+
+  @override
+  String get iconPackSettingLabel => 'Icon pack';
+
+  @override
+  String get iconPackScreenTitle => 'Icon pack';
+
+  @override
+  String get iconPackNote => 'Note: Not all third-party icon packs are supported.';
+
+  @override
+  String get iconPackSystemDefault => 'System default';
+
+  @override
+  String get iconPackErrorLoading => 'Failed to load icon packs.';
+
+  @override
+  String get iconPackColorModeWarning => 'Cannot apply color mode when custom icon is selected';
 }

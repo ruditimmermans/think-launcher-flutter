@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:think_launcher/models/folder.dart';
 import 'package:think_launcher/models/app_info.dart';
+import 'package:think_launcher/services/icon_pack_service.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'dart:convert';
 import 'package:think_launcher/l10n/app_localizations.dart';
@@ -213,7 +214,10 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
           final app = await InstalledApps.getAppInfo(packageName, null);
           if (!mounted) return null;
 
-          final appInfo = AppInfo.fromInstalledApps(app);
+          var appInfo = AppInfo.fromInstalledApps(app);
+
+          // Apply icon pack override if configured
+          appInfo = await IconPackService.applyIconPackToApp(appInfo, widget.prefs);
           final customNamesJson =
               widget.prefs.getString('customAppNames') ?? '{}';
           final customNames =

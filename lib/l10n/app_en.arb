@@ -519,8 +519,58 @@
     "description": "Message when no weather app is selected"
   },
 
+  "appAlignment": "App alignment",
+  "@appAlignment": {
+    "description": "Label for app alignment setting"
+  },
+
+  "appAlignmentLeft": "Left",
+  "@appAlignmentLeft": {
+    "description": "Left alignment option"
+  },
+
+  "appAlignmentCenter": "Center",
+  "@appAlignmentCenter": {
+    "description": "Center alignment option"
+  },
+
+  "appAlignmentRight": "Right",
+  "@appAlignmentRight": {
+    "description": "Right alignment option"
+  },
+
   "noFolders": "No Folders",
   "@noFolders": {
     "description": "Message when no folders are there"
+  },
+
+  "iconPackSettingLabel": "Icon pack",
+  "@iconPackSettingLabel": {
+    "description": "Label for the icon pack setting in settings screen"
+  },
+
+  "iconPackScreenTitle": "Icon pack",
+  "@iconPackScreenTitle": {
+    "description": "Title for the icon pack selection screen"
+  },
+
+  "iconPackNote": "Note: Not all third-party icon packs are supported.",
+  "@iconPackNote": {
+    "description": "Note shown on the icon pack selection screen about limited support"
+  },
+
+  "iconPackSystemDefault": "System default",
+  "@iconPackSystemDefault": {
+    "description": "Label for using the system default icons instead of an icon pack"
+  },
+
+  "iconPackErrorLoading": "Failed to load icon packs.",
+  "@iconPackErrorLoading": {
+    "description": "Error message when icon packs fail to load"
+  },
+
+  "iconPackColorModeWarning": "Cannot apply color mode when custom icon is selected",
+  "@iconPackColorModeWarning": {
+    "description": "Shown when color mode is not usable when custom icon pack is selected"
   }
 }

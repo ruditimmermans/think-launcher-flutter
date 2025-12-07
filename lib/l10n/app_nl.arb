@@ -519,8 +519,58 @@
     "description": "Bericht wanneer geen weer-app is geselecteerd"
   },
 
+  "appAlignment": "App-uitlijning",
+  "@appAlignment": {
+    "description": "Label voor app-uitlijning instelling"
+  },
+
+  "appAlignmentLeft": "Links",
+  "@appAlignmentLeft": {
+    "description": "Optie voor uitlijning links"
+  },
+
+  "appAlignmentCenter": "Midden",
+  "@appAlignmentCenter": {
+    "description": "Optie voor uitlijning in het midden"
+  },
+
+  "appAlignmentRight": "Rechts",
+  "@appAlignmentRight": {
+    "description": "Optie voor uitlijning rechts"
+  },
+
   "noFolders": "Geen mappen",
   "@noFolders": {
     "description": "Message when no folders are there"
+  },
+
+  "iconPackSettingLabel": "Pictogrampakket",
+  "@iconPackSettingLabel": {
+    "description": "Label voor de pictogrampakket-instelling in het instellingen scherm"
+  },
+
+  "iconPackScreenTitle": "Pictogrampakket",
+  "@iconPackScreenTitle": {
+    "description": "Titel voor het pictogrampakket-selectiescherm"
+  },
+
+  "iconPackNote": "Let op: niet alle pictogrampakketten van derden worden ondersteund.",
+  "@iconPackNote": {
+    "description": "Opmerking op het pictogrampakket-selectiescherm over beperkte ondersteuning"
+  },
+
+  "iconPackSystemDefault": "Systeemstandaard",
+  "@iconPackSystemDefault": {
+    "description": "Label voor het gebruik van systeempictogrammen in plaats van een pictogrampakket"
+  },
+
+  "iconPackErrorLoading": "Laden van pictogrampakketten mislukt.",
+  "@iconPackErrorLoading": {
+    "description": "Foutmelding wanneer pictogrampakketten niet kunnen worden geladen"
+  },
+
+  "iconPackColorModeWarning": "Kan de kleurmodus niet toepassen als een aangepast pictogram is geselecteerd",
+  "@iconPackColorModeWarning": {
+    "description": "Shown when color mode is not usable when custom icon pack is selected"
   }
 }

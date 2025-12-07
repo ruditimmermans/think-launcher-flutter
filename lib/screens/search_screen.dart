@@ -5,6 +5,7 @@ import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import '../models/app_info.dart';
 import 'dart:convert';
+import 'package:think_launcher/services/icon_pack_service.dart';
 
 // Theme and style constants
 const _kSearchPadding = EdgeInsets.all(16.0);
@@ -124,7 +125,14 @@ class _SearchScreenState extends State<SearchScreen> {
       );
       if (!mounted) return;
 
-      final apps = installedApps.map(AppInfo.fromInstalledApps).toList();
+      var apps = installedApps.map(AppInfo.fromInstalledApps).toList();
+
+      // Apply icon pack overrides if configured
+      apps = await Future.wait(
+        apps.map(
+          (app) => IconPackService.applyIconPackToApp(app, widget.prefs),
+        ),
+      );
 
       // Load custom names for all apps
       final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';

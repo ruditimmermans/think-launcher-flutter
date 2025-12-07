@@ -343,4 +343,22 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get appAlignmentRight => 'Rechts';
+
+  @override
+  String get iconPackSettingLabel => 'Pictogrampakket';
+
+  @override
+  String get iconPackScreenTitle => 'Pictogrampakket';
+
+  @override
+  String get iconPackNote => 'Let op: niet alle pictogrampakketten van derden worden ondersteund.';
+
+  @override
+  String get iconPackSystemDefault => 'Systeemstandaard';
+
+  @override
+  String get iconPackErrorLoading => 'Laden van pictogrampakketten mislukt.';
+
+  @override
+  String get iconPackColorModeWarning => 'Kan de kleurmodus niet toepassen als een aangepast pictogram is geselecteerd';
 }
