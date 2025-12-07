@@ -13,13 +13,16 @@
 - Feat: Added icon for app list
 - Feat: Added notification support in app list
 - Feat: Added folder support
-- Feat: Weather support
+- Feat: Weather support with custom app to launch support
 - Feat: Removed app grid, bold font & long press gesture support
 - Feat: Remove app limit
 - Feat: Automatic Save feature after changes in settings
 - Feat: Added Clear selected gesture app button
 - Feat: App & Folder long press dialog options
 - Feat: App & Folder reorder support
+- Feat: Wallpaper with customizable blur support
+- Feat: App alignment options
+- Feat: Custom third party icon support
 - Bug: Fixed for uninstalled apps
 
 ## Screenshots 📷
