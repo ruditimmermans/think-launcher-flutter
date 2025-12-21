@@ -459,7 +459,7 @@
   "wallpaperBlur": "Wallpaper blur",
   "@wallpaperBlur": { "description": "Label for wallpaper blur slider" },
 
-  "scrollToTop": "Scroll to top",
+  "scrollToTop": "Auto scroll on folder close",
   "@scrollToTop": { "description": "Label for Scroll to top" },
 
   "exportSettings": "Export settings",
@@ -572,5 +572,65 @@
   "iconPackColorModeWarning": "Cannot apply color mode when custom icon is selected",
   "@iconPackColorModeWarning": {
     "description": "Shown when color mode is not usable when custom icon pack is selected"
+  },
+
+  "weatherApiKeyTitle": "Weather API key",
+  "@weatherApiKeyTitle": {
+    "description": "Title for the weather API key setting"
+  },
+
+  "weatherApiKeyNotSet": "Not set",
+  "@weatherApiKeyNotSet": {
+    "description": "Subtitle when no weather API key is configured"
+  },
+
+  "weatherApiKeyCustomSet": "Custom key set",
+  "@weatherApiKeyCustomSet": {
+    "description": "Subtitle when a custom weather API key is configured"
+  },
+
+  "weatherApiKeyDialogTitle": "OpenWeather API key",
+  "@weatherApiKeyDialogTitle": {
+    "description": "Title for the dialog where the user enters their OpenWeather API key"
+  },
+
+  "weatherApiKeyDialogLabel": "OpenWeather API key",
+  "@weatherApiKeyDialogLabel": {
+    "description": "Label for the weather API key text field"
+  },
+
+  "weatherApiKeyDialogHint": "Enter API key",
+  "@weatherApiKeyDialogHint": {
+    "description": "Hint text for the weather API key text field"
+  },
+
+  "weatherApiKeyDialogHelp": "You can get your API key from https://openweathermap.org/api",
+  "@weatherApiKeyDialogHelp": {
+    "description": "Helper text shown below the weather API key field"
+  },
+
+  "aboutTitle": "About",
+  "@aboutTitle": {
+    "description": "Title for the About screen"
+  },
+
+  "aboutVersionLabel": "Version",
+  "@aboutVersionLabel": {
+    "description": "Label for the app version row in the About screen"
+  },
+
+  "aboutLoadError": "Unable to load app information",
+  "@aboutLoadError": {
+    "description": "Error message shown when the About screen cannot load app info"
+  },
+
+  "licenseScreenTitle": "Open source licenses",
+  "@licenseScreenTitle": {
+    "description": "Title for the license screen"
+  },
+
+  "aboutOpenSourceLicenses": "Open source licenses",
+  "@aboutOpenSourceLicenses": {
+    "description": "Label for the Open source licenses item in the About screen"
   }
 }

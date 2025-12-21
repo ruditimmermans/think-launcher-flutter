@@ -19,8 +19,6 @@ class GestureSettingsScreen extends StatefulWidget {
 class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
   bool _autoFocusSearch = true;
 
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -30,7 +28,6 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
   void _loadSettings() {
     setState(() {
       _autoFocusSearch = widget.prefs.getBool('autoFocusSearch') ?? true;
-      _isLoading = false;
     });
   }
 
@@ -56,52 +53,42 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: _isLoading
-              ? Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.loading,
-                    style: const TextStyle(fontSize: _kFontSize),
-                  ),
-                )
-              : Theme(
-                  data: Theme.of(context).copyWith(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                  ),
-                  child: ScrollConfiguration(
-                    behavior: NoGlowScrollBehavior(),
-                    child: ListView(
-                      physics: const ClampingScrollPhysics(),
-                      children: [
-                        SwitchListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.autoFocusSearch,
-                            style: const TextStyle(
-                              fontSize: _kFontSize,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Text(
-                            AppLocalizations.of(context)!
-                                .autoFocusSearchDescription,
-                            style:
-                                const TextStyle(fontSize: _kSubtitleFontSize),
-                          ),
-                          value: _autoFocusSearch,
-                          onChanged: (value) {
-                            setState(() {
-                              _autoFocusSearch = value;
-                            });
-                            _saveSettings();
-                          },
-                        ),
-
-                      ],
+          body: Theme(
+            data: Theme.of(context).copyWith(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
+            ),
+            child: ScrollConfiguration(
+              behavior: NoGlowScrollBehavior(),
+              child: ListView(
+                physics: const ClampingScrollPhysics(),
+                children: [
+                  SwitchListTile(
+                    title: Text(
+                      AppLocalizations.of(context)!.autoFocusSearch,
+                      style: const TextStyle(
+                        fontSize: _kFontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    subtitle: Text(
+                      AppLocalizations.of(context)!.autoFocusSearchDescription,
+                      style: const TextStyle(fontSize: _kSubtitleFontSize),
+                    ),
+                    value: _autoFocusSearch,
+                    onChanged: (value) {
+                      setState(() {
+                        _autoFocusSearch = value;
+                      });
+                      _saveSettings();
+                    },
                   ),
-                ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -614,7 +614,7 @@ abstract class AppLocalizations {
   /// Label for Scroll to top
   ///
   /// In en, this message translates to:
-  /// **'Scroll to top'**
+  /// **'Auto scroll on folder close'**
   String get scrollToTop;
 
   /// Title for export settings tile
@@ -766,6 +766,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot apply color mode when custom icon is selected'**
   String get iconPackColorModeWarning;
+
+  /// Title for the weather API key setting
+  ///
+  /// In en, this message translates to:
+  /// **'Weather API key'**
+  String get weatherApiKeyTitle;
+
+  /// Subtitle when no weather API key is configured
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get weatherApiKeyNotSet;
+
+  /// Subtitle when a custom weather API key is configured
+  ///
+  /// In en, this message translates to:
+  /// **'Custom key set'**
+  String get weatherApiKeyCustomSet;
+
+  /// Title for the dialog where the user enters their OpenWeather API key
+  ///
+  /// In en, this message translates to:
+  /// **'OpenWeather API key'**
+  String get weatherApiKeyDialogTitle;
+
+  /// Label for the weather API key text field
+  ///
+  /// In en, this message translates to:
+  /// **'OpenWeather API key'**
+  String get weatherApiKeyDialogLabel;
+
+  /// Hint text for the weather API key text field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter API key'**
+  String get weatherApiKeyDialogHint;
+
+  /// Helper text shown below the weather API key field
+  ///
+  /// In en, this message translates to:
+  /// **'You can get your API key from https://openweathermap.org/api'**
+  String get weatherApiKeyDialogHelp;
+
+  /// Title for the About screen
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutTitle;
+
+  /// Label for the app version row in the About screen
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get aboutVersionLabel;
+
+  /// Error message shown when the About screen cannot load app info
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load app information'**
+  String get aboutLoadError;
+
+  /// Title for the license screen
+  ///
+  /// In en, this message translates to:
+  /// **'Open source licenses'**
+  String get licenseScreenTitle;
+
+  /// Label for the Open source licenses item in the About screen
+  ///
+  /// In en, this message translates to:
+  /// **'Open source licenses'**
+  String get aboutOpenSourceLicenses;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

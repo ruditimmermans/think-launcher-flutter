@@ -1,7 +1,7 @@
 name: think_launcher
-description: A minimalist launcher for E-Ink screens
+description: A minimalist launcher for OLED & E-Ink screens
 publish_to: 'none'
-version: 1.18.0
+version: 1.19.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -13,7 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  installed_apps: ^1.0.0
+  installed_apps: ^2.1.0
   shared_preferences: ^2.2.2
   intl: ^0.20.2
   cupertino_icons: ^1.0.2
@@ -26,11 +26,9 @@ dependencies:
   palette_generator: ^0.3.3+3
   path_provider: ^2.1.4
   file_picker: ^8.0.6
-
-  notification_listener_service:
-    git:
-      url: https://github.com/jagadeesh-k-2802/notification-listener-service-flutter.git
-      ref: feat/on-going-flag
+  notification_listener_service: ^0.3.5
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

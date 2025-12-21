@@ -1,4 +1,4 @@
-package com.desu.think_launcher
+package com.jackappsdev.think_minimal_launcher
 
 import android.annotation.SuppressLint
 import android.content.Context

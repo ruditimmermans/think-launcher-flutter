@@ -211,7 +211,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
           .where((packageName) => !_appInfoCache.containsKey(packageName))
           .map((packageName) async {
         try {
-          final app = await InstalledApps.getAppInfo(packageName, null);
+          final app = await InstalledApps.getAppInfo(packageName);
           if (!mounted) return null;
 
           var appInfo = AppInfo.fromInstalledApps(app);

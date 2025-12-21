@@ -37,9 +37,10 @@ class _AppCache {
 
     try {
       final currentApps = await InstalledApps.getInstalledApps(
-        false, // excludeSystemApps
-        false, // withIcon
-        '', // packageNamePrefix
+        excludeSystemApps: false,
+        excludeNonLaunchableApps: true,
+        withIcon: false,
+        packageNamePrefix: '',
       );
       final currentPackageList =
           currentApps.map((app) => app.packageName).join(',');
@@ -119,9 +120,10 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadAndCacheApps() async {
     try {
       final installedApps = await InstalledApps.getInstalledApps(
-        false, // excludeSystemApps
-        false, // withIcon
-        '', // packageNamePrefix
+        excludeSystemApps: false,
+        excludeNonLaunchableApps: true,
+        withIcon: false,
+        packageNamePrefix: '',
       );
       if (!mounted) return;
 

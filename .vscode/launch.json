@@ -4,8 +4,7 @@
         {
             "name": "App Debug",
             "request": "launch",
-            "type": "dart",
-            "toolArgs": ["--dart-define-from-file=config/env.json"]
+            "type": "dart"
         }
     ]
 }

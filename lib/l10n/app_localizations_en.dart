@@ -281,7 +281,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wallpaperBlur => 'Wallpaper blur';
 
   @override
-  String get scrollToTop => 'Scroll to top';
+  String get scrollToTop => 'Auto scroll on folder close';
 
   @override
   String get exportSettings => 'Export settings';
@@ -361,4 +361,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iconPackColorModeWarning => 'Cannot apply color mode when custom icon is selected';
+
+  @override
+  String get weatherApiKeyTitle => 'Weather API key';
+
+  @override
+  String get weatherApiKeyNotSet => 'Not set';
+
+  @override
+  String get weatherApiKeyCustomSet => 'Custom key set';
+
+  @override
+  String get weatherApiKeyDialogTitle => 'OpenWeather API key';
+
+  @override
+  String get weatherApiKeyDialogLabel => 'OpenWeather API key';
+
+  @override
+  String get weatherApiKeyDialogHint => 'Enter API key';
+
+  @override
+  String get weatherApiKeyDialogHelp => 'You can get your API key from https://openweathermap.org/api';
+
+  @override
+  String get aboutTitle => 'About';
+
+  @override
+  String get aboutVersionLabel => 'Version';
+
+  @override
+  String get aboutLoadError => 'Unable to load app information';
+
+  @override
+  String get licenseScreenTitle => 'Open source licenses';
+
+  @override
+  String get aboutOpenSourceLicenses => 'Open source licenses';
 }

@@ -1,18 +1,11 @@
 import 'dart:typed_data';
 
-enum BuiltWith {
-  flutter,
-  native,
-  unknown,
-}
-
 class AppInfo {
   final String name;
   final Uint8List? icon;
   final String packageName;
   final String versionName;
   final int versionCode;
-  final BuiltWith builtWith;
   final int installedTimestamp;
   final String? customName;
 
@@ -22,7 +15,6 @@ class AppInfo {
     required this.packageName,
     required this.versionName,
     required this.versionCode,
-    required this.builtWith,
     required this.installedTimestamp,
     this.customName,
   });
@@ -37,7 +29,6 @@ class AppInfo {
     String? packageName,
     String? versionName,
     int? versionCode,
-    BuiltWith? builtWith,
     int? installedTimestamp,
     String? customName,
   }) {
@@ -47,7 +38,6 @@ class AppInfo {
       packageName: packageName ?? this.packageName,
       versionName: versionName ?? this.versionName,
       versionCode: versionCode ?? this.versionCode,
-      builtWith: builtWith ?? this.builtWith,
       installedTimestamp: installedTimestamp ?? this.installedTimestamp,
       customName: customName ?? this.customName,
     );
@@ -60,10 +50,6 @@ class AppInfo {
       packageName: app.packageName as String,
       versionName: app.versionName as String,
       versionCode: app.versionCode as int,
-      builtWith: BuiltWith.values.firstWhere(
-        (e) => e.toString() == 'BuiltWith.${app.builtWith}',
-        orElse: () => BuiltWith.unknown,
-      ),
       installedTimestamp: app.installedTimestamp as int,
     );
   }
@@ -75,10 +61,6 @@ class AppInfo {
       packageName: json['packageName'] as String,
       versionName: json['versionName'] as String,
       versionCode: json['versionCode'] as int,
-      builtWith: BuiltWith.values.firstWhere(
-        (e) => e.toString() == 'BuiltWith.${json['builtWith']}',
-        orElse: () => BuiltWith.unknown,
-      ),
       installedTimestamp: json['installedTimestamp'] as int,
       customName: json['customName'] as String?,
     );
@@ -91,7 +73,6 @@ class AppInfo {
       'packageName': packageName,
       'versionName': versionName,
       'versionCode': versionCode,
-      'builtWith': builtWith.toString().split('.').last,
       'installedTimestamp': installedTimestamp,
       'customName': customName,
     };

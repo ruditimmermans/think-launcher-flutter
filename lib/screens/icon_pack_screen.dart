@@ -33,7 +33,7 @@ class IconPackScreen extends StatefulWidget {
 }
 
 class _IconPackScreenState extends State<IconPackScreen> {
-  static const MethodChannel _channel = MethodChannel('com.desu.think_launcher/icon_packs');
+  static const MethodChannel _channel = MethodChannel('com.jackappsdev.think_minimal_launcher/icon_packs');
 
   List<IconPackInfo> _iconPacks = [];
   bool _isLoading = false;

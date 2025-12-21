@@ -1,4 +1,4 @@
-package com.desu.think_launcher
+package com.jackappsdev.think_minimal_launcher
 
 import android.content.Context
 import android.os.PowerManager
@@ -71,12 +71,12 @@ class MainActivity : FlutterActivity() {
     }
 
     companion object {
-        private const val WAKE_CHANNEL = "com.desu.think_launcher/wake"
+        private const val WAKE_CHANNEL = "com.jackappsdev.think_minimal_launcher/wake"
         private const val WAKE_METHOD = "wakeScreen"
         private const val WAKE_LOCK_SECONDS_PARAM = "seconds"
         private const val WAKE_LOCK_TAG = "think_launcher:WakeLock"
 
-        private const val ICON_PACK_CHANNEL_NAME = "com.desu.think_launcher/icon_packs"
+        private const val ICON_PACK_CHANNEL_NAME = "com.jackappsdev.think_minimal_launcher/icon_packs"
         private const val ICON_PACK_LIST_METHOD_NAME = "getIconPacks"
         private const val ICON_PACK_ICON_METHOD_NAME = "getIconForApp"
 

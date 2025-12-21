@@ -281,7 +281,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get wallpaperBlur => 'Achtergrond vervagen';
 
   @override
-  String get scrollToTop => 'Naar boven scrollen';
+  String get scrollToTop => 'Automatisch scrollen bij het sluiten van een map';
 
   @override
   String get exportSettings => 'Instellingen exporteren';
@@ -361,4 +361,40 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get iconPackColorModeWarning => 'Kan de kleurmodus niet toepassen als een aangepast pictogram is geselecteerd';
+
+  @override
+  String get weatherApiKeyTitle => 'Weer-API-sleutel';
+
+  @override
+  String get weatherApiKeyNotSet => 'Niet ingesteld';
+
+  @override
+  String get weatherApiKeyCustomSet => 'Aangepaste sleutel ingesteld';
+
+  @override
+  String get weatherApiKeyDialogTitle => 'OpenWeather API-sleutel';
+
+  @override
+  String get weatherApiKeyDialogLabel => 'OpenWeather API-sleutel';
+
+  @override
+  String get weatherApiKeyDialogHint => 'Voer API-sleutel in';
+
+  @override
+  String get weatherApiKeyDialogHelp => 'Je kunt je API-sleutel krijgen via https://openweathermap.org/api';
+
+  @override
+  String get aboutTitle => 'Over';
+
+  @override
+  String get aboutVersionLabel => 'Versie';
+
+  @override
+  String get aboutLoadError => 'Kan app-informatie niet laden';
+
+  @override
+  String get licenseScreenTitle => 'Open source licenties';
+
+  @override
+  String get aboutOpenSourceLicenses => 'Open source licenties';
 }

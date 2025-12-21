@@ -49,7 +49,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
   Future<void> _loadAppInfo() async {
     final futures = widget.selectedApps.map((packageName) async {
       try {
-        final app = await InstalledApps.getAppInfo(packageName, null);
+        final app = await InstalledApps.getAppInfo(packageName);
         var appInfo = AppInfo.fromInstalledApps(app);
 
         // Apply icon pack override if configured
@@ -124,7 +124,10 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.createFolder),
+        title: Text(
+          AppLocalizations.of(context)!.createFolder,
+          style: const TextStyle(fontSize: 20),
+        ),
         content: TextField(
           controller: _folderNameController,
           decoration: InputDecoration(
@@ -167,7 +170,10 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.editFolder),
+        title: Text(
+          AppLocalizations.of(context)!.editFolder,
+          style: const TextStyle(fontSize: 20),
+        ),
         content: TextField(
           controller: _folderNameController,
           decoration: InputDecoration(
@@ -210,7 +216,10 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteFolder),
+        title: Text(
+          AppLocalizations.of(context)!.deleteFolder,
+          style: const TextStyle(fontSize: 20),
+        ),
         content: Text(
             AppLocalizations.of(context)!.deleteFolderConfirm(folder.name)),
         actions: [
@@ -245,7 +254,9 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(
-              AppLocalizations.of(context)!.manageAppsInFolder(folder.name)),
+            AppLocalizations.of(context)!.manageAppsInFolder(folder.name),
+            style: const TextStyle(fontSize: 20),
+          ),
           content: SizedBox(
             width: double.maxFinite,
             height: MediaQuery.of(context).size.height * 0.4,

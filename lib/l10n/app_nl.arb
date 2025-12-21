@@ -459,7 +459,7 @@
   "wallpaperBlur": "Achtergrond vervagen",
   "@wallpaperBlur": { "description": "Label voor schuifregelaar voor achtergrondvervaging" },
 
-  "scrollToTop": "Naar boven scrollen",
+  "scrollToTop": "Automatisch scrollen bij het sluiten van een map",
   "@scrollToTop": { "description": "Label for Scroll to top" },
 
   "exportSettings": "Instellingen exporteren",
@@ -572,5 +572,65 @@
   "iconPackColorModeWarning": "Kan de kleurmodus niet toepassen als een aangepast pictogram is geselecteerd",
   "@iconPackColorModeWarning": {
     "description": "Shown when color mode is not usable when custom icon pack is selected"
+  },
+
+  "weatherApiKeyTitle": "Weer-API-sleutel",
+  "@weatherApiKeyTitle": {
+    "description": "Titel voor de weer-API-sleutel-instelling"
+  },
+
+  "weatherApiKeyNotSet": "Niet ingesteld",
+  "@weatherApiKeyNotSet": {
+    "description": "Subtitel wanneer er geen weer-API-sleutel is ingesteld"
+  },
+
+  "weatherApiKeyCustomSet": "Aangepaste sleutel ingesteld",
+  "@weatherApiKeyCustomSet": {
+    "description": "Subtitel wanneer er een aangepaste weer-API-sleutel is ingesteld"
+  },
+
+  "weatherApiKeyDialogTitle": "OpenWeather API-sleutel",
+  "@weatherApiKeyDialogTitle": {
+    "description": "Titel voor de dialoog waarin de gebruiker zijn OpenWeather API-sleutel invoert"
+  },
+
+  "weatherApiKeyDialogLabel": "OpenWeather API-sleutel",
+  "@weatherApiKeyDialogLabel": {
+    "description": "Label voor het tekstveld voor de weer-API-sleutel"
+  },
+
+  "weatherApiKeyDialogHint": "Voer API-sleutel in",
+  "@weatherApiKeyDialogHint": {
+    "description": "Hinttekst voor het tekstveld voor de weer-API-sleutel"
+  },
+
+  "weatherApiKeyDialogHelp": "Je kunt je API-sleutel krijgen via https://openweathermap.org/api",
+  "@weatherApiKeyDialogHelp": {
+    "description": "Hulptest die onder het veld voor de weer-API-sleutel wordt weergegeven"
+  },
+
+  "aboutTitle": "Over",
+  "@aboutTitle": {
+    "description": "Titel voor het Over-scherm"
+  },
+
+  "aboutVersionLabel": "Versie",
+  "@aboutVersionLabel": {
+    "description": "Label voor de app-versierij in het Over-scherm"
+  },
+
+  "aboutLoadError": "Kan app-informatie niet laden",
+  "@aboutLoadError": {
+    "description": "Foutmelding wanneer het Over-scherm app-informatie niet kan laden"
+  },
+
+  "licenseScreenTitle": "Open source licenties",
+  "@licenseScreenTitle": {
+    "description": "Titel voor het licentiescherm"
+  },
+
+  "aboutOpenSourceLicenses": "Open source licenties",
+  "@aboutOpenSourceLicenses": {
+    "description": "Label voor het item Open source licenties in het Over-scherm"
   }
 }

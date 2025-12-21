@@ -17,6 +17,8 @@ import 'package:think_launcher/screens/icon_pack_screen.dart';
 import 'package:think_launcher/models/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:think_launcher/constants/app_alignment.dart';
+import 'package:think_launcher/screens/about_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -48,6 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   AppAlignment appAlignment = AppAlignment.left;
   String? iconPackPackageName;
   String? iconPackAppName;
+  String? weatherApiKey;
 
   @override
   void initState() {
@@ -81,6 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
       iconPackPackageName = widget.prefs.getString('iconPackPackageName');
       iconPackAppName = widget.prefs.getString('iconPackAppName');
+      weatherApiKey = widget.prefs.getString('weatherApiKey');
     });
   }
 
@@ -124,6 +128,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (iconPackAppName != null && iconPackAppName!.isNotEmpty) {
           await widget.prefs.setString('iconPackAppName', iconPackAppName!);
         }
+      }
+
+      if (weatherApiKey == null || weatherApiKey!.isEmpty) {
+        await widget.prefs.remove('weatherApiKey');
+      } else {
+        await widget.prefs.setString('weatherApiKey', weatherApiKey!);
       }
 
       // Update status bar visibility
@@ -256,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<String?> _getWeatherAppName() async {
     if (weatherAppPackageName == null) return null;
     try {
-      final app = await InstalledApps.getAppInfo(weatherAppPackageName!, null);
+      final app = await InstalledApps.getAppInfo(weatherAppPackageName!);
       if (app == null) return null;
       final appInfo = AppInfo.fromInstalledApps(app);
       // Check for custom name
@@ -267,6 +277,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       debugPrint('Error getting weather app name: $e');
       return null;
+    }
+  }
+
+  Future<void> _editWeatherApiKey() async {
+    final controller = TextEditingController(text: weatherApiKey ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(context)!.weatherApiKeyDialogTitle,
+            style: const TextStyle(fontSize: 20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText:
+                      AppLocalizations.of(context)!.weatherApiKeyDialogLabel,
+                  hintText:
+                      AppLocalizations.of(context)!.weatherApiKeyDialogHint,
+                ),
+                autofocus: true,
+                autocorrect: false,
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final uri =
+                      Uri.parse('https://openweathermap.org/api');
+                  try {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } catch (_) {
+                    // ignore launch failures
+                  }
+                },
+                child: Text(
+                  AppLocalizations.of(context)!.weatherApiKeyDialogHelp,
+                  style: const TextStyle(
+                    fontSize: 12
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: Text(AppLocalizations.of(context)!.save),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        weatherApiKey = result.isEmpty ? null : result;
+      });
+      await _saveSettings();
     }
   }
 
@@ -1302,6 +1380,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
+                      // 16c. Weather API key
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.weatherApiKeyTitle,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          (weatherApiKey == null || weatherApiKey!.isEmpty)
+                              ? AppLocalizations.of(context)!
+                                  .weatherApiKeyNotSet
+                              : AppLocalizations.of(context)!
+                                  .weatherApiKeyCustomSet,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        trailing: (weatherApiKey == null || weatherApiKey!.isEmpty)
+                            ? const Icon(Icons.chevron_right)
+                            : IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () async {
+                                  setState(() {
+                                    weatherApiKey = null;
+                                  });
+                                  await _saveSettings();
+                                },
+                              ),
+                        onTap: _editWeatherApiKey,
+                      ),
+
                       // 17. Export settings
                       const Divider(height: 32),
                       ListTile(
@@ -1333,6 +1443,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               .importSettingsSubtitle,
                         ),
                         onTap: _importSettings,
+                      ),
+
+                      // 19. About
+                      const Divider(height: 32),
+                      ListTile(
+                        title: const Text(
+                          'About',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) {
+                                return const AboutScreen();
+                              },
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

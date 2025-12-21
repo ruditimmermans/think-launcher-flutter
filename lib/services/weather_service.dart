@@ -11,7 +11,7 @@ class WeatherService {
   // Cache variables
   WeatherInfo? _cachedWeather;
   DateTime? _lastFetchTime;
-  final Duration cacheDuration = const Duration(seconds: 120);
+  final Duration cacheDuration = const Duration(minutes: 15);
 
   WeatherService({required this.apiKey});
 

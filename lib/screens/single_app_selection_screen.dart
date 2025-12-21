@@ -48,9 +48,10 @@ class _SingleAppSelectionScreenState extends State<SingleAppSelectionScreen> {
       });
 
       final installedApps = await InstalledApps.getInstalledApps(
-        false, // excludeSystemApps
-        false, // withIcon
-        '', // packageNamePrefix
+        excludeSystemApps: false,
+        excludeNonLaunchableApps: true,
+        withIcon: false,
+        packageNamePrefix: '',
       );
 
       final appInfos =

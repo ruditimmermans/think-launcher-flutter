@@ -73,12 +73,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   String? _weatherAppPackageName;
 
   late AppAlignment _appAlignment;
+  String? _weatherApiKey;
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
 
   static const MethodChannel _wakeChannel = MethodChannel(
-    'com.desu.think_launcher/wake',
+    'com.jackappsdev.think_minimal_launcher/wake',
   );
 
   void _saveNotifications() {
@@ -320,12 +321,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _appAlignment = appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
     // Always prepare once on init (handles null/remove as well)
     _prepareWallpaper();
+    _weatherApiKey = widget.prefs.getString('weatherApiKey');
   }
 
   void _setupWeatherService() {
-    _weatherService = WeatherService(
-      apiKey: const String.fromEnvironment('OPENWEATHER_API_KEY'),
-    );
+    _weatherService = WeatherService(apiKey: _weatherApiKey ?? '');
     _updateWeather();
   }
 
@@ -350,9 +350,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Future<void> _setupNotificationListener() async {
     // Request notification permission if not granted
-    final isGranted = await NotificationListenerService.isPermissionGranted();
+    try {
+      final isGranted = await NotificationListenerService.isPermissionGranted();
     if (!isGranted) {
-      await NotificationListenerService.requestPermission();
+        await NotificationListenerService.requestPermission();
+      }
+    } catch (e) {
+      debugPrint('Error setting up notification listener: $e');
     }
 
     // Listen to notifications
@@ -465,7 +469,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         final cachedInfo = _appInfoCache[packageName]!;
         try {
           // Verify the cached app info is still valid
-          final currentApp = await InstalledApps.getAppInfo(packageName, null);
+          final currentApp = await InstalledApps.getAppInfo(packageName);
           if (currentApp?.versionName != cachedInfo.versionName) {
             debugPrint('App $packageName updated, refreshing cache');
             _appInfoCache.remove(packageName); // Force refresh for updated app
@@ -479,7 +483,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       }
 
       // Get fresh app info
-      final app = await InstalledApps.getAppInfo(packageName, null);
+      final app = await InstalledApps.getAppInfo(packageName);
       if (app == null) {
         debugPrint('Could not get app info for $packageName');
         await _handleUninstalledApp(packageName);
@@ -684,7 +688,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Refreshes app info cache for a specific app
   Future<void> _refreshAppInfo(String packageName) async {
     try {
-      final app = await InstalledApps.getAppInfo(packageName, null);
+      final app = await InstalledApps.getAppInfo(packageName);
       var appInfo = AppInfo.fromInstalledApps(app);
 
       // Apply icon pack override if configured
@@ -729,6 +733,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'wallpaperPath': prefs.getString('wallpaperPath'),
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
         'weatherAppPackageName': prefs.getString('weatherAppPackageName'),
+        'weatherApiKey': prefs.getString('weatherApiKey'),
       };
 
       final newAlignment = appAlignmentFromStorage(prefs.getString('appAlignment'));
@@ -749,7 +754,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showFolderChevron != settings['showFolderChevron'] ||
           _wallpaperBlur != settings['wallpaperBlur'] ||
           _weatherAppPackageName != settings['weatherAppPackageName'] ||
-          _appAlignment != newAlignment;
+          _appAlignment != newAlignment ||
+          _weatherApiKey != settings['weatherApiKey'];
 
       if (hasChanges) {
         // Update all state at once to minimize rebuilds
@@ -793,6 +799,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
         // Always prepare wallpaper after settings update to ensure palette refresh
         _prepareWallpaper();
+      }
+
+      // Reconfigure weather service if API key changed
+      if (_weatherApiKey != settings['weatherApiKey']) {
+        _weatherApiKey = settings['weatherApiKey'] as String?;
+        _setupWeatherService();
+        _updateWeather();
       }
     } catch (e) {
       debugPrint('Error loading settings: $e');
@@ -917,7 +930,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       }
     } catch (e) {
       if (!mounted) return;
-      debugPrint(AppLocalizations.of(context)!.errorUpdatingWeather);
+      debugPrint('${AppLocalizations.of(context)!.errorUpdatingWeather}: $e');
     }
   }
 

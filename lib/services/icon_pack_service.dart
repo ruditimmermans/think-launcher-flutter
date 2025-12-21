@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:think_launcher/models/app_info.dart';
 
 class IconPackService {
-  static const MethodChannel _channel = MethodChannel('com.desu.think_launcher/icon_packs');
+  static const MethodChannel _channel = MethodChannel('com.jackappsdev.think_minimal_launcher/icon_packs');
 
   static Future<Uint8List?> _getIconBytes(
     String iconPackPackageName,
