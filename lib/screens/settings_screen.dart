@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import 'package:think_launcher/screens/app_selection_screen.dart';
@@ -30,7 +32,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool showDateTime = true;
   bool showSearchButton = true;
   double clockFontSize = 18.0;
   double appFontSize = 18.0;
@@ -51,16 +52,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? iconPackPackageName;
   String? iconPackAppName;
   String? weatherApiKey;
+  bool _locationEnabledForWeather = true;
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _refreshLocationPermission();
   }
 
   void _loadSettings() {
     setState(() {
-      showDateTime = widget.prefs.getBool('showDateTime') ?? true;
       showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
       clockFontSize = widget.prefs.getDouble('clockFontSize') ?? 18.0;
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
@@ -95,7 +97,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         errorMessage = null;
       });
 
-      await widget.prefs.setBool('showDateTime', showDateTime);
       await widget.prefs.setBool('showSearchButton', showSearchButton);
       await widget.prefs.setDouble('clockFontSize', clockFontSize);
       await widget.prefs.setDouble('appFontSize', appFontSize);
@@ -158,6 +159,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
         });
       }
     }
+  }
+
+  Future<void> _refreshLocationPermission() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        setState(() {
+          _locationEnabledForWeather = false;
+        });
+        return;
+      }
+
+      final permission = await Geolocator.checkPermission();
+      final granted = permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse;
+      if (!mounted) return;
+      setState(() {
+        _locationEnabledForWeather = granted;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _locationEnabledForWeather = false;
+      });
+    }
+  }
+
+  void _showEnableLocationForWeatherSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.enableLocationForWeather,
+        ),
+        action: SnackBarAction(
+          label: AppLocalizations.of(context)!.openLocationSettings,
+          onPressed: () {
+            Geolocator.openLocationSettings();
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _selectApps() async {
@@ -352,7 +395,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final prefs = widget.prefs;
       final Map<String, dynamic> data = {
-        'showDateTime': prefs.getBool('showDateTime') ?? true,
         'showSearchButton': prefs.getBool('showSearchButton') ?? true,
         'enableScroll': prefs.getBool('enableScroll') ?? true,
         'showIcons': prefs.getBool('showIcons') ?? true,
@@ -372,10 +414,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final String jsonText = const JsonEncoder.withIndent('  ').convert(data);
 
       String? savePath;
+      final formattedDate = DateFormat('yyyy-MM-dd-HH-mm-ss').format(DateTime.now());
+      final fileName = 'think_launcher_settings_$formattedDate.json';
       try {
         savePath = await FilePicker.platform.saveFile(
           dialogTitle: AppLocalizations.of(context)!.exportSettings,
-          fileName: 'think_launcher_settings.json',
+          fileName: fileName,
           type: FileType.custom,
           allowedExtensions: const ['json'],
         );
@@ -390,8 +434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (!await downloadsDir.exists()) {
             await downloadsDir.create(recursive: true);
           }
-          final fallback =
-              '${downloadsDir.path}/think_launcher_settings_${DateTime.now().millisecondsSinceEpoch}.json';
+          final fallback = '${downloadsDir.path}/$fileName';
           await File(fallback).writeAsString(jsonText);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -404,8 +447,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         } catch (_) {
           // Fallback to app-specific external storage if Downloads isn't writable
           final dir = await getExternalStorageDirectory();
-          final fallback =
-              '${dir?.path}/think_launcher_settings_${DateTime.now().millisecondsSinceEpoch}.json';
+          final fallback = '${dir?.path}/$fileName';
           await File(fallback).writeAsString(jsonText);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -488,11 +530,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final prefs = widget.prefs;
 
       // Apply known keys only
-      final bool? vShowDateTime = getBoolOrNull('showDateTime');
-      if (vShowDateTime != null) {
-        await prefs.setBool('showDateTime', vShowDateTime);
-      }
-
       final bool? vShowSearchButton = getBoolOrNull('showSearchButton');
       if (vShowSearchButton != null) {
         await prefs.setBool('showSearchButton', vShowSearchButton);
@@ -648,25 +685,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ListView(
                     physics: const ClampingScrollPhysics(),
                     children: [
-                      // 1. Show date, time and battery
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.showInformationPanel,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showDateTime,
-                        onChanged: (value) {
-                          setState(() {
-                            showDateTime = value;
-                          });
-                          _saveSettings();
-                        },
-                      ),
-
-                      // 2. Show search button
+                      // 1. Show search button
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.showSearchButton,
@@ -684,7 +703,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 3. Enable list scrolling
+                      // 2. Enable list scrolling
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.enableListScrolling,
@@ -702,7 +721,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 4. Show status bar
+                      // 3. Show status bar
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.showStatusBar,
@@ -720,7 +739,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 5. Color mode
+                      // 4. Color mode
                       Opacity(
                         opacity: iconPackPackageName == null ? 1.0 : 0.4,
                         child: SwitchListTile(
@@ -747,7 +766,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 6. Show icons
+                      // 5. Show icons
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.showIcons,
@@ -765,7 +784,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 6b. Icon pack
+                      // 5b. Icon pack
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.iconPackSettingLabel,
@@ -784,7 +803,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // 7. Wake on notification
+                      // 6. Wake on notification
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.wakeOnNotification,
@@ -802,7 +821,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 7b. Scroll to top on folder close
+                      // 6b. Scroll to top on folder close
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.scrollToTop,
@@ -820,7 +839,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 8. Show folder chevron
+                      // 7. Show folder chevron
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.showFolderChevron,
@@ -838,7 +857,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 9. Wallpaper (single setting item)
+                      // 8. Wallpaper (single setting item)
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.wallpaper,
@@ -912,7 +931,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 9b. Wallpaper blur slider (only when wallpaper is set)
+                      // 8b. Wallpaper blur slider (only when wallpaper is set)
                       if (wallpaperPath != null) ...[
                         Padding(
                           padding:
@@ -1003,7 +1022,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ],
 
-                      // 10. Clock font size
+                      // 9. Clock font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1052,7 +1071,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 child: Slider(
                                   value: clockFontSize,
                                   min: 18,
-                                  max: 72,
+                                  max: 64,
                                   label: clockFontSize.toStringAsFixed(0),
                                   onChanged: (value) {
                                     setState(() {
@@ -1078,7 +1097,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 11. App font size
+                      // 10. App font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1151,7 +1170,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 12. App icon size
+                      // 11. App icon size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1224,7 +1243,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 13. App alignment
+                      // 12. App alignment
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1259,7 +1278,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // 14. App list
+                      // 13. App list
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.appList,
@@ -1276,7 +1295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _selectApps,
                       ),
 
-                      // 15. Reorder apps
+                      // 14. Reorder apps
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.reorderAppsFolders,
@@ -1289,7 +1308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
 
-                      // 16. Manage folders
+                      // 15. Manage folders
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.manageFolders,
@@ -1318,7 +1337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 16. Gestures
+                      // 16. Gestures panel
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.gestures,
@@ -1345,71 +1364,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
 
                       // 16b. Weather app
-                      FutureBuilder<String?>(
-                        future: _getWeatherAppName(),
-                        builder: (context, snapshot) {
-                          return ListTile(
-                            title: Text(
-                              AppLocalizations.of(context)!.weatherApp,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                      Opacity(
+                        opacity: _locationEnabledForWeather ? 1.0 : 0.4,
+                        child: FutureBuilder<String?>(
+                          future: _getWeatherAppName(),
+                          builder: (context, snapshot) {
+                            return ListTile(
+                              title: Text(
+                                AppLocalizations.of(context)!.weatherApp,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            subtitle: Text(
-                              weatherAppPackageName == null
-                                  ? AppLocalizations.of(context)!
-                                      .noWeatherAppSelected
-                                  : snapshot.data ?? weatherAppPackageName!,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            trailing: weatherAppPackageName == null
-                                ? const Icon(Icons.chevron_right)
-                                : IconButton(
-                                    icon: const Icon(Icons.delete_outline),
-                                    onPressed: () async {
-                                      setState(() {
-                                        weatherAppPackageName = null;
-                                      });
-                                      await _saveSettings();
-                                    },
-                                  ),
-                            onTap: _selectWeatherApp,
-                          );
-                        },
+                              subtitle: Text(
+                                weatherAppPackageName == null
+                                    ? AppLocalizations.of(context)!
+                                        .noWeatherAppSelected
+                                    : snapshot.data ?? weatherAppPackageName!,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              trailing: weatherAppPackageName == null
+                                  ? const Icon(Icons.chevron_right)
+                                  : IconButton(
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: () async {
+                                        if (!_locationEnabledForWeather) {
+                                          _showEnableLocationForWeatherSnackbar();
+                                          return;
+                                        }
+                                        setState(() {
+                                          weatherAppPackageName = null;
+                                        });
+                                        await _saveSettings();
+                                      },
+                                    ),
+                              onTap: () {
+                                if (!_locationEnabledForWeather) {
+                                  _showEnableLocationForWeatherSnackbar();
+                                  return;
+                                }
+                                _selectWeatherApp();
+                              },
+                            );
+                          },
+                        ),
                       ),
 
                       // 16c. Weather API key
-                      ListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.weatherApiKeyTitle,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      Opacity(
+                        opacity: _locationEnabledForWeather ? 1.0 : 0.4,
+                        child: ListTile(
+                          title: Text(
+                            AppLocalizations.of(context)!.weatherApiKeyTitle,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                          subtitle: Text(
+                            (weatherApiKey == null || weatherApiKey!.isEmpty)
+                                ? AppLocalizations.of(context)!
+                                    .weatherApiKeyNotSet
+                                : AppLocalizations.of(context)!
+                                    .weatherApiKeyCustomSet,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          trailing:
+                              (weatherApiKey == null || weatherApiKey!.isEmpty)
+                                  ? const Icon(Icons.chevron_right)
+                                  : IconButton(
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: () async {
+                                        if (!_locationEnabledForWeather) {
+                                          _showEnableLocationForWeatherSnackbar();
+                                          return;
+                                        }
+                                        setState(() {
+                                          weatherApiKey = null;
+                                        });
+                                        await _saveSettings();
+                                      },
+                                    ),
+                          onTap: () {
+                            if (!_locationEnabledForWeather) {
+                              _showEnableLocationForWeatherSnackbar();
+                              return;
+                            }
+                            _editWeatherApiKey();
+                          },
                         ),
-                        subtitle: Text(
-                          (weatherApiKey == null || weatherApiKey!.isEmpty)
-                              ? AppLocalizations.of(context)!
-                                  .weatherApiKeyNotSet
-                              : AppLocalizations.of(context)!
-                                  .weatherApiKeyCustomSet,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        trailing: (weatherApiKey == null || weatherApiKey!.isEmpty)
-                            ? const Icon(Icons.chevron_right)
-                            : IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () async {
-                                  setState(() {
-                                    weatherApiKey = null;
-                                  });
-                                  await _saveSettings();
-                                },
-                              ),
-                        onTap: _editWeatherApiKey,
                       ),
 
                       // 17. Export settings
@@ -1448,9 +1494,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       // 19. About
                       const Divider(height: 32),
                       ListTile(
-                        title: const Text(
-                          'About',
-                          style: TextStyle(
+                        title: Text(
+                          AppLocalizations.of(context)!.aboutTitle,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1467,6 +1513,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               reverseTransitionDuration: Duration.zero,
                             ),
                           );
+                        },
+                      ),
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.sendFeedbackTitle,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          launchUrl(Uri.parse('mailto:jack.apps.dev.2023@gmail.com'));
                         },
                       ),
                     ],

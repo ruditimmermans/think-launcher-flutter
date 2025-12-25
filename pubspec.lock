@@ -424,10 +424,11 @@ packages:
   notification_listener_service:
     dependency: "direct main"
     description:
-      name: notification_listener_service
-      sha256: e94d1fdc8dcbaeb0ccc879559a7db6224ea78fd0235a3ad16544bcf50a47302f
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: "feat/method-error-fix"
+      resolved-ref: bea748d6bfa235583e87cf934ffeda930d0df767
+      url: "https://github.com/jagadeesh-k-2802/notification-listener-service-flutter.git"
+    source: git
     version: "0.3.5"
   package_info_plus:
     dependency: "direct main"

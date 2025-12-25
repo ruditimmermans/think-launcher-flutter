@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'screens/main_screen.dart';
+import 'screens/nux_screen.dart';
 import 'l10n/l10n.dart';
 
 // Theme constants
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showNux = !(prefs.getBool('nuxCompleted') ?? false);
     return MaterialApp(
       title: 'Think Launcher',
       debugShowCheckedModeBanner: false,
@@ -55,7 +57,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: L10n.all,
-      home: MainScreen(prefs: prefs),
+      home: showNux ? NuxScreen(prefs: prefs) : MainScreen(prefs: prefs),
     );
   }
 

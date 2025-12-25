@@ -24,9 +24,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get back => 'Rug';
 
   @override
-  String get showInformationPanel => 'Tijd, datum, weer weergeven?';
-
-  @override
   String get searchApps => 'Zoek apps';
 
   @override
@@ -387,6 +384,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get aboutTitle => 'Over';
 
   @override
+  String get sendFeedbackTitle => 'Feedback verzenden';
+
+  @override
   String get aboutVersionLabel => 'Versie';
 
   @override
@@ -397,4 +397,43 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get aboutOpenSourceLicenses => 'Open source licenties';
+
+  @override
+  String get aboutPrivacyPolicy => 'Privacybeleid';
+
+  @override
+  String get nuxTitle => 'Initiële installatie';
+
+  @override
+  String get nuxDescription => 'Deze stappen zijn optioneel. Je kunt altijd doorgaan, maar het inschakelen hiervan ontgrendelt weer- en meldingsfuncties.';
+
+  @override
+  String get nuxLocationTitle => 'Locatie';
+
+  @override
+  String get nuxLocationBody => 'Wordt alleen gebruikt om uw lokale weer op te halen op basis van uw geschatte locatie. Uw locatie wordt nooit opgeslagen of ergens anders naartoe verzonden.';
+
+  @override
+  String get nuxNotificationTitle => 'Meldingstoegang';
+
+  @override
+  String get nuxNotificationBody => 'Gebruikt om je laatste meldingen onder app-namen te tonen. Meldingsinhoud verlaat je apparaat nooit.';
+
+  @override
+  String get nuxLauncherTitle => 'Stel Think Launcher in als standaard';
+
+  @override
+  String get nuxLauncherBody => 'Om Think Launcher als je startscherm te gebruiken, stel je het in als standaard-launcher in de Android-instellingen.';
+
+  @override
+  String get nuxContinue => 'Aan de slag';
+
+  @override
+  String get nuxOptionalNote => 'Locatie- en meldingstoegang zijn optioneel. Je kunt dit later wijzigen in Instellingen.';
+
+  @override
+  String get enableLocationForWeather => 'Schakel locatie in om weer in te stellen.';
+
+  @override
+  String get openLocationSettings => 'Locatie-instellingen openen';
 }

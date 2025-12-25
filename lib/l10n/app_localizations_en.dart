@@ -24,9 +24,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get back => 'Back';
 
   @override
-  String get showInformationPanel => 'Show information panel';
-
-  @override
   String get searchApps => 'Search apps';
 
   @override
@@ -387,14 +384,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutTitle => 'About';
 
   @override
+  String get sendFeedbackTitle => 'Send Feedback';
+
+  @override
   String get aboutVersionLabel => 'Version';
 
   @override
   String get aboutLoadError => 'Unable to load app information';
 
   @override
-  String get licenseScreenTitle => 'Open source licenses';
+  String get licenseScreenTitle => 'Open Source Licenses';
 
   @override
-  String get aboutOpenSourceLicenses => 'Open source licenses';
+  String get aboutOpenSourceLicenses => 'Open Source Licenses';
+
+  @override
+  String get aboutPrivacyPolicy => 'Privacy Policy';
+
+  @override
+  String get nuxTitle => 'Initial Setup';
+
+  @override
+  String get nuxDescription => 'These steps are optional. You can continue at any time, but enabling them will unlock weather and notification features.';
+
+  @override
+  String get nuxLocationTitle => 'Location';
+
+  @override
+  String get nuxLocationBody => 'Used only to fetch your local weather using approximate location. Your location is never stored or sent anywhere else.';
+
+  @override
+  String get nuxNotificationTitle => 'Notification Access';
+
+  @override
+  String get nuxNotificationBody => 'Used to show your latest notifications under app names. Notification content never leaves your device.';
+
+  @override
+  String get nuxLauncherTitle => 'Set Think Launcher as Default';
+
+  @override
+  String get nuxLauncherBody => 'To use Think Launcher as your home screen, set it as the default launcher in Android settings.';
+
+  @override
+  String get nuxContinue => 'Get Started';
+
+  @override
+  String get nuxOptionalNote => 'Location and notification access are optional. You can change them later in Settings.';
+
+  @override
+  String get enableLocationForWeather => 'Enable location to configure weather.';
+
+  @override
+  String get openLocationSettings => 'Open location settings';
 }

@@ -1,6 +1,8 @@
 package com.jackappsdev.think_minimal_launcher
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.PowerManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -27,6 +29,20 @@ class MainActivity : FlutterActivity() {
                     result.success(null)
                 }
 
+                else -> result.notImplemented()
+            }
+        }
+
+        // Launcher status channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LAUNCHER_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                LAUNCHER_IS_DEFAULT_METHOD -> {
+                    try {
+                        result.success(isDefaultLauncher())
+                    } catch (e: Exception) {
+                        result.error("LAUNCHER_ERROR", e.message, null)
+                    }
+                }
                 else -> result.notImplemented()
             }
         }
@@ -76,6 +92,9 @@ class MainActivity : FlutterActivity() {
         private const val WAKE_LOCK_SECONDS_PARAM = "seconds"
         private const val WAKE_LOCK_TAG = "think_launcher:WakeLock"
 
+        private const val LAUNCHER_CHANNEL = "com.jackappsdev.think_minimal_launcher/launcher"
+        private const val LAUNCHER_IS_DEFAULT_METHOD = "isDefaultLauncher"
+
         private const val ICON_PACK_CHANNEL_NAME = "com.jackappsdev.think_minimal_launcher/icon_packs"
         private const val ICON_PACK_LIST_METHOD_NAME = "getIconPacks"
         private const val ICON_PACK_ICON_METHOD_NAME = "getIconForApp"
@@ -95,6 +114,21 @@ class MainActivity : FlutterActivity() {
                 acquire((seconds * 1000).toLong())
             }
         } catch (_: Throwable) {
+        }
+    }
+
+    private fun isDefaultLauncher(): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+            }
+            val pm = packageManager
+            val resolveInfo = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                ?: return false
+            val packageName = resolveInfo.activityInfo?.packageName ?: return false
+            packageName == applicationContext.packageName
+        } catch (_: Throwable) {
+            false
         }
     }
 }

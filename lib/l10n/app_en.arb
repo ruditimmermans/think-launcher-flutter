@@ -26,11 +26,6 @@
     "description": "Label for back"
   },
 
-  "showInformationPanel": "Show information panel",
-  "@showInformationPanel": {
-    "description": "Label for showing information panel"
-  },
-
   "searchApps": "Search apps",
   "@searchApps": {
     "description": "Title for search apps"
@@ -614,6 +609,11 @@
     "description": "Title for the About screen"
   },
 
+  "sendFeedbackTitle": "Send Feedback",
+  "@aboutTitle": {
+    "description": "Title for send feedback settings item"
+  },
+
   "aboutVersionLabel": "Version",
   "@aboutVersionLabel": {
     "description": "Label for the app version row in the About screen"
@@ -624,13 +624,78 @@
     "description": "Error message shown when the About screen cannot load app info"
   },
 
-  "licenseScreenTitle": "Open source licenses",
+  "licenseScreenTitle": "Open Source Licenses",
   "@licenseScreenTitle": {
     "description": "Title for the license screen"
   },
 
-  "aboutOpenSourceLicenses": "Open source licenses",
+  "aboutOpenSourceLicenses": "Open Source Licenses",
   "@aboutOpenSourceLicenses": {
     "description": "Label for the Open source licenses item in the About screen"
+  },
+
+  "aboutPrivacyPolicy": "Privacy Policy",
+  "@aboutOpenSourceLicenses": {
+    "description": "Label for the Privacy Policy item in the About screen"
+  },
+
+  "nuxTitle": "Initial Setup",
+  "@nuxTitle": {
+    "description": "Title for the first-time NUX screen"
+  },
+
+  "nuxDescription": "These steps are optional. You can continue at any time, but enabling them will unlock weather and notification features.",
+  "@nuxDescription": {
+    "description": "Intro text for the NUX screen"
+  },
+
+  "nuxLocationTitle": "Location",
+  "@nuxLocationTitle": {
+    "description": "Title for the location permission row in NUX"
+  },
+
+  "nuxLocationBody": "Used only to fetch your local weather using approximate location. Your location is never stored or sent anywhere else.",
+  "@nuxLocationBody": {
+    "description": "Body text explaining why location is requested in NUX"
+  },
+
+  "nuxNotificationTitle": "Notification Access",
+  "@nuxNotificationTitle": {
+    "description": "Title for the notification permission row in NUX"
+  },
+
+  "nuxNotificationBody": "Used to show your latest notifications under app names. Notification content never leaves your device.",
+  "@nuxNotificationBody": {
+    "description": "Body text explaining why notification access is requested"
+  },
+
+  "nuxLauncherTitle": "Set Think Launcher as Default",
+  "@nuxLauncherTitle": {
+    "description": "Title for the default launcher section in NUX"
+  },
+
+  "nuxLauncherBody": "To use Think Launcher as your home screen, set it as the default launcher in Android settings.",
+  "@nuxLauncherBody": {
+    "description": "Body text explaining how to set default launcher"
+  },
+
+  "nuxContinue": "Get Started",
+  "@nuxContinue": {
+    "description": "Label for the NUX continue button"
+  },
+
+  "nuxOptionalNote": "Location and notification access are optional. You can change them later in Settings.",
+  "@nuxOptionalNote": {
+    "description": "Note at the bottom of the NUX screen about optional nature"
+  },
+
+  "enableLocationForWeather": "Enable location to configure weather.",
+  "@enableLocationForWeather": {
+    "description": "Snackbar text asking user to enable location for weather"
+  },
+
+  "openLocationSettings": "Open location settings",
+  "@openLocationSettings": {
+    "description": "Label for the snackbar action that opens location settings"
   }
 }

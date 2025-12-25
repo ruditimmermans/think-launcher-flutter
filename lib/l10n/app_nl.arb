@@ -26,11 +26,6 @@
     "description": "Label for back"
   },
 
-  "showInformationPanel": "Tijd, datum, weer weergeven?",
-  "@showInformationPanel": {
-    "description": "Label for showing information panel"
-  },
-
   "searchApps": "Zoek apps",
   "@searchApps": {
     "description": "Title for search apps"
@@ -614,6 +609,11 @@
     "description": "Titel voor het Over-scherm"
   },
 
+  "sendFeedbackTitle": "Feedback verzenden",
+  "@aboutTitle": {
+    "description": "Title for send feedback settings item"
+  },
+
   "aboutVersionLabel": "Versie",
   "@aboutVersionLabel": {
     "description": "Label voor de app-versierij in het Over-scherm"
@@ -632,5 +632,70 @@
   "aboutOpenSourceLicenses": "Open source licenties",
   "@aboutOpenSourceLicenses": {
     "description": "Label voor het item Open source licenties in het Over-scherm"
+  },
+
+  "aboutPrivacyPolicy": "Privacybeleid",
+  "@aboutOpenSourceLicenses": {
+    "description": "Label for the Privacy Policy item in the About screen"
+  },
+
+  "nuxTitle": "Initiële installatie",
+  "@nuxTitle": {
+    "description": "Titel voor het eerste NUX-scherm"
+  },
+
+  "nuxDescription": "Deze stappen zijn optioneel. Je kunt altijd doorgaan, maar het inschakelen hiervan ontgrendelt weer- en meldingsfuncties.",
+  "@nuxDescription": {
+    "description": "Intro-tekst voor het NUX-scherm"
+  },
+
+  "nuxLocationTitle": "Locatie",
+  "@nuxLocationTitle": {
+    "description": "Titel voor de locatie-machtiging in NUX"
+  },
+
+  "nuxLocationBody": "Wordt alleen gebruikt om uw lokale weer op te halen op basis van uw geschatte locatie. Uw locatie wordt nooit opgeslagen of ergens anders naartoe verzonden.",
+  "@nuxLocationBody": {
+    "description": "Tekst die uitlegt waarom locatie wordt gevraagd in NUX"
+  },
+
+  "nuxNotificationTitle": "Meldingstoegang",
+  "@nuxNotificationTitle": {
+    "description": "Titel voor de meldingsmachtiging in NUX"
+  },
+
+  "nuxNotificationBody": "Gebruikt om je laatste meldingen onder app-namen te tonen. Meldingsinhoud verlaat je apparaat nooit.",
+  "@nuxNotificationBody": {
+    "description": "Tekst die uitlegt waarom meldings-toegang wordt gevraagd"
+  },
+
+  "nuxLauncherTitle": "Stel Think Launcher in als standaard",
+  "@nuxLauncherTitle": {
+    "description": "Titel voor de standaard-launcher sectie in NUX"
+  },
+
+  "nuxLauncherBody": "Om Think Launcher als je startscherm te gebruiken, stel je het in als standaard-launcher in de Android-instellingen.",
+  "@nuxLauncherBody": {
+    "description": "Tekst die uitlegt hoe standaard-launcher in te stellen"
+  },
+
+  "nuxContinue": "Aan de slag",
+  "@nuxContinue": {
+    "description": "Label voor de NUX-doorgaan-knop"
+  },
+
+  "nuxOptionalNote": "Locatie- en meldingstoegang zijn optioneel. Je kunt dit later wijzigen in Instellingen.",
+  "@nuxOptionalNote": {
+    "description": "Opmerking onderaan het NUX-scherm over optionele aard"
+  },
+
+  "enableLocationForWeather": "Schakel locatie in om weer in te stellen.",
+  "@enableLocationForWeather": {
+    "description": "Snackbar-tekst die vraagt locatie in te schakelen voor weer"
+  },
+
+  "openLocationSettings": "Locatie-instellingen openen",
+  "@openLocationSettings": {
+    "description": "Label voor de snackbar-actie die locatie-instellingen opent"
   }
 }

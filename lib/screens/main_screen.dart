@@ -47,8 +47,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late int _numApps;
   List<Folder> _folders = [];
   final Set<String> _expandedFolders = {};
-
-  late bool _showDateTime;
   late bool _showSearchButton;
 
   late double _appFontSize;
@@ -98,7 +96,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildHeader() {
-    final statusBarPadding = _showStatusBar ? MediaQuery.of(context).padding.top : 0.0;
+    final statusBarPadding =
+        _showStatusBar ? MediaQuery.of(context).padding.top : 0.0;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         16.0,
@@ -149,103 +148,100 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0),
-            child: Row(
-              children: [
-                Text(
-                  _currentDate,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    color: _overlayTextColor,
-                  ),
-                ),
-                Text(
-                  ' | ',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: _overlayTextColor,
-                  ),
-                ),
-                Icon(
-                  _getBatteryIcon(_batteryLevel),
-                  size: 18,
+          Row(
+            children: [
+              Text(
+                _currentDate,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
                   color: _overlayTextColor,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  '$_batteryLevel%',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    color: _overlayTextColor,
-                  ),
+              ),
+              Text(
+                ' | ',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: _overlayTextColor,
                 ),
-                if (_weatherInfo != null) ...[
-                  Text(
-                    ' | ',
-                    style: TextStyle(fontSize: 18, color: _overlayTextColor),
-                  ),
-                  GestureDetector(
-                    onTap: _weatherAppPackageName != null
-                        ? () {
-                            InstalledApps.startApp(_weatherAppPackageName!);
-                          }
-                        : null,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _colorMode
-                            ? Image.network(
+              ),
+              Icon(
+                _getBatteryIcon(_batteryLevel),
+                size: 18,
+                color: _overlayTextColor,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$_batteryLevel%',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                  color: _overlayTextColor,
+                ),
+              ),
+              if (_weatherInfo != null) ...[
+                Text(
+                  ' | ',
+                  style: TextStyle(fontSize: 18, color: _overlayTextColor),
+                ),
+                GestureDetector(
+                  onTap: _weatherAppPackageName != null
+                      ? () {
+                          InstalledApps.startApp(_weatherAppPackageName!);
+                        }
+                      : null,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _colorMode
+                          ? Image.network(
+                              _weatherInfo!.iconUrl,
+                              width: 24,
+                              height: 24,
+                            )
+                          : ColorFiltered(
+                              colorFilter: const ColorFilter.matrix([
+                                0.2126,
+                                0.7152,
+                                0.0722,
+                                0,
+                                0,
+                                0.2126,
+                                0.7152,
+                                0.0722,
+                                0,
+                                0,
+                                0.2126,
+                                0.7152,
+                                0.0722,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                1,
+                                0,
+                              ]),
+                              child: Image.network(
                                 _weatherInfo!.iconUrl,
                                 width: 24,
                                 height: 24,
-                              )
-                            : ColorFiltered(
-                                colorFilter: const ColorFilter.matrix([
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0,
-                                  0,
-                                  0,
-                                  1,
-                                  0,
-                                ]),
-                                child: Image.network(
-                                  _weatherInfo!.iconUrl,
-                                  width: 24,
-                                  height: 24,
-                                ),
                               ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_weatherInfo!.temperature.round()}°C',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.normal,
-                            color: _overlayTextColor,
-                          ),
+                            ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_weatherInfo!.temperature.round()}°C',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: _overlayTextColor,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
         ],
       ),
@@ -299,10 +295,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _numApps = widget.prefs.getInt('numApps') ?? 5;
     _loadFolders();
     _loadNotifications();
-
-    _showDateTime = widget.prefs.getBool('showDateTime') ?? true;
     _showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
-
     _appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
     _enableScroll = widget.prefs.getBool('enableScroll') ?? true;
     _showIcons = widget.prefs.getBool('showIcons') ?? true;
@@ -310,7 +303,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _showFolderChevron = widget.prefs.getBool('showFolderChevron') ?? true;
     _showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
     _clockFontSize = widget.prefs.getDouble('clockFontSize') ?? 18.0;
-
     _appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
     _currentTime = _timeFormatter.format(DateTime.now());
     _currentDate = _dateFormatter.format(DateTime.now());
@@ -318,7 +310,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _wallpaperPath = widget.prefs.getString('wallpaperPath');
     _wallpaperBlur = widget.prefs.getDouble('wallpaperBlur') ?? 0.0;
     _weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
-    _appAlignment = appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
+    _appAlignment =
+        appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
     // Always prepare once on init (handles null/remove as well)
     _prepareWallpaper();
     _weatherApiKey = widget.prefs.getString('weatherApiKey');
@@ -351,9 +344,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _setupNotificationListener() async {
     // Request notification permission if not granted
     try {
-      final isGranted = await NotificationListenerService.isPermissionGranted();
-    if (!isGranted) {
-        await NotificationListenerService.requestPermission();
+      final bool granted =
+          await NotificationListenerService.isPermissionGranted();
+      if (!granted) {
+        return;
       }
     } catch (e) {
       debugPrint('Error setting up notification listener: $e');
@@ -388,7 +382,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Future<void> _wakeScreen() async {
     try {
-      await _wakeChannel.invokeMethod('wakeScreen', {'seconds': 3});
+      await _wakeChannel.invokeMethod('wakeScreen', {'seconds': 2});
     } catch (_) {
       // ignore failures
     }
@@ -719,7 +713,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       final prefs = widget.prefs;
       final settings = {
         'numApps': prefs.getInt('numApps') ?? 5,
-        'showDateTime': prefs.getBool('showDateTime') ?? true,
         'showSearchButton': prefs.getBool('showSearchButton') ?? true,
         'appFontSize': prefs.getDouble('appFontSize') ?? 18.0,
         'enableScroll': prefs.getBool('enableScroll') ?? true,
@@ -736,11 +729,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'weatherApiKey': prefs.getString('weatherApiKey'),
       };
 
-      final newAlignment = appAlignmentFromStorage(prefs.getString('appAlignment'));
+      final newAlignment =
+          appAlignmentFromStorage(prefs.getString('appAlignment'));
 
       // Check if any settings have changed
       final hasChanges = _numApps != settings['numApps'] ||
-          _showDateTime != settings['showDateTime'] ||
           _showSearchButton != settings['showSearchButton'] ||
           _appFontSize != settings['appFontSize'] ||
           _clockFontSize != settings['clockFontSize'] ||
@@ -748,7 +741,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
           _showStatusBar != settings['showStatusBar'] ||
-          !listEquals(_selectedApps, settings['selectedApps'] as List<String>) ||
+          !listEquals(
+              _selectedApps, settings['selectedApps'] as List<String>) ||
           _appIconSize != settings['appIconSize'] ||
           _wallpaperPath != settings['wallpaperPath'] ||
           _showFolderChevron != settings['showFolderChevron'] ||
@@ -761,7 +755,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Update all state at once to minimize rebuilds
         setState(() {
           _numApps = settings['numApps'] as int;
-          _showDateTime = settings['showDateTime'] as bool;
           _showSearchButton = settings['showSearchButton'] as bool;
           _appFontSize = settings['appFontSize'] as double;
           _clockFontSize = settings['clockFontSize'] as double;
@@ -817,7 +810,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: isLightText ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness:
+            isLightText ? Brightness.light : Brightness.dark,
         systemNavigationBarColor: Colors.white,
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
@@ -901,7 +895,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   void _updateDateTime() {
-    if (!mounted || !_showDateTime) return;
+    if (!mounted) return;
     final now = DateTime.now();
     setState(() {
       _currentTime = _timeFormatter.format(now);
@@ -910,7 +904,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _updateBattery() async {
-    if (!mounted || !_showDateTime) return;
+    if (!mounted) return;
     try {
       final level = await _battery.batteryLevel;
       if (mounted) {
@@ -922,7 +916,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _updateWeather() async {
-    if (!mounted || !_showDateTime) return;
+    if (!mounted) return;
     try {
       final weather = await _weatherService.getCurrentWeather();
       if (mounted) {
@@ -1322,7 +1316,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             final index = _folders.indexWhere((f) => f.id == folder.id);
             if (index != -1) {
               _folders[index] = folder.copyWith(name: newName);
-              final foldersJson = jsonEncode(_folders.map((f) => f.toJson()).toList());
+              final foldersJson =
+                  jsonEncode(_folders.map((f) => f.toJson()).toList());
               widget.prefs.setString('folders', foldersJson);
             }
           });
@@ -1357,7 +1352,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             _folders.removeWhere((f) => f.id == folder.id);
             _expandedFolders.remove(folder.id);
             _folderItemKeys.remove(folder.id);
-            final foldersJson = jsonEncode(_folders.map((f) => f.toJson()).toList());
+            final foldersJson =
+                jsonEncode(_folders.map((f) => f.toJson()).toList());
             widget.prefs.setString('folders', foldersJson);
           });
         }
@@ -1505,8 +1501,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 ListTile(
                   leading: const Icon(Icons.notifications_off),
                   title: Text(AppLocalizations.of(context)!.clearNotification),
-                  onTap: () =>
-                      Navigator.pop(context, AppDialogOptions.clearNotification),
+                  onTap: () => Navigator.pop(
+                      context, AppDialogOptions.clearNotification),
                 ),
               ListTile(
                 leading: const Icon(Icons.delete),
@@ -1657,8 +1653,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _appInfoCache[app.packageName] = updatedApp;
 
           // Save custom names to preferences
-          final customNamesJson = widget.prefs.getString('customAppNames') ?? '{}';
-          final customNames = Map<String, String>.from(jsonDecode(customNamesJson));
+          final customNamesJson =
+              widget.prefs.getString('customAppNames') ?? '{}';
+          final customNames =
+              Map<String, String>.from(jsonDecode(customNamesJson));
           customNames[app.packageName] = newName;
           widget.prefs.setString('customAppNames', jsonEncode(customNames));
 
@@ -2005,7 +2003,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           children: [
             // Wallpaper layer
             if (_wallpaperPath != null)
-              Positioned.fill(child: _buildBlurredWallpaper()),
+              Positioned.fill(
+                child: _buildBlurredWallpaper(),
+              ),
             Column(
               children: [
                 Expanded(
@@ -2014,9 +2014,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       // Keep wallpaper visible in both loading and loaded states
                       if (_wallpaperPath != null)
                         Positioned.fill(
-                          child: IgnorePointer(child: _buildBlurredWallpaper()),
+                          child: IgnorePointer(
+                            child: _buildBlurredWallpaper(),
+                          ),
                         ),
-                        _buildAppList(),
+                      _buildAppList(),
                     ],
                   ),
                 ),

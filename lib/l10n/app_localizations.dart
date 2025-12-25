@@ -125,12 +125,6 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get back;
 
-  /// Label for showing information panel
-  ///
-  /// In en, this message translates to:
-  /// **'Show information panel'**
-  String get showInformationPanel;
-
   /// Title for search apps
   ///
   /// In en, this message translates to:
@@ -809,11 +803,17 @@ abstract class AppLocalizations {
   /// **'You can get your API key from https://openweathermap.org/api'**
   String get weatherApiKeyDialogHelp;
 
-  /// Title for the About screen
+  /// Title for send feedback settings item
   ///
   /// In en, this message translates to:
   /// **'About'**
   String get aboutTitle;
+
+  /// No description provided for @sendFeedbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Feedback'**
+  String get sendFeedbackTitle;
 
   /// Label for the app version row in the About screen
   ///
@@ -830,14 +830,92 @@ abstract class AppLocalizations {
   /// Title for the license screen
   ///
   /// In en, this message translates to:
-  /// **'Open source licenses'**
+  /// **'Open Source Licenses'**
   String get licenseScreenTitle;
 
-  /// Label for the Open source licenses item in the About screen
+  /// Label for the Privacy Policy item in the About screen
   ///
   /// In en, this message translates to:
-  /// **'Open source licenses'**
+  /// **'Open Source Licenses'**
   String get aboutOpenSourceLicenses;
+
+  /// No description provided for @aboutPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get aboutPrivacyPolicy;
+
+  /// Title for the first-time NUX screen
+  ///
+  /// In en, this message translates to:
+  /// **'Initial Setup'**
+  String get nuxTitle;
+
+  /// Intro text for the NUX screen
+  ///
+  /// In en, this message translates to:
+  /// **'These steps are optional. You can continue at any time, but enabling them will unlock weather and notification features.'**
+  String get nuxDescription;
+
+  /// Title for the location permission row in NUX
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get nuxLocationTitle;
+
+  /// Body text explaining why location is requested in NUX
+  ///
+  /// In en, this message translates to:
+  /// **'Used only to fetch your local weather using approximate location. Your location is never stored or sent anywhere else.'**
+  String get nuxLocationBody;
+
+  /// Title for the notification permission row in NUX
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Access'**
+  String get nuxNotificationTitle;
+
+  /// Body text explaining why notification access is requested
+  ///
+  /// In en, this message translates to:
+  /// **'Used to show your latest notifications under app names. Notification content never leaves your device.'**
+  String get nuxNotificationBody;
+
+  /// Title for the default launcher section in NUX
+  ///
+  /// In en, this message translates to:
+  /// **'Set Think Launcher as Default'**
+  String get nuxLauncherTitle;
+
+  /// Body text explaining how to set default launcher
+  ///
+  /// In en, this message translates to:
+  /// **'To use Think Launcher as your home screen, set it as the default launcher in Android settings.'**
+  String get nuxLauncherBody;
+
+  /// Label for the NUX continue button
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get nuxContinue;
+
+  /// Note at the bottom of the NUX screen about optional nature
+  ///
+  /// In en, this message translates to:
+  /// **'Location and notification access are optional. You can change them later in Settings.'**
+  String get nuxOptionalNote;
+
+  /// Snackbar text asking user to enable location for weather
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location to configure weather.'**
+  String get enableLocationForWeather;
+
+  /// Label for the snackbar action that opens location settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open location settings'**
+  String get openLocationSettings;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

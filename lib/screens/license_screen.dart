@@ -76,6 +76,8 @@ SOFTWARE.
                 style: TextStyle(fontSize: 14),
               ),
               SizedBox(height: 16),
+              Divider(height: 32),
+              SizedBox(height: 16),
               Text(
                 'Original project (Think Launcher)',
                 style: TextStyle(
@@ -88,6 +90,7 @@ SOFTWARE.
                 _originalMitLicense,
                 textAlign: TextAlign.left,
               ),
+              Divider(height: 32),
               SizedBox(height: 16),
               Text(
                 'Modifications by Jack\'s - Apps',

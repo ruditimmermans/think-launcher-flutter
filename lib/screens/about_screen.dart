@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
 import 'package:think_launcher/screens/license_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -78,6 +79,19 @@ class AboutScreen extends StatelessWidget {
                           reverseTransitionDuration: Duration.zero,
                         ),
                       );
+                    },
+                  ),
+                  ListTile(
+                    title: Text(
+                      AppLocalizations.of(context)!.aboutPrivacyPolicy,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      launchUrl(Uri.parse('https://jacks-apps.vercel.app/privacy-policy-think-minimal-launcher.html'));
                     },
                   ),
                 ],
