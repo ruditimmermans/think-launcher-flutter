@@ -45,3 +45,9 @@ This project is licensed under the **MIT License**. You are free to use, modify,
 
 ## Fork 🍽️
 [MatiasDesuu/ThinkLauncher](https://github.com/MatiasDesuu/ThinkLauncher)
+
+## Links 🔗
+
+<a href="https://play.google.com/store/apps/details?id=com.jackappsdev.think_minimal_launcher" target="_blank">
+    <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100" width="225">
+</a>
