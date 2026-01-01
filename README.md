@@ -46,8 +46,7 @@ This project is licensed under the **MIT License**. You are free to use, modify,
 ## Fork 🍽️
 [MatiasDesuu/ThinkLauncher](https://github.com/MatiasDesuu/ThinkLauncher)
 
-## Links 🔗
+## Download Links 🔗
 
-<a href="https://play.google.com/store/apps/details?id=com.jackappsdev.think_minimal_launcher" target="_blank">
-    <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100" width="225">
-</a>
+<a href="https://play.google.com/store/apps/details?id=com.jackappsdev.think_minimal_launcher" target="_blank"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100" width="225" /></a>
+<a href="https://github.com/jagadeesh-k-2802/think-minimal-launcher-flutter/releases/latest" target="_blank"><img alt="Get it on GitHub" src="https://github.com/jagadeesh-k-2802/battery-alarm-android/assets/63912668/89e3aecd-fe2a-4b08-8dca-18808a4abe9f" height="100" width="225" /></a>
