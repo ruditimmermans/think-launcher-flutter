@@ -599,7 +599,7 @@
     "description": "Hinttekst voor het tekstveld voor de weer-API-sleutel"
   },
 
-  "weatherApiKeyDialogHelp": "Je kunt je API-sleutel krijgen via https://openweathermap.org/api",
+  "weatherApiKeyDialogHelp": "Je kunt je gratis API-sleutel verkrijgen via https://openweathermap.org/api",
   "@weatherApiKeyDialogHelp": {
     "description": "Hulptest die onder het veld voor de weer-API-sleutel wordt weergegeven"
   },
@@ -697,5 +697,10 @@
   "openLocationSettings": "Locatie-instellingen openen",
   "@openLocationSettings": {
     "description": "Label voor de snackbar-actie die locatie-instellingen opent"
+  },
+
+  "donatePaypalTitle": "Doneer met PayPal",
+  "@donatePaypalTitle": {
+    "description": "Titel voor het 'Doneer met PayPal'-item in instellingen"
   }
 }

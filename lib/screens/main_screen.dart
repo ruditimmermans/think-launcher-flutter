@@ -72,6 +72,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   late AppAlignment _appAlignment;
   String? _weatherApiKey;
+  String? _iconPackPackageName;
 
   // Notification state
   final Map<String, NotificationInfo> _notifications = {};
@@ -315,6 +316,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Always prepare once on init (handles null/remove as well)
     _prepareWallpaper();
     _weatherApiKey = widget.prefs.getString('weatherApiKey');
+    _iconPackPackageName = widget.prefs.getString('iconPackPackageName');
   }
 
   void _setupWeatherService() {
@@ -727,6 +729,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
         'weatherAppPackageName': prefs.getString('weatherAppPackageName'),
         'weatherApiKey': prefs.getString('weatherApiKey'),
+        'iconPackPackageName': prefs.getString('iconPackPackageName'),
       };
 
       final newAlignment =
@@ -741,15 +744,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
           _showStatusBar != settings['showStatusBar'] ||
-          !listEquals(
-              _selectedApps, settings['selectedApps'] as List<String>) ||
+          !listEquals(_selectedApps, settings['selectedApps'] as List<String>) ||
           _appIconSize != settings['appIconSize'] ||
           _wallpaperPath != settings['wallpaperPath'] ||
           _showFolderChevron != settings['showFolderChevron'] ||
           _wallpaperBlur != settings['wallpaperBlur'] ||
           _weatherAppPackageName != settings['weatherAppPackageName'] ||
           _appAlignment != newAlignment ||
-          _weatherApiKey != settings['weatherApiKey'];
+          _weatherApiKey != settings['weatherApiKey'] ||
+          _iconPackPackageName != settings['iconPackPackageName'];
 
       if (hasChanges) {
         // Update all state at once to minimize rebuilds
@@ -780,8 +783,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         );
 
         // Only reload app info if selected apps changed
-        if (!listEquals(
-            _selectedApps, settings['selectedApps'] as List<String>)) {
+        if (!listEquals(_selectedApps, settings['selectedApps'] as List<String>)) {
           _appInfoCache.clear();
           await _preloadAppInfo();
 
@@ -799,6 +801,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _weatherApiKey = settings['weatherApiKey'] as String?;
         _setupWeatherService();
         _updateWeather();
+      }
+
+      // Reconfigure icon pack if package name changed
+      if (_iconPackPackageName != settings['iconPackPackageName']) {
+        _iconPackPackageName = settings['iconPackPackageName'] as String?;
+        _appInfoCache.clear();
+        await _preloadAppInfo();
+        if (mounted) {
+          setState(() {});
+        }
       }
     } catch (e) {
       debugPrint('Error loading settings: $e');
@@ -959,12 +971,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _reloadData() async {
-    // Clear caches to force reload
-    _appInfoCache.clear();
-    setState(() {
-      _selectedApps = widget.prefs.getStringList('selectedApps') ?? [];
-    });
-
     // Reload all state
     await _loadSettings();
     _loadFolders();

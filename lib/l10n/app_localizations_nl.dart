@@ -378,7 +378,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get weatherApiKeyDialogHint => 'Voer API-sleutel in';
 
   @override
-  String get weatherApiKeyDialogHelp => 'Je kunt je API-sleutel krijgen via https://openweathermap.org/api';
+  String get weatherApiKeyDialogHelp => 'Je kunt je gratis API-sleutel verkrijgen via https://openweathermap.org/api';
 
   @override
   String get aboutTitle => 'Over';
@@ -436,4 +436,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get openLocationSettings => 'Locatie-instellingen openen';
+
+  @override
+  String get donatePaypalTitle => 'Doneer met PayPal';
 }

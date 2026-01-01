@@ -1528,6 +1528,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           launchUrl(Uri.parse('mailto:jack.apps.dev.2023@gmail.com'));
                         },
                       ),
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.donatePaypalTitle,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          launchUrl(
+                            Uri.parse('https://www.paypal.com/ncp/payment/39JV6M94ZNGNU'),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

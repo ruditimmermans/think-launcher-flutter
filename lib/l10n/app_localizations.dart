@@ -800,7 +800,7 @@ abstract class AppLocalizations {
   /// Helper text shown below the weather API key field
   ///
   /// In en, this message translates to:
-  /// **'You can get your API key from https://openweathermap.org/api'**
+  /// **'You can get your free API key from https://openweathermap.org/api'**
   String get weatherApiKeyDialogHelp;
 
   /// Title for send feedback settings item
@@ -916,6 +916,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open location settings'**
   String get openLocationSettings;
+
+  /// Title for the donate with PayPal item in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Donate with PayPal'**
+  String get donatePaypalTitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

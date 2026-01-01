@@ -599,7 +599,7 @@
     "description": "Hint text for the weather API key text field"
   },
 
-  "weatherApiKeyDialogHelp": "You can get your API key from https://openweathermap.org/api",
+  "weatherApiKeyDialogHelp": "You can get your free API key from https://openweathermap.org/api",
   "@weatherApiKeyDialogHelp": {
     "description": "Helper text shown below the weather API key field"
   },
@@ -697,5 +697,10 @@
   "openLocationSettings": "Open location settings",
   "@openLocationSettings": {
     "description": "Label for the snackbar action that opens location settings"
+  },
+
+  "donatePaypalTitle": "Donate with PayPal",
+  "@donatePaypalTitle": {
+    "description": "Title for the donate with PayPal item in settings"
   }
 }

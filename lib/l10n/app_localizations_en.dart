@@ -378,7 +378,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weatherApiKeyDialogHint => 'Enter API key';
 
   @override
-  String get weatherApiKeyDialogHelp => 'You can get your API key from https://openweathermap.org/api';
+  String get weatherApiKeyDialogHelp => 'You can get your free API key from https://openweathermap.org/api';
 
   @override
   String get aboutTitle => 'About';
@@ -436,4 +436,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openLocationSettings => 'Open location settings';
+
+  @override
+  String get donatePaypalTitle => 'Donate with PayPal';
 }
