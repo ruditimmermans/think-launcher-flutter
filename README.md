@@ -36,7 +36,7 @@
   <img src="assets/image6.png" width="250" />
 </p>
 
-## Bugs and ideas 💡
+## Bugs and Ideas 💡
 Feel free to open issues or suggestions in the repository.
 
 ## License 📄
