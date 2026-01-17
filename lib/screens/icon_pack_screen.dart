@@ -98,17 +98,18 @@ class _IconPackScreenState extends State<IconPackScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedPackage = widget.selectedIconPackPackage;
+    ThemeData theme = Theme.of(context);
 
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.iconPackScreenTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -123,9 +124,9 @@ class _IconPackScreenState extends State<IconPackScreen> {
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Text(
                   AppLocalizations.of(context)!.iconPackNote,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -136,17 +137,17 @@ class _IconPackScreenState extends State<IconPackScreen> {
                   child: Text(
                     _errorMessage ??
                         AppLocalizations.of(context)!.iconPackErrorLoading,
-                    style: const TextStyle(
-                      color: Colors.redAccent,
+                    style: TextStyle(
+                      color: theme.colorScheme.error,
                       fontSize: 14,
                     ),
                   ),
                 ),
               if (_isLoading)
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: CircularProgressIndicator(
-                      color: Colors.black,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                 )
@@ -164,7 +165,7 @@ class _IconPackScreenState extends State<IconPackScreen> {
                           ),
                         ),
                         trailing: selectedPackage == null
-                            ? const Icon(Icons.check, color: Colors.black)
+                            ? Icon(Icons.check, color: theme.colorScheme.onSurface)
                             : null,
                         onTap: _selectDefault,
                       ),
@@ -182,13 +183,13 @@ class _IconPackScreenState extends State<IconPackScreen> {
                           ),
                           subtitle: Text(
                             pack.packageName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(Icons.check, color: Colors.black)
+                              ? Icon(Icons.check, color: theme.colorScheme.onSurface)
                               : null,
                           onTap: () => _selectPack(pack),
                         );

@@ -12,6 +12,7 @@ import 'dart:io';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
+import 'package:think_launcher/constants/app_theme.dart';
 import 'package:think_launcher/models/app_info.dart';
 import 'package:think_launcher/services/icon_pack_service.dart';
 import 'package:think_launcher/models/folder.dart';
@@ -22,7 +23,7 @@ import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import 'package:think_launcher/models/weather_info.dart';
 import 'package:think_launcher/services/weather_service.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
-import 'package:think_launcher/screens/reorder_apps_screen.dart';
+import 'package:think_launcher/screens/reorder_screen.dart';
 import 'package:think_launcher/constants/app_alignment.dart';
 import 'package:think_launcher/constants/dialog_options.dart';
 import 'dart:ui';
@@ -56,6 +57,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late bool _showFolderChevron;
   late bool _showStatusBar;
   late double _clockFontSize;
+  late bool _use24HourClock;
   late String _currentTime;
   late String _currentDate;
   late int _batteryLevel;
@@ -71,6 +73,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   String? _weatherAppPackageName;
 
   late AppAlignment _appAlignment;
+  late AppThemeMode _appTheme;
   String? _weatherApiKey;
   String? _iconPackPackageName;
 
@@ -276,7 +279,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final Battery _battery = Battery();
 
   // Formatters
-  static final _timeFormatter = DateFormat('HH:mm');
   static final _dateFormatter = DateFormat('EEE, dd MMM');
 
   @override
@@ -305,18 +307,25 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
     _clockFontSize = widget.prefs.getDouble('clockFontSize') ?? 18.0;
     _appIconSize = widget.prefs.getDouble('appIconSize') ?? 18.0;
-    _currentTime = _timeFormatter.format(DateTime.now());
+    _use24HourClock = widget.prefs.getBool('use24HourClock') ?? false;
+    final timeFormatter =
+        DateFormat(_use24HourClock ? 'HH:mm' : 'h:mm a');
+    _currentTime = timeFormatter.format(DateTime.now());
     _currentDate = _dateFormatter.format(DateTime.now());
     _batteryLevel = 0;
     _wallpaperPath = widget.prefs.getString('wallpaperPath');
     _wallpaperBlur = widget.prefs.getDouble('wallpaperBlur') ?? 0.0;
     _weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
-    _appAlignment =
-        appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
-    // Always prepare once on init (handles null/remove as well)
-    _prepareWallpaper();
+    _appAlignment = appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
+    _appTheme = appThemeModeFromStorage(widget.prefs.getString('appTheme'));
+    
     _weatherApiKey = widget.prefs.getString('weatherApiKey');
     _iconPackPackageName = widget.prefs.getString('iconPackPackageName');
+
+    // Always prepare once on init (handles null/remove as well)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _prepareWallpaper();
+    });
   }
 
   void _setupWeatherService() {
@@ -681,6 +690,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Returns the base overlay text color when no wallpaper is available
+  /// or when wallpaper loading fails.
+  ///
+  /// For [AppThemeMode.auto], this uses the effective theme brightness from
+  /// the current [BuildContext] so that Auto follows the actual light/dark
+  /// mode in use.
+  Color _getBaseOverlayTextColor() {
+    bool isLight;
+    switch (_appTheme) {
+      case AppThemeMode.light:
+        isLight = true;
+        break;
+      case AppThemeMode.dark:
+        isLight = false;
+        break;
+      case AppThemeMode.auto:
+        final brightness = Theme.of(context).brightness;
+        isLight = brightness == Brightness.light;
+        break;
+    }
+    return isLight ? Colors.black : Colors.white;
+  }
+
   /// Refreshes app info cache for a specific app
   Future<void> _refreshAppInfo(String packageName) async {
     try {
@@ -724,6 +756,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'appIconSize': prefs.getDouble('appIconSize') ?? 18.0,
         'clockFontSize': prefs.getDouble('clockFontSize') ?? 18.0,
+        'use24HourClock': prefs.getBool('use24HourClock') ?? false,
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
         'wallpaperPath': prefs.getString('wallpaperPath'),
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
@@ -734,12 +767,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       final newAlignment =
           appAlignmentFromStorage(prefs.getString('appAlignment'));
+      final newAppTheme = appThemeModeFromStorage(prefs.getString('appTheme'));
 
       // Check if any settings have changed
       final hasChanges = _numApps != settings['numApps'] ||
           _showSearchButton != settings['showSearchButton'] ||
           _appFontSize != settings['appFontSize'] ||
           _clockFontSize != settings['clockFontSize'] ||
+          _use24HourClock != settings['use24HourClock'] ||
           _enableScroll != settings['enableScroll'] ||
           _showIcons != settings['showIcons'] ||
           _colorMode != settings['colorMode'] ||
@@ -751,6 +786,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _wallpaperBlur != settings['wallpaperBlur'] ||
           _weatherAppPackageName != settings['weatherAppPackageName'] ||
           _appAlignment != newAlignment ||
+          _appTheme != newAppTheme ||
           _weatherApiKey != settings['weatherApiKey'] ||
           _iconPackPackageName != settings['iconPackPackageName'];
 
@@ -761,6 +797,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _showSearchButton = settings['showSearchButton'] as bool;
           _appFontSize = settings['appFontSize'] as double;
           _clockFontSize = settings['clockFontSize'] as double;
+          _use24HourClock = settings['use24HourClock'] as bool;
           _enableScroll = settings['enableScroll'] as bool;
           _showIcons = settings['showIcons'] as bool;
           _colorMode = settings['colorMode'] as bool;
@@ -772,6 +809,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _wallpaperBlur = settings['wallpaperBlur'] as double;
           _weatherAppPackageName = settings['weatherAppPackageName'] as String?;
           _appAlignment = newAlignment;
+          _appTheme = newAppTheme;
         });
 
         // Update system UI
@@ -794,6 +832,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
         // Always prepare wallpaper after settings update to ensure palette refresh
         _prepareWallpaper();
+
+        // Refresh time immediately when clock settings change.
+        _updateDateTime();
       }
 
       // Reconfigure weather service if API key changed
@@ -844,7 +885,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _prepareWallpaper() async {
     if (_wallpaperPath == null) {
       setState(() {
-        _overlayTextColor = Colors.black;
+        _overlayTextColor = _getBaseOverlayTextColor();
         _wallpaperProvider = null;
         _isPreparingWallpaper = false;
       });
@@ -857,7 +898,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       final file = File(_wallpaperPath!);
       if (!await file.exists()) {
         setState(() {
-          _overlayTextColor = Colors.black;
+          _overlayTextColor = _getBaseOverlayTextColor();
           _wallpaperProvider = null;
           _isPreparingWallpaper = false;
         });
@@ -871,7 +912,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       imageCache.clearLiveImages();
       // Prefer white text until palette analysis completes
       if (mounted) {
-        setState(() => _overlayTextColor = Colors.white);
+        setState(() => _overlayTextColor = _getBaseOverlayTextColor());
         _updateStatusBarColor();
       }
       final palette = await PaletteGenerator.fromImageProvider(
@@ -898,7 +939,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       });
     } catch (e) {
       setState(() {
-        _overlayTextColor = Colors.white;
+        _overlayTextColor = _getBaseOverlayTextColor();
         _wallpaperProvider = null;
         _isPreparingWallpaper = false;
       });
@@ -910,7 +951,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!mounted) return;
     final now = DateTime.now();
     setState(() {
-      _currentTime = _timeFormatter.format(now);
+      final formatter = DateFormat(_use24HourClock ? 'HH:mm' : 'h:mm a');
+      _currentTime = formatter.format(now);
       _currentDate = _dateFormatter.format(now);
     });
   }
@@ -2001,10 +2043,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.colorScheme.surface,
         body: Stack(
           children: [
             // Wallpaper layer

@@ -10,18 +10,19 @@
 
 ## Features 📲
 
-- 📱 Select apps only that you need in custom order
-- 👁️ E-ink & OLED Friendly user interface
-- ✏️ Rename apps to custom display names
+- 📱 Select apps only that you need in custom order.
+- 👁️ E-ink & OLED Friendly user interface.
+- ✏️ Rename apps to custom display names.
 - 🔔 Recent notifications are shown under app name.
 - 🔍 Search feature to quickly open apps you need.
-- ☀️ Weather support with custom OpenWeather API Key
-- 🌟 Third party theme support
-- 🌄 Wallpaper with blur support
-- 📂 Organize apps into folders
-- 💾 Backup & restore settings
-- ⚙️ Granular customizable preferences
-- 🌞 Wake screen on new notification
+- 🌙 Dark Mode Support with (Auto/Light/Dark) options.
+- ☀️ Weather support with custom OpenWeather API Key.
+- 🌟 Third party theme support.
+- 🌄 Wallpaper with blur support.
+- 📂 Organize apps into folders.
+- 💾 Backup & restore settings.
+- ⚙️ Granular customizable preferences.
+- 🌞 Wake screen on new notification.
 - 🔐 No personal data is collected.
 - 🌍 Full support for English and Dutch languages.
 

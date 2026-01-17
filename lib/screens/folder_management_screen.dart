@@ -213,6 +213,7 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
   }
 
   void _deleteFolder(Folder folder) {
+    ThemeData theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -236,7 +237,8 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
               Navigator.pop(context);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
             ),
             child: Text(AppLocalizations.of(context)!.delete),
           ),
@@ -324,39 +326,41 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.manageFolders),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
             ),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: _createFolder,
-            backgroundColor: Colors.black,
-            child: const Icon(Icons.create_new_folder),
+            backgroundColor: theme.colorScheme.primary,
+            child: Icon(Icons.create_new_folder, color: theme.colorScheme.onPrimary),
           ),
           body: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator(color: theme.colorScheme.onSurface))
               : _folders.isEmpty
                   ? Center(
-                      child: Text(AppLocalizations.of(context)!.noFolders),
+                      child: Text(AppLocalizations.of(context)!.noFolders, style: TextStyle(color: theme.colorScheme.onSurface)),
                     )
                   : ListView.builder(
                       itemCount: _folders.length,
                       itemBuilder: (context, index) {
                         final folder = _folders[index];
                         return ListTile(
-                          leading: const Icon(Icons.folder),
+                          leading: Icon(Icons.folder, color: theme.colorScheme.onSurface.withAlpha(200)),
                           title: Text(folder.name),
                           subtitle: Text(
                             AppLocalizations.of(context)!
@@ -366,15 +370,15 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.apps),
+                                icon: Icon(Icons.apps, color: theme.colorScheme.onSurface),
                                 onPressed: () => _manageApps(folder),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.edit),
+                                icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
                                 onPressed: () => _editFolder(folder),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete),
+                                icon: Icon(Icons.delete, color: theme.colorScheme.onSurface),
                                 onPressed: () => _deleteFolder(folder),
                               ),
                             ],

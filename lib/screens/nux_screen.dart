@@ -151,24 +151,25 @@ class _NuxScreenState extends State<NuxScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    ThemeData theme = Theme.of(context);
 
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           appBar: AppBar(
             title: Text(loc.nuxTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
           ),
           body: _isLoading
               ? Center(
                   child: Text(
                     loc.loading,
-                    style: const TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface),
                   ),
                 )
               : Theme(
@@ -189,14 +190,14 @@ class _NuxScreenState extends State<NuxScreen> {
                         const SizedBox(height: 8),
                         Text(
                           loc.nuxDescription,
-                          style: const TextStyle(fontSize: 14),
+                          style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
                         ),
                         const SizedBox(height: 16),
 
                         // Location permission (optional)
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.location_on),
+                          leading: Icon(Icons.location_on, color: theme.colorScheme.onSurface),
                           title: Text(
                             loc.nuxLocationTitle,
                             style: const TextStyle(
@@ -206,7 +207,7 @@ class _NuxScreenState extends State<NuxScreen> {
                           ),
                           subtitle: Text(
                             loc.nuxLocationBody,
-                            style: const TextStyle(fontSize: 14),
+                            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
                           ),
                           trailing: _buildCheckIcon(_locationGranted),
                           onTap: _requestLocationPermission,
@@ -217,7 +218,7 @@ class _NuxScreenState extends State<NuxScreen> {
                         // Notification permission (optional)
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.notifications),
+                          leading: Icon(Icons.notifications, color: theme.colorScheme.onSurface),
                           title: Text(
                             loc.nuxNotificationTitle,
                             style: const TextStyle(
@@ -227,7 +228,7 @@ class _NuxScreenState extends State<NuxScreen> {
                           ),
                           subtitle: Text(
                             loc.nuxNotificationBody,
-                            style: const TextStyle(fontSize: 14),
+                            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
                           ),
                           trailing: _buildCheckIcon(_notificationGranted),
                           onTap: _requestNotificationPermission,
@@ -238,7 +239,7 @@ class _NuxScreenState extends State<NuxScreen> {
                         // Default launcher info
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.home),
+                          leading: Icon(Icons.home, color: theme.colorScheme.onSurface),
                           title: Text(
                             loc.nuxLauncherTitle,
                             style: const TextStyle(
@@ -248,7 +249,7 @@ class _NuxScreenState extends State<NuxScreen> {
                           ),
                           subtitle: Text(
                             loc.nuxLauncherBody,
-                            style: const TextStyle(fontSize: 14),
+                            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
                           ),
                           trailing: _buildCheckIcon(_launcherMarkedDone),
                           onTap: () async {
@@ -261,7 +262,7 @@ class _NuxScreenState extends State<NuxScreen> {
 
                         FilledButton(
                           onPressed: _onContinue,
-                          child: Text(loc.nuxContinue),
+                          child: Text(loc.nuxContinue, style: TextStyle(color: theme.colorScheme.onPrimary)),
                         ),
                         const SizedBox(height: 16),
                       ],

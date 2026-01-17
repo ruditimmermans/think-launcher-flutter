@@ -179,6 +179,12 @@ abstract class AppLocalizations {
   /// **'Clock font size'**
   String get clockFontSize;
 
+  /// Toggle to use 24-hour clock instead of 12-hour clock
+  ///
+  /// In en, this message translates to:
+  /// **'Use 24-hour clock'**
+  String get use24HourClock;
+
   /// Label for app font size setting
   ///
   /// In en, this message translates to:
@@ -190,6 +196,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App icon size'**
   String get appIconSize;
+
+  /// Label for the app theme setting
+  ///
+  /// In en, this message translates to:
+  /// **'App theme'**
+  String get appTheme;
+
+  /// App theme option that follows the system theme
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get appThemeAuto;
+
+  /// App theme option that forces light mode
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get appThemeLight;
+
+  /// App theme option that forces dark mode
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get appThemeDark;
 
   /// Label for app list section
   ///

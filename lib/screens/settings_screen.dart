@@ -13,12 +13,13 @@ import 'package:think_launcher/utils/no_grow_scroll_behaviour.dart';
 import 'package:think_launcher/screens/app_selection_screen.dart';
 import 'package:think_launcher/screens/folder_management_screen.dart';
 import 'package:think_launcher/screens/gesture_settings_screen.dart';
-import 'package:think_launcher/screens/reorder_apps_screen.dart';
+import 'package:think_launcher/screens/reorder_screen.dart';
 import 'package:think_launcher/screens/single_app_selection_screen.dart';
 import 'package:think_launcher/screens/icon_pack_screen.dart';
 import 'package:think_launcher/models/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:think_launcher/constants/app_alignment.dart';
+import 'package:think_launcher/constants/app_theme.dart';
 import 'package:think_launcher/screens/about_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -34,6 +35,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool showSearchButton = true;
   double clockFontSize = 18.0;
+  bool use24HourClock = false;
   double appFontSize = 18.0;
   double appIconSize = 35.0;
   bool enableScroll = true;
@@ -49,6 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double wallpaperBlur = 0.0; // 0 = no blur when no wallpaper; 1-10 when set
   String? weatherAppPackageName;
   AppAlignment appAlignment = AppAlignment.left;
+  AppThemeMode appTheme = AppThemeMode.auto;
   String? iconPackPackageName;
   String? iconPackAppName;
   String? weatherApiKey;
@@ -65,6 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       showSearchButton = widget.prefs.getBool('showSearchButton') ?? true;
       clockFontSize = widget.prefs.getDouble('clockFontSize') ?? 18.0;
+      use24HourClock = widget.prefs.getBool('use24HourClock') ?? false;
       appFontSize = widget.prefs.getDouble('appFontSize') ?? 18.0;
       appIconSize = widget.prefs.getDouble('appIconSize') ?? 35.0;
       enableScroll = widget.prefs.getBool('enableScroll') ?? true;
@@ -84,6 +88,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       weatherAppPackageName = widget.prefs.getString('weatherAppPackageName');
       appAlignment =
           appAlignmentFromStorage(widget.prefs.getString('appAlignment'));
+      appTheme =
+          appThemeModeFromStorage(widget.prefs.getString('appTheme'));
       iconPackPackageName = widget.prefs.getString('iconPackPackageName');
       iconPackAppName = widget.prefs.getString('iconPackAppName');
       weatherApiKey = widget.prefs.getString('weatherApiKey');
@@ -99,6 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       await widget.prefs.setBool('showSearchButton', showSearchButton);
       await widget.prefs.setDouble('clockFontSize', clockFontSize);
+      await widget.prefs.setBool('use24HourClock', use24HourClock);
       await widget.prefs.setDouble('appFontSize', appFontSize);
       await widget.prefs.setDouble('appIconSize', appIconSize);
       await widget.prefs.setBool('enableScroll', enableScroll);
@@ -120,6 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await widget.prefs.setString('weatherAppPackageName', weatherAppPackageName!);
       }
       await widget.prefs.setString('appAlignment', appAlignment.storageKey);
+      await widget.prefs.setString('appTheme', appTheme.storageKey);
 
       if (iconPackPackageName == null) {
         await widget.prefs.remove('iconPackPackageName');
@@ -136,6 +144,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         await widget.prefs.setString('weatherApiKey', weatherApiKey!);
       }
+
+      // Notify app about theme changes so MaterialApp can update.
+      appThemeNotifier.value = appTheme;
 
       // Update status bar visibility
       final showStatusBar = widget.prefs.getBool('showStatusBar') ?? false;
@@ -402,13 +413,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'wakeOnNotification': prefs.getBool('wakeOnNotification') ?? false,
         'scrollToTop': prefs.getBool('scrollToTop') ?? false,
         'clockFontSize': prefs.getDouble('clockFontSize') ?? 18.0,
+        'use24HourClock': prefs.getBool('use24HourClock') ?? false,
         'appFontSize': prefs.getDouble('appFontSize') ?? 18.0,
         'appIconSize': prefs.getDouble('appIconSize') ?? 35.0,
         'selectedApps': prefs.getStringList('selectedApps') ?? <String>[],
         'showStatusBar': prefs.getBool('showStatusBar') ?? false,
         'showFolderChevron': prefs.getBool('showFolderChevron') ?? true,
         'wallpaperBlur': prefs.getDouble('wallpaperBlur') ?? 0.0,
-        'appAlignment': prefs.getString('appAlignment') ?? AppAlignment.left.storageKey,
+        'appAlignment':
+            prefs.getString('appAlignment') ?? AppAlignment.left.storageKey,
+        'appTheme':
+            prefs.getString('appTheme') ?? AppThemeMode.auto.storageKey,
       };
 
       final String jsonText = const JsonEncoder.withIndent('  ').convert(data);
@@ -565,6 +580,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await prefs.setBool('scrollToTop', vScrollToTop);
       }
 
+      final bool? vUse24HourClock = getBoolOrNull('use24HourClock');
+      if (vUse24HourClock != null) {
+        await prefs.setBool('use24HourClock', vUse24HourClock);
+      }
+
       final double? vClockFontSize = getDoubleOrNull('clockFontSize');
       if (vClockFontSize != null) {
         await prefs.setDouble('clockFontSize', vClockFontSize);
@@ -601,6 +621,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await prefs.setString('appAlignment', importedAlignment.storageKey);
       }
 
+      final String? vAppTheme = getStringOrNull('appTheme');
+      if (vAppTheme != null) {
+        final importedTheme = appThemeModeFromStorage(vAppTheme);
+        await prefs.setString('appTheme', importedTheme.storageKey);
+        appThemeNotifier.value = importedTheme;
+      }
+
       // Refresh UI and system UI overlays
       if (!mounted) return;
       _loadSettings();
@@ -630,6 +657,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String label,
   ) {
     final selected = appAlignment == value;
+    ThemeData theme = Theme.of(context);
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -641,8 +669,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _saveSettings();
           },
           style: OutlinedButton.styleFrom(
-            backgroundColor: selected ? Colors.black : Colors.white,
-            foregroundColor: selected ? Colors.white : Colors.black,
+            backgroundColor: selected ? theme.colorScheme.onSurface : theme.colorScheme.surface,
+            foregroundColor: selected ? theme.colorScheme.surface : theme.colorScheme.onSurface,
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context,
+    AppThemeMode value,
+    String label,
+  ) {
+    ThemeData theme = Theme.of(context);
+    final selected = appTheme == value;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: OutlinedButton(
+          onPressed: () {
+            setState(() {
+              appTheme = value;
+            });
+            _saveSettings();
+          },
+          style: OutlinedButton.styleFrom(
+            backgroundColor: selected ? theme.colorScheme.onSurface : theme.colorScheme.surface,
+            foregroundColor: selected ? theme.colorScheme.surface : theme.colorScheme.onSurface,
           ),
           child: Text(
             label,
@@ -655,19 +713,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.settingsTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -685,77 +745,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ListView(
                     physics: const ClampingScrollPhysics(),
                     children: [
-                      // 1. Show search button
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.showSearchButton,
-                          style: const TextStyle(
+                      // Appearance: theme & colors
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          AppLocalizations.of(context)!.appTheme,
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
-                        value: showSearchButton,
-                        onChanged: (value) {
-                          setState(() {
-                            showSearchButton = value;
-                          });
-                          _saveSettings();
-                        },
                       ),
-
-                      // 2. Enable list scrolling
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.enableListScrolling,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            _buildThemeOption(
+                              context,
+                              AppThemeMode.auto,
+                              AppLocalizations.of(context)!.appThemeAuto,
+                            ),
+                            _buildThemeOption(
+                              context,
+                              AppThemeMode.light,
+                              AppLocalizations.of(context)!.appThemeLight,
+                            ),
+                            _buildThemeOption(
+                              context,
+                              AppThemeMode.dark,
+                              AppLocalizations.of(context)!.appThemeDark,
+                            ),
+                          ],
                         ),
-                        value: enableScroll,
-                        onChanged: (value) {
-                          setState(() {
-                            enableScroll = value;
-                          });
-                          _saveSettings();
-                        },
                       ),
-
-                      // 3. Show status bar
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.showStatusBar,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: widget.prefs.getBool('showStatusBar') ?? false,
-                        onChanged: (value) {
-                          setState(() {
-                            widget.prefs.setBool('showStatusBar', value);
-                          });
-                          _saveSettings();
-                        },
-                      ),
-
-                      // 4. Color mode
+                      const SizedBox(height: 8),
                       Opacity(
                         opacity: iconPackPackageName == null ? 1.0 : 0.4,
                         child: SwitchListTile(
                           title: Text(
                             AppLocalizations.of(context)!.colorMode,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                           value: colorMode,
                           onChanged: (value) {
                             if (iconPackPackageName != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(AppLocalizations.of(context)!.iconPackColorModeWarning),
-                              ));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    AppLocalizations.of(context)!
+                                        .iconPackColorModeWarning,
+                                  ),
+                                ),
+                              );
                               return;
                             }
                             setState(() {
@@ -765,14 +811,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                         ),
                       ),
-
-                      // 5. Show icons
                       SwitchListTile(
                         title: Text(
                           AppLocalizations.of(context)!.showIcons,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         value: showIcons,
@@ -783,87 +828,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _saveSettings();
                         },
                       ),
-
-                      // 5b. Icon pack
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.iconPackSettingLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         subtitle: Text(
-                          iconPackAppName ?? AppLocalizations.of(context)!.iconPackSystemDefault,
+                          iconPackAppName ??
+                              AppLocalizations.of(context)!
+                                  .iconPackSystemDefault,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                        trailing: const Icon(Icons.chevron_right),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         onTap: _selectIconPack,
                       ),
                       const SizedBox(height: 8),
-
-                      // 6. Wake on notification
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.wakeOnNotification,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: wakeOnNotification,
-                        onChanged: (value) {
-                          setState(() {
-                            wakeOnNotification = value;
-                          });
-                          _saveSettings();
-                        },
-                      ),
-
-                      // 6b. Scroll to top on folder close
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.scrollToTop,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: scrollToTop,
-                        onChanged: (value) {
-                          setState(() {
-                            scrollToTop = value;
-                          });
-                          _saveSettings();
-                        },
-                      ),
-
-                      // 7. Show folder chevron
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.showFolderChevron,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        value: showFolderChevron,
-                        onChanged: (value) {
-                          setState(() {
-                            showFolderChevron = value;
-                          });
-                          _saveSettings();
-                        },
-                      ),
-
-                      // 8. Wallpaper (single setting item)
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.wallpaper,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         subtitle: Text(
@@ -889,7 +883,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                         onTap: () async {
                           final picker = ImagePicker();
-                          final XFile? picked = await picker.pickImage(
+                          final XFile? picked =
+                              await picker.pickImage(
                             source: ImageSource.gallery,
                             requestFullMetadata: false,
                           );
@@ -930,12 +925,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           }
                         },
                       ),
-
-                      // 8b. Wallpaper blur slider (only when wallpaper is set)
                       if (wallpaperPath != null) ...[
                         Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(16.0, 0, 16.0, 8.0),
+                          padding: const EdgeInsets.fromLTRB(
+                            16.0,
+                            0,
+                            16.0,
+                            8.0,
+                          ),
                           child: Text(
                             AppLocalizations.of(context)!.wallpaperBlur,
                             style: const TextStyle(
@@ -945,7 +942,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -969,30 +967,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       data: SliderTheme.of(context).copyWith(
                                         overlayShape:
                                             SliderComponentShape.noOverlay,
-                                        valueIndicatorColor: Colors.transparent,
-                                        valueIndicatorTextStyle:
-                                            const TextStyle(
-                                          color: Colors.black,
+                                        valueIndicatorColor:
+                                            Colors.transparent,
+                                        valueIndicatorTextStyle: TextStyle(
+                                          color: theme.colorScheme.onSurface,
                                         ),
-                                        thumbShape: const RoundSliderThumbShape(
+                                        thumbShape:
+                                            const RoundSliderThumbShape(
                                           enabledThumbRadius: 12,
                                           elevation: 0,
                                           pressedElevation: 0,
                                         ),
                                         trackHeight: 2,
-                                        activeTrackColor: Colors.black,
-                                        inactiveTrackColor: Colors.grey,
-                                        thumbColor: Colors.black,
+                                        activeTrackColor:
+                                            theme.colorScheme.onSurface,
+                                        inactiveTrackColor:
+                                            theme.colorScheme.onSurface,
+                                        thumbColor:
+                                            theme.colorScheme.onSurface,
                                         overlayColor: Colors.transparent,
-                                        showValueIndicator: ShowValueIndicator
-                                            .always,
+                                        showValueIndicator:
+                                            ShowValueIndicator.always,
                                       ),
                                       child: Slider(
                                         value: wallpaperBlur,
                                         min: 1,
                                         max: 10,
                                         divisions: 9,
-                                        label: wallpaperBlur.toStringAsFixed(0),
+                                        label:
+                                            wallpaperBlur.toStringAsFixed(0),
                                         onChanged: (value) {
                                           setState(() {
                                             wallpaperBlur = value;
@@ -1021,8 +1024,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ],
-
-                      // 9. Clock font size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1051,19 +1052,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Expanded(
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
-                                  overlayShape: SliderComponentShape.noOverlay,
+                                  overlayShape:
+                                      SliderComponentShape.noOverlay,
                                   valueIndicatorColor: Colors.transparent,
-                                  valueIndicatorTextStyle:
-                                      const TextStyle(color: Colors.black),
+                                  valueIndicatorTextStyle: TextStyle(
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                   thumbShape: const RoundSliderThumbShape(
                                     enabledThumbRadius: 12,
                                     elevation: 0,
                                     pressedElevation: 0,
                                   ),
                                   trackHeight: 2,
-                                  activeTrackColor: Colors.black,
-                                  inactiveTrackColor: Colors.grey,
-                                  thumbColor: Colors.black,
+                                  activeTrackColor:
+                                      theme.colorScheme.onSurface,
+                                  inactiveTrackColor:
+                                      theme.colorScheme.onSurface,
+                                  thumbColor: theme.colorScheme.onSurface,
                                   overlayColor: Colors.transparent,
                                   showValueIndicator:
                                       ShowValueIndicator.onlyForContinuous,
@@ -1075,7 +1080,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   label: clockFontSize.toStringAsFixed(0),
                                   onChanged: (value) {
                                     setState(() {
-                                      clockFontSize = value.roundToDouble();
+                                      clockFontSize =
+                                          value.roundToDouble();
                                     });
                                     _saveSettings();
                                   },
@@ -1096,8 +1102,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ),
                       ),
-
-                      // 10. App font size
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.use24HourClock,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        value: use24HourClock,
+                        onChanged: (value) {
+                          setState(() {
+                            use24HourClock = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1125,19 +1145,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Expanded(
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
-                                  overlayShape: SliderComponentShape.noOverlay,
+                                  overlayShape:
+                                      SliderComponentShape.noOverlay,
                                   valueIndicatorColor: Colors.transparent,
-                                  valueIndicatorTextStyle:
-                                      const TextStyle(color: Colors.black),
+                                  valueIndicatorTextStyle: TextStyle(
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                   thumbShape: const RoundSliderThumbShape(
                                     enabledThumbRadius: 12,
                                     elevation: 0,
                                     pressedElevation: 0,
                                   ),
                                   trackHeight: 2,
-                                  activeTrackColor: Colors.black,
-                                  inactiveTrackColor: Colors.grey,
-                                  thumbColor: Colors.black,
+                                  activeTrackColor:
+                                      theme.colorScheme.onSurface,
+                                  inactiveTrackColor:
+                                      theme.colorScheme.onSurface,
+                                  thumbColor: theme.colorScheme.onSurface,
                                   overlayColor: Colors.transparent,
                                   showValueIndicator:
                                       ShowValueIndicator.onlyForContinuous,
@@ -1149,7 +1173,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   label: appFontSize.toStringAsFixed(0),
                                   onChanged: (value) {
                                     setState(() {
-                                      appFontSize = value.roundToDouble();
+                                      appFontSize =
+                                          value.roundToDouble();
                                     });
                                     _saveSettings();
                                   },
@@ -1169,8 +1194,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ),
                       ),
-
-                      // 11. App icon size
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1198,19 +1221,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Expanded(
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
-                                  overlayShape: SliderComponentShape.noOverlay,
+                                  overlayShape:
+                                      SliderComponentShape.noOverlay,
                                   valueIndicatorColor: Colors.transparent,
-                                  valueIndicatorTextStyle:
-                                      const TextStyle(color: Colors.black),
+                                  valueIndicatorTextStyle: TextStyle(
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                   thumbShape: const RoundSliderThumbShape(
                                     enabledThumbRadius: 12,
                                     elevation: 0,
                                     pressedElevation: 0,
                                   ),
                                   trackHeight: 2,
-                                  activeTrackColor: Colors.black,
-                                  inactiveTrackColor: Colors.grey,
-                                  thumbColor: Colors.black,
+                                  activeTrackColor:
+                                      theme.colorScheme.onSurface,
+                                  inactiveTrackColor:
+                                      theme.colorScheme.onSurface,
+                                  thumbColor: theme.colorScheme.onSurface,
                                   overlayColor: Colors.transparent,
                                   showValueIndicator:
                                       ShowValueIndicator.onlyForContinuous,
@@ -1222,7 +1249,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   label: appIconSize.toStringAsFixed(0),
                                   onChanged: (value) {
                                     setState(() {
-                                      appIconSize = value.roundToDouble();
+                                      appIconSize =
+                                          value.roundToDouble();
                                     });
                                     _saveSettings();
                                   },
@@ -1243,7 +1271,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 12. App alignment
+                      const Divider(height: 32),
+
+                      // General behavior
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showSearchButton,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        value: showSearchButton,
+                        onChanged: (value) {
+                          setState(() {
+                            showSearchButton = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.enableListScrolling,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        value: enableScroll,
+                        onChanged: (value) {
+                          setState(() {
+                            enableScroll = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showStatusBar,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        value: widget.prefs.getBool('showStatusBar') ?? false,
+                        onChanged: (value) {
+                          setState(() {
+                            widget.prefs.setBool('showStatusBar', value);
+                          });
+                          _saveSettings();
+                        },
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.wakeOnNotification,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        value: wakeOnNotification,
+                        onChanged: (value) {
+                          setState(() {
+                            wakeOnNotification = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.scrollToTop,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        value: scrollToTop,
+                        onChanged: (value) {
+                          setState(() {
+                            scrollToTop = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.showFolderChevron,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        value: showFolderChevron,
+                        onChanged: (value) {
+                          setState(() {
+                            showFolderChevron = value;
+                          });
+                          _saveSettings();
+                        },
+                      ),
+
+                      const Divider(height: 32),
+
+                      // Apps & folders
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
@@ -1277,8 +1413,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-
-                      // 13. App list
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.appList,
@@ -1291,11 +1425,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           AppLocalizations.of(context)!
                               .selectedAppsCount(selectedApps.length),
                         ),
-                        trailing: const Icon(Icons.chevron_right),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         onTap: _selectApps,
                       ),
-
-                      // 14. Reorder apps
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.reorderAppsFolders,
@@ -1304,11 +1439,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        trailing: const Icon(Icons.chevron_right),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         onTap: selectedApps.isEmpty ? null : _reorderApps,
                       ),
-
-                      // 15. Manage folders
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.manageFolders,
@@ -1317,16 +1453,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Text(AppLocalizations.of(context)!
-                            .createAndOrganizeFolders),
-                        trailing: const Icon(Icons.chevron_right),
+                        subtitle: Text(
+                          AppLocalizations.of(context)!
+                              .createAndOrganizeFolders,
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      FolderManagementScreen(
+                              pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
+                                  FolderManagementScreen(
                                 prefs: widget.prefs,
                                 selectedApps: selectedApps,
                               ),
@@ -1336,8 +1477,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           );
                         },
                       ),
-
-                      // 16. Gestures panel
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.gestures,
@@ -1347,15 +1486,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         subtitle: Text(
-                            AppLocalizations.of(context)!.configureGestures),
-                        trailing: const Icon(Icons.chevron_right),
+                          AppLocalizations.of(context)!.configureGestures,
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
                               pageBuilder: (context, animation,
                                       secondaryAnimation) =>
-                                  GestureSettingsScreen(prefs: widget.prefs),
+                                  GestureSettingsScreen(
+                                prefs: widget.prefs,
+                              ),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -1363,7 +1508,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
 
-                      // 16b. Weather app
+                      const Divider(height: 32),
+
+                      // Weather
                       Opacity(
                         opacity: _locationEnabledForWeather ? 1.0 : 0.4,
                         child: FutureBuilder<String?>(
@@ -1386,7 +1533,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 maxLines: 1,
                               ),
                               trailing: weatherAppPackageName == null
-                                  ? const Icon(Icons.chevron_right)
+                                  ? Icon(
+                                      Icons.chevron_right,
+                                      color: theme.colorScheme.onSurface,
+                                    )
                                   : IconButton(
                                       icon: const Icon(Icons.delete_outline),
                                       onPressed: () async {
@@ -1411,8 +1561,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                         ),
                       ),
-
-                      // 16c. Weather API key
                       Opacity(
                         opacity: _locationEnabledForWeather ? 1.0 : 0.4,
                         child: ListTile(
@@ -1432,22 +1580,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
-                          trailing:
-                              (weatherApiKey == null || weatherApiKey!.isEmpty)
-                                  ? const Icon(Icons.chevron_right)
-                                  : IconButton(
-                                      icon: const Icon(Icons.delete_outline),
-                                      onPressed: () async {
-                                        if (!_locationEnabledForWeather) {
-                                          _showEnableLocationForWeatherSnackbar();
-                                          return;
-                                        }
-                                        setState(() {
-                                          weatherApiKey = null;
-                                        });
-                                        await _saveSettings();
-                                      },
-                                    ),
+                          trailing: (weatherApiKey == null ||
+                                  weatherApiKey!.isEmpty)
+                              ? Icon(
+                                  Icons.chevron_right,
+                                  color: theme.colorScheme.onSurface,
+                                )
+                              : IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () async {
+                                    if (!_locationEnabledForWeather) {
+                                      _showEnableLocationForWeatherSnackbar();
+                                      return;
+                                    }
+                                    setState(() {
+                                      weatherApiKey = null;
+                                    });
+                                    await _saveSettings();
+                                  },
+                                ),
                           onTap: () {
                             if (!_locationEnabledForWeather) {
                               _showEnableLocationForWeatherSnackbar();
@@ -1458,7 +1609,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      // 17. Export settings
+                      // Backup & restore
                       const Divider(height: 32),
                       ListTile(
                         title: Text(
@@ -1474,8 +1625,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         onTap: _exportSettings,
                       ),
-
-                      // 18. Import settings
                       ListTile(
                         title: Text(
                           AppLocalizations.of(context)!.importSettings,
@@ -1491,7 +1640,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: _importSettings,
                       ),
 
-                      // 19. About
+                      // About & support
                       const Divider(height: 32),
                       ListTile(
                         title: Text(
@@ -1506,9 +1655,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) {
-                                return const AboutScreen();
-                              },
+                              pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
+                                  const AboutScreen(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -1525,7 +1674,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
-                          launchUrl(Uri.parse('mailto:jack.apps.dev.2023@gmail.com'));
+                          launchUrl(
+                            Uri.parse(
+                              'mailto:jack.apps.dev.2023@gmail.com',
+                            ),
+                          );
                         },
                       ),
                       ListTile(
@@ -1539,7 +1692,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           launchUrl(
-                            Uri.parse('https://www.paypal.com/ncp/payment/39JV6M94ZNGNU'),
+                            Uri.parse(
+                              'https://www.paypal.com/ncp/payment/39JV6M94ZNGNU',
+                            ),
                           );
                         },
                       ),

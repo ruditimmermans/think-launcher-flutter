@@ -71,6 +71,11 @@
     "description": "Label for clock font size setting"
   },
 
+  "use24HourClock": "24-uursklok gebruiken",
+  "@use24HourClock": {
+    "description": "Schakelaar om een 24-uursklok te gebruiken in plaats van 12-uurs"
+  },
+
   "appFontSize": "App lettergrootte",
   "@appFontSize": {
     "description": "Label for app font size setting"
@@ -79,6 +84,26 @@
   "appIconSize": "App pictogramgrootte",
   "@appIconSize": {
     "description": "Label for app icon size setting"
+  },
+
+  "appTheme": "App-thema",
+  "@appTheme": {
+    "description": "Label voor de app-thema-instelling"
+  },
+
+  "appThemeAuto": "Auto",
+  "@appThemeAuto": {
+    "description": "App-themaoptie die het systeemthema volgt"
+  },
+
+  "appThemeLight": "Licht",
+  "@appThemeLight": {
+    "description": "App-themaoptie die lichte modus afdwingt"
+  },
+
+  "appThemeDark": "Donker",
+  "@appThemeDark": {
+    "description": "App-themaoptie die donkere modus afdwingt"
   },
 
   "appList": "App lijst",

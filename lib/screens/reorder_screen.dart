@@ -366,14 +366,16 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
   }
 
   Widget _buildLoadingIndicator() {
-    return const Center(
+    ThemeData theme = Theme.of(context);
+    return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+        valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onSurface),
       ),
     );
   }
 
   Widget _buildErrorMessage() {
+    ThemeData theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -383,12 +385,12 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
             Text(
               _errorMessage ?? AppLocalizations.of(context)!.errorLoadingApps,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: _loadData,
-              child: Text(AppLocalizations.of(context)!.save),
+              child: Text(AppLocalizations.of(context)!.save, style: TextStyle(color: theme.colorScheme.onSurface)),
             ),
           ],
         ),
@@ -397,11 +399,13 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
   }
 
   Widget _buildListItem(ReorderableItem item) {
+    ThemeData theme = Theme.of(context);
+
     Widget? leadingIcon;
     if (item.type == ReorderableItemType.folder) {
       leadingIcon = Icon(
         Icons.folder,
-        color: Colors.grey[700],
+        color: theme.colorScheme.onSurface.withAlpha(200),
         size: _appIconSize * 0.7,
       );
     } else if (item.appInfo?.icon != null) {
@@ -443,7 +447,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
     return Container(
       key: Key(item.id),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         border: Border(
           bottom: BorderSide(
             color: Colors.grey.withValues(alpha: 0.2),
@@ -459,7 +463,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
           leading: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.drag_handle, color: Colors.grey),
+              Icon(Icons.drag_handle, color: theme.colorScheme.onSurface),
               const SizedBox(width: 16),
               if (leadingIcon != null)
                 Container(
@@ -484,8 +488,10 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
@@ -494,7 +500,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                 ? AppLocalizations.of(context)!.reorderAppsInFolder
                 : AppLocalizations.of(context)!.reorderAppsFolders),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
               tooltip: AppLocalizations.of(context)!.back,
             ),
@@ -512,8 +518,8 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                   ),
                 ),
             ],
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
           ),
           body: SafeArea(
@@ -525,7 +531,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                         ? Center(
                             child: Text(
                               AppLocalizations.of(context)!.noAppsSelected,
-                              style: const TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface),
                             ),
                           )
                         : ReorderableListView.builder(
@@ -551,7 +557,7 @@ class _ReorderAppsScreenState extends State<ReorderAppsScreen> {
                             proxyDecorator: (child, index, animation) {
                               return Material(
                                 elevation: 4,
-                                color: Colors.white,
+                                color: theme.colorScheme.surface,
                                 child: child,
                               );
                             },

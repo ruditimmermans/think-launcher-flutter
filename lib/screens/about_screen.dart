@@ -13,18 +13,20 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.aboutTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           body: FutureBuilder<PackageInfo>(
             future: _loadPackageInfo(),
             builder: (context, snapshot) {
@@ -51,9 +53,10 @@ class AboutScreen extends StatelessWidget {
                   ListTile(
                     title: Text(
                       AppLocalizations.of(context)!.aboutVersionLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     subtitle: Text(versionText),
@@ -61,12 +64,13 @@ class AboutScreen extends StatelessWidget {
                   ListTile(
                     title: Text(
                       AppLocalizations.of(context)!.aboutOpenSourceLicenses,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: Icon(Icons.chevron_right, color: theme.colorScheme.onSurface),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -84,12 +88,13 @@ class AboutScreen extends StatelessWidget {
                   ListTile(
                     title: Text(
                       AppLocalizations.of(context)!.aboutPrivacyPolicy,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: Icon(Icons.chevron_right, color: theme.colorScheme.onSurface),
                     onTap: () {
                       launchUrl(Uri.parse('https://jacks-apps.vercel.app/privacy-policy-think-minimal-launcher.html'));
                     },

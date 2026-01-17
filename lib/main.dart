@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:think_launcher/l10n/app_localizations.dart';
+import 'package:think_launcher/constants/app_theme.dart';
 import 'screens/main_screen.dart';
 import 'screens/nux_screen.dart';
 import 'l10n/l10n.dart';
@@ -17,12 +18,24 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
+  // Initialize theme from persisted settings.
+  appThemeNotifier.value =
+      appThemeModeFromStorage(prefs.getString('appTheme'));
+
   _configureSystemUI(prefs);
   runApp(MyApp(prefs: prefs));
 }
 
 void _configureSystemUI(SharedPreferences prefs) {
   final showStatusBar = prefs.getBool('showStatusBar') ?? false;
+  final themeMode = appThemeModeFromStorage(prefs.getString('appTheme'));
+  final brightness = switch (themeMode) {
+    AppThemeMode.light => Brightness.light,
+    AppThemeMode.dark => Brightness.dark,
+    AppThemeMode.auto =>
+      WidgetsBinding.instance.platformDispatcher.platformBrightness,
+  };
+  final bool isDark = brightness == Brightness.dark;
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
     overlays: showStatusBar
@@ -31,10 +44,11 @@ void _configureSystemUI(SharedPreferences prefs) {
   );
 
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
+    SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      systemNavigationBarColor: _kSurfaceColor,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: isDark ? Colors.black : _kSurfaceColor,
+      systemNavigationBarIconBrightness:
+          isDark ? Brightness.light : Brightness.dark,
     ),
   );
 }
@@ -46,66 +60,106 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showNux = !(prefs.getBool('nuxCompleted') ?? false);
-    return MaterialApp(
-      title: 'Think Launcher',
-      debugShowCheckedModeBanner: false,
-      theme: _buildTheme(),
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: L10n.all,
-      home: showNux ? NuxScreen(prefs: prefs) : MainScreen(prefs: prefs),
+    return ValueListenableBuilder<AppThemeMode>(
+      valueListenable: appThemeNotifier,
+      builder: (context, appTheme, _) {
+        final themeMode = _toFlutterThemeMode(appTheme);
+        return MaterialApp(
+          title: 'Think Launcher',
+          debugShowCheckedModeBanner: false,
+          theme: _buildTheme(Brightness.light),
+          darkTheme: _buildTheme(Brightness.dark),
+          themeMode: themeMode,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: L10n.all,
+          home: showNux ? NuxScreen(prefs: prefs) : MainScreen(prefs: prefs),
+        );
+      },
     );
   }
 
-  ThemeData _buildTheme() {
+  ThemeMode _toFlutterThemeMode(AppThemeMode mode) {
+    switch (mode) {
+      case AppThemeMode.light:
+        return ThemeMode.light;
+      case AppThemeMode.dark:
+        return ThemeMode.dark;
+      case AppThemeMode.auto:
+        return ThemeMode.system;
+    }
+  }
+
+  ThemeData _buildTheme(Brightness brightness) {
+    final bool isDark = brightness == Brightness.dark;
+    final Color primary = isDark ? Colors.white : _kPrimaryColor;
+    final Color surface = isDark ? Colors.black : _kSurfaceColor;
+
+    final ColorScheme colorScheme = isDark
+        ? const ColorScheme.dark(
+            primary: Colors.white,
+            onPrimary: Colors.black,
+            secondary: Colors.white,
+            onSecondary: Colors.black,
+            surface: Colors.black,
+            onSurface: Colors.white,
+            error: Colors.red,
+            onError: Colors.black,
+            surfaceContainerHighest: Colors.black,
+            onSurfaceVariant: Colors.white,
+            outline: Colors.white,
+            outlineVariant: Colors.white,
+          )
+        : const ColorScheme.light(
+            primary: _kPrimaryColor,
+            onPrimary: _kSurfaceColor,
+            secondary: _kPrimaryColor,
+            onSecondary: _kSurfaceColor,
+            surface: _kSurfaceColor,
+            onSurface: _kPrimaryColor,
+            error: _kPrimaryColor,
+            onError: _kSurfaceColor,
+            surfaceContainerHighest: _kSurfaceColor,
+            onSurfaceVariant: _kPrimaryColor,
+            outline: _kPrimaryColor,
+            outlineVariant: _kPrimaryColor,
+          );
+
     return ThemeData(
       useMaterial3: true,
-      colorScheme: const ColorScheme.light(
-        primary: _kPrimaryColor,
-        onPrimary: _kSurfaceColor,
-        secondary: _kPrimaryColor,
-        onSecondary: _kSurfaceColor,
-        surface: _kSurfaceColor,
-        onSurface: _kPrimaryColor,
-        error: _kPrimaryColor,
-        onError: _kSurfaceColor,
-        surfaceContainerHighest: _kSurfaceColor,
-        onSurfaceVariant: _kPrimaryColor,
-        outline: _kPrimaryColor,
-        outlineVariant: _kPrimaryColor,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: _kSurfaceColor,
-        foregroundColor: _kPrimaryColor,
+      colorScheme: colorScheme,
+      appBarTheme: AppBarTheme(
+        backgroundColor: surface,
+        foregroundColor: primary,
         elevation: 0,
       ),
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         elevation: 0,
-        color: _kSurfaceColor,
+        color: surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(_kBorderRadius)),
-          side: BorderSide(color: _kPrimaryColor, width: _kBorderWidth),
+          borderRadius: const BorderRadius.all(Radius.circular(_kBorderRadius)),
+          side: BorderSide(color: primary, width: _kBorderWidth),
         ),
       ),
-      iconTheme: const IconThemeData(color: _kPrimaryColor),
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: _kPrimaryColor),
-        bodyMedium: TextStyle(color: _kPrimaryColor),
-        titleLarge: TextStyle(color: _kPrimaryColor),
+      iconTheme: IconThemeData(color: primary),
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(color: primary),
+        bodyMedium: TextStyle(color: primary),
+        titleLarge: TextStyle(color: primary),
       ),
-      dividerTheme: const DividerThemeData(color: _kPrimaryColor),
-      listTileTheme: const ListTileThemeData(
-        textColor: _kPrimaryColor,
-        iconColor: _kPrimaryColor,
+      dividerTheme: DividerThemeData(color: primary),
+      listTileTheme: ListTileThemeData(
+        textColor: primary,
+        iconColor: primary,
       ),
-      filledButtonTheme: _buildFilledButtonTheme(),
-      outlinedButtonTheme: _buildOutlinedButtonTheme(),
-      textButtonTheme: _buildTextButtonTheme(),
-      inputDecorationTheme: _buildInputDecorationTheme(),
+      filledButtonTheme: _buildFilledButtonTheme(primary, surface),
+      outlinedButtonTheme: _buildOutlinedButtonTheme(primary),
+      textButtonTheme: _buildTextButtonTheme(primary),
+      inputDecorationTheme: _buildInputDecorationTheme(primary, surface),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       hoverColor: Colors.transparent,
@@ -119,11 +173,12 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  FilledButtonThemeData _buildFilledButtonTheme() {
+  FilledButtonThemeData _buildFilledButtonTheme(
+      Color primary, Color surface) {
     return FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: _kPrimaryColor,
-        foregroundColor: _kSurfaceColor,
+        backgroundColor: primary,
+        foregroundColor: surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_kBorderRadius),
         ),
@@ -131,11 +186,11 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  OutlinedButtonThemeData _buildOutlinedButtonTheme() {
+  OutlinedButtonThemeData _buildOutlinedButtonTheme(Color primary) {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: _kPrimaryColor,
-        side: const BorderSide(color: _kPrimaryColor),
+        foregroundColor: primary,
+        side: BorderSide(color: primary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_kBorderRadius),
         ),
@@ -143,30 +198,34 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  TextButtonThemeData _buildTextButtonTheme() {
+  TextButtonThemeData _buildTextButtonTheme(Color primary) {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: _kPrimaryColor,
+        foregroundColor: primary,
       ),
     );
   }
 
-  InputDecorationTheme _buildInputDecorationTheme() {
+  InputDecorationTheme _buildInputDecorationTheme(
+      Color primary, Color surface) {
     return InputDecorationTheme(
       filled: true,
-      fillColor: _kSurfaceColor,
-      border: _buildInputBorder(),
-      enabledBorder: _buildInputBorder(),
-      focusedBorder: _buildInputBorder(width: 2),
-      errorBorder: _buildInputBorder(),
-      focusedErrorBorder: _buildInputBorder(width: 2),
+      fillColor: surface,
+      border: _buildInputBorder(primary: primary),
+      enabledBorder: _buildInputBorder(primary: primary),
+      focusedBorder: _buildInputBorder(primary: primary, width: 2),
+      errorBorder: _buildInputBorder(primary: primary),
+      focusedErrorBorder: _buildInputBorder(primary: primary, width: 2),
     );
   }
 
-  OutlineInputBorder _buildInputBorder({double width = 1}) {
+  OutlineInputBorder _buildInputBorder({
+    required Color primary,
+    double width = 1,
+  }) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(_kBorderRadius),
-      borderSide: BorderSide(color: _kPrimaryColor, width: width),
+      borderSide: BorderSide(color: primary, width: width),
     );
   }
 }

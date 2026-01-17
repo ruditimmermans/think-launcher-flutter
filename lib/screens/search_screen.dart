@@ -224,6 +224,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchField() {
+    ThemeData theme = Theme.of(context);
+
     return Padding(
       padding: _kSearchPadding,
       child: TextField(
@@ -231,19 +233,19 @@ class _SearchScreenState extends State<SearchScreen> {
         focusNode: _searchFocusNode,
         autofocus: widget.autoFocus,
         showCursor: true,
-        cursorColor: Colors.black,
+        cursorColor: theme.colorScheme.onSurface,
         cursorWidth: _kCursorWidth,
         cursorRadius: const Radius.circular(1),
         cursorOpacityAnimates: false,
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.searchAppsHint,
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(_kBorderRadius),
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          fillColor: theme.colorScheme.surfaceContainerHighest,
         ),
         onChanged: _filterApps,
       ),
@@ -251,6 +253,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildAppList() {
+    ThemeData theme = Theme.of(context);
     if (_isLoading) {
       return Center(
         child: Text(
@@ -265,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
         padding: _kSearchPadding,
         child: Text(
           _errorMessage!,
-          style: const TextStyle(color: Colors.black),
+          style: TextStyle(color: theme.colorScheme.onSurface),
         ),
       );
     }
@@ -307,19 +310,21 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.searchApps),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
             ),
           ),

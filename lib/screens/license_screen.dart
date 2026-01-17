@@ -54,53 +54,56 @@ SOFTWARE.
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.licenseScreenTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            children: const [
+            children: [
               Text(
                 'This software is based on an open-source project and has been '
                 'modified by Jack\'s - Apps. Both the original work and the '
                 'modifications are provided under the MIT License.',
-                style: TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
               ),
-              SizedBox(height: 16),
-              Divider(height: 32),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+              Divider(height: 32, color: theme.colorScheme.onSurface),
+              const SizedBox(height: 16),
               Text(
                 'Original project (Think Launcher)',
                 style: TextStyle(
+                  color: theme.colorScheme.onSurface,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 8),
-              SelectableText(
+              const SizedBox(height: 8),
+              const SelectableText(
                 _originalMitLicense,
                 textAlign: TextAlign.left,
               ),
-              Divider(height: 32),
-              SizedBox(height: 16),
+              Divider(height: 32, color: theme.colorScheme.onSurface),
+              const SizedBox(height: 16),
               Text(
                 'Modifications by Jack\'s - Apps',
                 style: TextStyle(
+                  color: theme.colorScheme.onSurface,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 8),
-              SelectableText(
+              const SizedBox(height: 8),
+              const SelectableText(
                 _modifiedMitLicense,
                 textAlign: TextAlign.left,
               ),

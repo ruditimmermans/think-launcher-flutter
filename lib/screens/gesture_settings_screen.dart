@@ -37,19 +37,21 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.gesturesTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -68,14 +70,15 @@ class _GestureSettingsScreenState extends State<GestureSettingsScreen> {
                   SwitchListTile(
                     title: Text(
                       AppLocalizations.of(context)!.autoFocusSearch,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: _kFontSize,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     subtitle: Text(
                       AppLocalizations.of(context)!.autoFocusSearchDescription,
-                      style: const TextStyle(fontSize: _kSubtitleFontSize),
+                      style: TextStyle(fontSize: _kSubtitleFontSize, color: theme.colorScheme.onSurface),
                     ),
                     value: _autoFocusSearch,
                     onChanged: (value) {

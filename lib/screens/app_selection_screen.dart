@@ -162,18 +162,20 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.only(top: 16.0),
         child: Scaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.selectAppsTitle),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.onSurface,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => Navigator.pop(context, widget.selectedApps),
               tooltip: AppLocalizations.of(context)!.cancel,
             ),
@@ -189,9 +191,10 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                       AppLocalizations.of(context)!.selectedAppsCount(
                         widget.selectedApps.length,
                       ),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     Row(
@@ -218,21 +221,19 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                   controller: _searchController,
                   autofocus: false,
                   showCursor: true,
-                  cursorColor: Colors.black,
+                  cursorColor: theme.colorScheme.onSurface,
                   cursorWidth: 2,
                   cursorRadius: const Radius.circular(1),
                   cursorOpacityAnimates: false,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.searchAppsHint,
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
                   ),
                   onChanged: _filterApps,
                 ),
@@ -278,19 +279,19 @@ class _AppSelectionScreenState extends State<AppSelectionScreen> {
                                   Expanded(
                                     child: Text(
                                       displayName,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        color: theme.colorScheme.onSurface,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
                                   ),
                                   if (isSelected)
-                                    const Icon(
+                                    Icon(
                                       Icons.check_circle,
-                                      color: Colors.black,
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                 ],
                               ),

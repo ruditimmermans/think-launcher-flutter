@@ -71,6 +71,11 @@
     "description": "Label for clock font size setting"
   },
 
+  "use24HourClock": "Use 24-hour clock",
+  "@use24HourClock": {
+    "description": "Toggle to use 24-hour clock instead of 12-hour clock"
+  },
+
   "appFontSize": "App font size",
   "@appFontSize": {
     "description": "Label for app font size setting"
@@ -79,6 +84,26 @@
   "appIconSize": "App icon size",
   "@appIconSize": {
     "description": "Label for app icon size setting"
+  },
+
+  "appTheme": "App theme",
+  "@appTheme": {
+    "description": "Label for the app theme setting"
+  },
+
+  "appThemeAuto": "Auto",
+  "@appThemeAuto": {
+    "description": "App theme option that follows the system theme"
+  },
+
+  "appThemeLight": "Light",
+  "@appThemeLight": {
+    "description": "App theme option that forces light mode"
+  },
+
+  "appThemeDark": "Dark",
+  "@appThemeDark": {
+    "description": "App theme option that forces dark mode"
   },
 
   "appList": "App list",

@@ -51,10 +51,25 @@ class AppLocalizationsNl extends AppLocalizations {
   String get clockFontSize => 'Klok lettergrootte';
 
   @override
+  String get use24HourClock => '24-uursklok gebruiken';
+
+  @override
   String get appFontSize => 'App lettergrootte';
 
   @override
   String get appIconSize => 'App pictogramgrootte';
+
+  @override
+  String get appTheme => 'App-thema';
+
+  @override
+  String get appThemeAuto => 'Auto';
+
+  @override
+  String get appThemeLight => 'Licht';
+
+  @override
+  String get appThemeDark => 'Donker';
 
   @override
   String get appList => 'App lijst';
